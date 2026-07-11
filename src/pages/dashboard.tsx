@@ -201,6 +201,9 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      <NewInspectionDialog open={newInsp} onOpenChange={setNewInsp} />
+      <RaiseNcDialog open={raiseNc} onOpenChange={setRaiseNc} />
     </div>
   );
 }
