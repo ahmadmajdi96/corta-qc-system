@@ -148,19 +148,26 @@ export function InspectionsListPage() {
 }
 
 export function InspectionCalendarPage() {
-  const [monthStart, setMonthStart] = useState(() => {
-    const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d;
-  });
-  const monthEnd = new Date(monthStart); monthEnd.setMonth(monthEnd.getMonth() + 1);
-  const dayCount = Math.round((monthEnd.getTime() - monthStart.getTime()) / (24 * 3600 * 1000));
+  const [view, setView] = useState<"month" | "week">("month");
+  const [anchor, setAnchor] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
+
+  const rangeStart = new Date(anchor);
+  const rangeEnd = new Date(anchor);
+  if (view === "month") {
+    rangeStart.setDate(1);
+    rangeEnd.setMonth(rangeEnd.getMonth() + 1); rangeEnd.setDate(1);
+  } else {
+    rangeStart.setDate(anchor.getDate() - anchor.getDay()); // Sunday
+    rangeEnd.setTime(rangeStart.getTime()); rangeEnd.setDate(rangeStart.getDate() + 7);
+  }
 
   const list = useQuery({
-    queryKey: ["inspections-cal", monthStart.toISOString()],
+    queryKey: ["inspections-cal", view, rangeStart.toISOString()],
     queryFn: async () => {
       const { data, error } = await supabase.from("inspections")
         .select("id, status, scheduled_date, products(name)")
-        .gte("scheduled_date", monthStart.toISOString().slice(0,10))
-        .lt("scheduled_date", monthEnd.toISOString().slice(0,10))
+        .gte("scheduled_date", rangeStart.toISOString().slice(0,10))
+        .lt("scheduled_date", rangeEnd.toISOString().slice(0,10))
         .order("scheduled_date");
       if (error) throw error;
       return data;
@@ -168,31 +175,57 @@ export function InspectionCalendarPage() {
   });
 
   const byDay: Record<string, any[]> = {};
-  (list.data ?? []).forEach((i) => {
-    (byDay[i.scheduled_date] ??= []).push(i);
-  });
+  (list.data ?? []).forEach((i) => { (byDay[i.scheduled_date] ??= []).push(i); });
 
+  const dayCount = Math.round((rangeEnd.getTime() - rangeStart.getTime()) / (24 * 3600 * 1000));
   const days: Date[] = [];
-  for (let i = 0; i < dayCount; i++) { const d = new Date(monthStart); d.setDate(d.getDate() + i); days.push(d); }
-  const firstDow = monthStart.getDay();
+  for (let i = 0; i < dayCount; i++) { const d = new Date(rangeStart); d.setDate(d.getDate() + i); days.push(d); }
+  const firstDow = view === "month" ? rangeStart.getDay() : 0;
+
+  const title = view === "month"
+    ? rangeStart.toLocaleString(undefined, { month: "long", year: "numeric" })
+    : `Week of ${rangeStart.toLocaleDateString()}`;
+
+  const shiftBy = (dir: -1 | 1) => {
+    const d = new Date(anchor);
+    if (view === "month") d.setMonth(d.getMonth() + dir);
+    else d.setDate(d.getDate() + dir * 7);
+    setAnchor(d);
+  };
+
+  const chipCls = (s: string) =>
+    s === "completed" ? "bg-status-completed/20 text-status-completed" :
+    s === "in_progress" ? "bg-status-in-progress/20 text-status-in-progress" :
+    s === "cancelled" ? "bg-status-cancelled/20 text-status-cancelled" :
+    "bg-status-planned/20 text-status-planned";
 
   return (
     <div className="max-w-7xl space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Inspection Calendar</h1>
-          <p className="text-sm text-muted-foreground">{monthStart.toLocaleString(undefined, { month: "long", year: "numeric" })}</p>
+          <p className="text-sm text-muted-foreground">{title}</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => { const d = new Date(monthStart); d.setMonth(d.getMonth() - 1); setMonthStart(d); }}>Prev</Button>
-          <Button variant="outline" size="sm" onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); setMonthStart(d); }}>Today</Button>
-          <Button variant="outline" size="sm" onClick={() => { const d = new Date(monthStart); d.setMonth(d.getMonth() + 1); setMonthStart(d); }}>Next</Button>
+        <div className="flex gap-2 items-center">
+          <div className="inline-flex rounded-md border overflow-hidden">
+            <button
+              className={`px-3 py-1 text-sm ${view === "month" ? "bg-primary text-primary-foreground" : "bg-background"}`}
+              onClick={() => setView("month")}
+            >Month</button>
+            <button
+              className={`px-3 py-1 text-sm border-l ${view === "week" ? "bg-primary text-primary-foreground" : "bg-background"}`}
+              onClick={() => setView("week")}
+            >Week</button>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => shiftBy(-1)}>Prev</Button>
+          <Button variant="outline" size="sm" onClick={() => { const d = new Date(); d.setHours(0,0,0,0); setAnchor(d); }}>Today</Button>
+          <Button variant="outline" size="sm" onClick={() => shiftBy(1)}>Next</Button>
           <Button asChild variant="outline"><Link to="/inspections"><ListIcon className="h-4 w-4 mr-2" />List</Link></Button>
         </div>
       </div>
 
       <div className="rounded-lg border bg-card p-4">
-        {list.isLoading ? <Skeleton className="h-96" /> : (
+        {list.isLoading ? <Skeleton className="h-96" /> : view === "month" ? (
           <div className="grid grid-cols-7 gap-1 text-xs">
             {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => <div key={d} className="font-medium text-muted-foreground p-1">{d}</div>)}
             {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
@@ -205,16 +238,34 @@ export function InspectionCalendarPage() {
                   <div className="space-y-0.5 mt-1">
                     {items.slice(0, 3).map((i) => (
                       <Link key={i.id} to="/inspections/$id" params={{ id: i.id }}
-                        className={`block truncate rounded px-1 text-[10px] ${
-                          i.status === "completed" ? "bg-status-completed/20 text-status-completed" :
-                          i.status === "in_progress" ? "bg-status-in-progress/20 text-status-in-progress" :
-                          i.status === "cancelled" ? "bg-status-cancelled/20 text-status-cancelled" :
-                          "bg-status-planned/20 text-status-planned"
-                        }`}>
+                        className={`block truncate rounded px-1 text-[10px] ${chipCls(i.status)}`}>
                         {i.products?.name}
                       </Link>
                     ))}
                     {items.length > 3 && <div className="text-[10px] text-muted-foreground">+{items.length - 3} more</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 gap-2 text-xs">
+            {days.map((d) => {
+              const key = d.toISOString().slice(0,10);
+              const items = byDay[key] ?? [];
+              const isToday = key === new Date().toISOString().slice(0,10);
+              return (
+                <div key={key} className={`border rounded min-h-64 p-2 ${isToday ? "ring-2 ring-primary" : ""}`}>
+                  <div className="font-medium">{d.toLocaleDateString(undefined, { weekday: "short" })}</div>
+                  <div className="text-muted-foreground mb-2">{d.getMonth()+1}/{d.getDate()}</div>
+                  <div className="space-y-1">
+                    {items.map((i) => (
+                      <Link key={i.id} to="/inspections/$id" params={{ id: i.id }}
+                        className={`block truncate rounded px-1 py-0.5 text-[11px] ${chipCls(i.status)}`}>
+                        {i.products?.name}
+                      </Link>
+                    ))}
+                    {!items.length && <div className="text-muted-foreground text-[11px]">—</div>}
                   </div>
                 </div>
               );
