@@ -392,6 +392,11 @@ function SettingsTab() {
             <Button onClick={addUnit}><Plus className="h-4 w-4 mr-2" />Add</Button>
           </div>
           {units.isLoading ? <Skeleton className="h-24" /> :
+           !(units.data as any[])?.length ? (
+             <EmptyState title="No measurement units yet"
+               description="Add units like °C, mm, kg so quality specifications can reference them."
+               action={<Button size="sm" onClick={() => { setNewUnit({ code: "°C", label: "Celsius" }); }}><Plus className="h-4 w-4 mr-2" />Prefill Celsius</Button>} />
+           ) :
            <table className="w-full text-sm">
              <thead><tr className="text-left border-b"><th className="py-1">Code</th><th>Label</th><th /></tr></thead>
              <tbody>
@@ -409,6 +414,10 @@ function SettingsTab() {
         <CardHeader><CardTitle className="text-base">Severities</CardTitle></CardHeader>
         <CardContent>
           {severities.isLoading ? <Skeleton className="h-24" /> :
+           !(severities.data as any[])?.length ? (
+             <EmptyState title="No severities configured"
+               description="Severities (critical, major, minor…) drive NC prioritisation." />
+           ) :
            <table className="w-full text-sm">
              <thead><tr className="text-left border-b"><th className="py-1">Code</th><th>Label</th><th>Color</th><th>Order</th></tr></thead>
              <tbody>
