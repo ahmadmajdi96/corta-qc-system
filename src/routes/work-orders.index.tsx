@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
 import { MesPage, StatusPill } from "@/components/mes/mes-page";
 import { SimpleList } from "@/components/mes/simple-list";
+import { Button } from "@/components/ui/button";
 import { ScrollText } from "lucide-react";
 
 function tone(status: string): "success" | "warning" | "danger" | "info" | "muted" {
