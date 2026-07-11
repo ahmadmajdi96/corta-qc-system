@@ -264,8 +264,12 @@ export function InspectionExecutePage({ id }: { id: string }) {
     queryKey: ["measurements", id],
     queryFn: async () => (await supabase.from("inspection_measurements").select("*").eq("inspection_id", id)).data ?? [],
   });
+  const gages = useQuery({
+    queryKey: ["gages", "active"],
+    queryFn: async () => (await supabase.from("gages").select("id, code, name, gage_type, status").eq("status", "active").order("code")).data ?? [],
+  });
 
-  type Row = { value: string; notes: string; na: boolean; attachment_url: string | null };
+  type Row = { value: string; notes: string; na: boolean; attachment_url: string | null; gage_id: string | null };
   const [values, setValues] = useState<Record<string, Row>>({});
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
@@ -276,7 +280,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
     const map: Record<string, Row> = {};
     items.data.forEach((it: any) => {
       const m = existing.data.find((x: any) => x.spec_item_id === it.id);
-      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "", na: !!m?.is_na, attachment_url: m?.attachment_url ?? null };
+      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "", na: !!m?.is_na, attachment_url: m?.attachment_url ?? null, gage_id: m?.gage_id ?? null };
     });
     initedRef.done = true;
     setValues(map);
