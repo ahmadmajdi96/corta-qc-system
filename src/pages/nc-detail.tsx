@@ -136,7 +136,7 @@ export function NcDetailPage({ id }: { id: string }) {
         </div>
       </div>
 
-      <Tabs defaultValue="info">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="info">Details</TabsTrigger>
           <TabsTrigger value="cas">Corrective Actions ({n.corrective_actions?.length ?? 0})</TabsTrigger>
@@ -175,21 +175,36 @@ export function NcDetailPage({ id }: { id: string }) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="cas" className="mt-4">
-          {!(n.corrective_actions ?? []).length ? <EmptyState title="No corrective actions yet" /> :
-           <div className="space-y-2">
-             {n.corrective_actions.map((ca: any) => (
-               <Link key={ca.id} to="/corrective-actions/$id" params={{ id: ca.id }} className="block rounded border p-3 hover:bg-accent/40">
-                 <div className="flex items-center justify-between">
-                   <div className="text-sm line-clamp-1">{ca.description}</div>
-                   <StatusBadge status={ca.status} kind="ca" />
-                 </div>
-                 <div className="text-xs text-muted-foreground mt-1">
-                   Assigned: {ca.profiles?.full_name ?? "—"} · Due: {ca.due_date ?? "—"}
-                 </div>
-               </Link>
-             ))}
-           </div>}
+        <TabsContent value="cas" className="mt-4 space-y-3">
+          {(n.corrective_actions ?? []).length ? (
+            <div className="space-y-2">
+              {n.corrective_actions.map((ca: any) => (
+                <Link key={ca.id} to="/corrective-actions/$id" params={{ id: ca.id }} className="block rounded border p-3 hover:bg-accent/40">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm line-clamp-1">{ca.description}</div>
+                    <StatusBadge status={ca.status} kind="ca" />
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Assigned: {ca.profiles?.full_name ?? "—"} · Due: {ca.due_date ?? "—"}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : !showInlineCa ? (
+            <EmptyState title="No corrective actions yet"
+              action={canManage ? <Button onClick={() => setShowInlineCa(true)}><Plus className="h-4 w-4 mr-2" />Define Corrective Action</Button> : undefined} />
+          ) : null}
+
+          {canManage && (
+            showInlineCa ? (
+              <InlineCaForm ncId={id} onCancel={() => setShowInlineCa(false)}
+                onCreated={() => { setShowInlineCa(false); qc.invalidateQueries({ queryKey: ["nc", id] }); }} />
+            ) : (n.corrective_actions ?? []).length ? (
+              <Button variant="outline" size="sm" onClick={() => setShowInlineCa(true)}>
+                <Plus className="h-4 w-4 mr-2" />Define another corrective action
+              </Button>
+            ) : null
+          )}
         </TabsContent>
 
         <TabsContent value="audit" className="mt-4">
@@ -220,8 +235,6 @@ export function NcDetailPage({ id }: { id: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <NewCaDialog open={caOpen} onOpenChange={setCaOpen} ncId={id} onCreated={() => qc.invalidateQueries({ queryKey: ["nc", id] })} />
     </div>
   );
 }
