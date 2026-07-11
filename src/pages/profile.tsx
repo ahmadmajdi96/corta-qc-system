@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2, Lock, MailCheck, MailWarning } from "lucide-react";
 
 const nameSchema = z.string().trim()
   .min(2, "Full name must be at least 2 characters")
