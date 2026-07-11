@@ -162,8 +162,17 @@ function WoDetail() {
 
   const complete = useMutation({
     mutationFn: async () => {
-      const openInsp = (inspections.data ?? []).filter((i: any) => i.status !== "completed" && i.status !== "cancelled");
-      if (openInsp.length) throw new Error(`${openInsp.length} inspection(s) still open — complete or cancel them first`);
+      const { data: openInspList, error: ie } = await supabase.from("inspections")
+        .select("id", { count: "exact", head: true })
+        .eq("work_order_id", id).not("status", "in", "(completed,cancelled)");
+      if (ie) throw ie;
+      const openCount = (openInspList as any)?.length ?? 0;
+      // fallback: use count via select if head query didn't return it
+      const { count } = await supabase.from("inspections")
+        .select("id", { count: "exact", head: true })
+        .eq("work_order_id", id).not("status", "in", "(completed,cancelled)");
+      const total = count ?? openCount;
+      if (total > 0) throw new Error(`${total} inspection(s) still open — complete or cancel them first`);
       const { error } = await supabase.from("work_orders").update({
         status: "completed", actual_end: new Date().toISOString(),
       }).eq("id", id);
@@ -175,6 +184,42 @@ function WoDetail() {
     onSuccess: () => { toast.success("Work order completed"); qc.invalidateQueries({ queryKey: ["wo", id] }); },
     onError: (e) => notifyError(e),
   });
+
+  const regenerate = useMutation({
+    mutationFn: async () => {
+      const w = wo.data!;
+      if (!w.product_id) throw new Error("Work order has no product.");
+      const [{ data: plans, error: pErr }, { data: existing, error: eErr }, { data: specs, error: sErr }] = await Promise.all([
+        supabase.from("inspection_plans").select("id, plan_type").eq("product_id", w.product_id).eq("is_active", true),
+        supabase.from("inspections").select("plan_id").eq("work_order_id", id),
+        supabase.from("quality_specifications").select("id").eq("product_id", w.product_id).eq("is_active", true).order("created_at", { ascending: false }).limit(1),
+      ]);
+      if (pErr) throw pErr; if (eErr) throw eErr; if (sErr) throw sErr;
+      const specId = specs?.[0]?.id;
+      if (!specId) throw new Error("No active quality spec on product.");
+      const existingPlanIds = new Set((existing ?? []).map((r: any) => r.plan_id).filter(Boolean));
+      const missing = (plans ?? []).filter((p: any) => !existingPlanIds.has(p.id));
+      if (!missing.length) return { created: 0 };
+      const rows = missing.map((p: any) => ({
+        product_id: w.product_id, spec_id: specId, work_order_id: id, plan_id: p.id, plan_type: p.plan_type,
+        scheduled_date: new Date().toISOString().slice(0, 10),
+        lot_number: w.lot_number ?? null, status: "planned",
+      }));
+      const { error: iErr } = await supabase.from("inspections").insert(rows as any);
+      if (iErr) throw iErr;
+      await supabase.from("audit_logs").insert({
+        user_id: user!.id, action: "wo.inspections_regenerated", entity_type: "work_order", entity_id: id,
+        details: { created: rows.length, plan_ids: missing.map((p: any) => p.id) },
+      });
+      return { created: rows.length };
+    },
+    onSuccess: (r) => {
+      toast.success(r.created ? `Created ${r.created} missing inspection(s)` : "All plans already have inspections");
+      qc.invalidateQueries({ queryKey: ["wo-inspections", id] });
+    },
+    onError: (e) => notifyError(e),
+  });
+
 
   if (wo.isLoading) return <Skeleton className="h-96 w-full" />;
   if (wo.error || !wo.data) return <div className="text-destructive">Failed to load.</div>;
