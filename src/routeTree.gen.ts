@@ -18,6 +18,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
+import { Route as StationsIndexRouteImport } from './routes/stations.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
 import { Route as LinesIndexRouteImport } from './routes/lines.index'
@@ -77,6 +78,11 @@ const IndexRoute = IndexRouteImport.update({
 const WorkOrdersIndexRoute = WorkOrdersIndexRouteImport.update({
   id: '/work-orders/',
   path: '/work-orders/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StationsIndexRoute = StationsIndexRouteImport.update({
+  id: '/stations/',
+  path: '/stations/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/lines/': typeof LinesIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/stations/': typeof StationsIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id/': typeof InspectionsIdIndexRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/lines': typeof LinesIndexRoute
   '/non-conformances': typeof NonConformancesIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/stations': typeof StationsIndexRoute
   '/work-orders': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id': typeof InspectionsIdIndexRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/lines/': typeof LinesIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/stations/': typeof StationsIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id/': typeof InspectionsIdIndexRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/lines/'
     | '/non-conformances/'
     | '/products/'
+    | '/stations/'
     | '/work-orders/'
     | '/inspections/$id/execute'
     | '/inspections/$id/'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/lines'
     | '/non-conformances'
     | '/products'
+    | '/stations'
     | '/work-orders'
     | '/inspections/$id/execute'
     | '/inspections/$id'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/lines/'
     | '/non-conformances/'
     | '/products/'
+    | '/stations/'
     | '/work-orders/'
     | '/inspections/$id/execute'
     | '/inspections/$id/'
@@ -337,6 +349,7 @@ export interface RootRouteChildren {
   LinesIndexRoute: typeof LinesIndexRoute
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  StationsIndexRoute: typeof StationsIndexRoute
   WorkOrdersIndexRoute: typeof WorkOrdersIndexRoute
   InspectionsIdExecuteRoute: typeof InspectionsIdExecuteRoute
   InspectionsIdIndexRoute: typeof InspectionsIdIndexRoute
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/work-orders'
       fullPath: '/work-orders/'
       preLoaderRoute: typeof WorkOrdersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stations/': {
+      id: '/stations/'
+      path: '/stations'
+      fullPath: '/stations/'
+      preLoaderRoute: typeof StationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/': {
@@ -537,6 +557,7 @@ const rootRouteChildren: RootRouteChildren = {
   LinesIndexRoute: LinesIndexRoute,
   NonConformancesIndexRoute: NonConformancesIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  StationsIndexRoute: StationsIndexRoute,
   WorkOrdersIndexRoute: WorkOrdersIndexRoute,
   InspectionsIdExecuteRoute: InspectionsIdExecuteRoute,
   InspectionsIdIndexRoute: InspectionsIdIndexRoute,
