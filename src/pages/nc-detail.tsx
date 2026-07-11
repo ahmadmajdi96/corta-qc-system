@@ -101,6 +101,49 @@ export function NcDetailPage({ id }: { id: string }) {
     onError: (e: Error) => notifyError(e.message),
   });
 
+  const linkedCapa = useQuery({
+    queryKey: ["nc-capa", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("capa_records").select("id, capa_number, status")
+        .eq("non_conformance_id", id).maybeSingle();
+      return data;
+    },
+  });
+
+  const openCapa = useMutation({
+    mutationFn: async () => {
+      if (linkedCapa.data) return linkedCapa.data;
+      const n = nc.data;
+      const problem = [
+        n?.description ? `Problem: ${n.description}` : null,
+        n?.category ? `Category: ${n.category}` : null,
+        n?.severity ? `Severity: ${n.severity}` : null,
+        n?.number ? `Source NC: ${n.number}` : null,
+      ].filter(Boolean).join("\n");
+      const { data, error } = await supabase.from("capa_records").insert({
+        non_conformance_id: id,
+        methodology: "8d",
+        status: "open",
+        d2_problem: problem,
+        d3_containment: n?.containment ?? null,
+        d4_root_cause: n?.root_cause ?? null,
+        opened_by: user!.id,
+      } as any).select("id").single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        user_id: user!.id, action: "capa.opened_from_nc", entity_type: "non_conformance", entity_id: id,
+        details: { capa_id: data.id },
+      });
+      return data;
+    },
+    onSuccess: (c) => {
+      qc.invalidateQueries({ queryKey: ["nc-capa", id] });
+      if (c?.id) navigate({ to: "/capa/$id", params: { id: c.id } });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+
   if (nc.isLoading) return <div className="max-w-4xl"><Skeleton className="h-64" /></div>;
   if (nc.error) return <div className="text-destructive">Failed to load.</div>;
   const n = nc.data;
