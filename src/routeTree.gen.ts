@@ -15,6 +15,7 @@ import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
+import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -46,6 +47,11 @@ const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
   path: '/inspections/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InspectionsIdIndexRoute = InspectionsIdIndexRouteImport.update({
+  id: '/inspections/$id/',
+  path: '/inspections/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/products/$id': typeof ProductsIdRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/inspections/$id/': typeof InspectionsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/products/$id': typeof ProductsIdRoute
   '/inspections': typeof InspectionsIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/inspections/$id': typeof InspectionsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/products/$id': typeof ProductsIdRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/inspections/$id/': typeof InspectionsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/inspections/'
     | '/products/'
+    | '/inspections/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/inspections'
     | '/products'
+    | '/inspections/$id'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/products/$id'
     | '/inspections/'
     | '/products/'
+    | '/inspections/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   ProductsIdRoute: typeof ProductsIdRoute
   InspectionsIndexRoute: typeof InspectionsIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  InspectionsIdIndexRoute: typeof InspectionsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectionsCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inspections/$id/': {
+      id: '/inspections/$id/'
+      path: '/inspections/$id'
+      fullPath: '/inspections/$id/'
+      preLoaderRoute: typeof InspectionsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsIdRoute: ProductsIdRoute,
   InspectionsIndexRoute: InspectionsIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  InspectionsIdIndexRoute: InspectionsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
