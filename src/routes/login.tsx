@@ -1,7 +1,13 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { AuthCard } from "@/components/auth-card";
 
-// Dedicated /login route — redirects to the existing /auth sign-in page.
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — CORTA QC" }, { name: "robots", content: "noindex" }] }),
-  beforeLoad: () => { throw redirect({ to: "/auth" }); },
+  head: () => ({
+    meta: [
+      { title: "Sign in — CORTA QC" },
+      { name: "description", content: "Sign in to CORTA QC quality control platform." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: AuthCard,
 });
