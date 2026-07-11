@@ -22,6 +22,11 @@ const SEV_COLORS: Record<string,string> = { critical: "hsl(0 84% 60%)", major: "
 export function ReportsPage() {
   const qc = useQueryClient();
   const { user } = useSession();
+  const { data: roles } = useMyRoles();
+  const canCreateInspection = hasAnyRole(roles, "administrator", "quality_manager", "inspector");
+  const canRaiseNc = hasAnyRole(roles, "administrator", "quality_manager", "inspector");
+  const [newInsp, setNewInsp] = useState(false);
+  const [newNc, setNewNc] = useState(false);
   const [from, setFrom] = useState(() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().slice(0,10); });
   const [to, setTo] = useState(() => new Date().toISOString().slice(0,10));
 
