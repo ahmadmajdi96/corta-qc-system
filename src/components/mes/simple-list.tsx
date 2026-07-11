@@ -112,6 +112,8 @@ export function SimpleList<T extends { id: string }>({
                       onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                       placeholder={f.placeholder}
                     />
+                  ) : f.type === "select" ? (
+                    <AsyncSelectField field={f} value={form[f.name] ?? ""} onChange={(v) => setForm({ ...form, [f.name]: v })} />
                   ) : (
                     <Input
                       id={f.name}
@@ -123,6 +125,7 @@ export function SimpleList<T extends { id: string }>({
                   )}
                 </div>
               ))}
+
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
