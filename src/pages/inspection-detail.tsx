@@ -184,7 +184,7 @@ export function InspectionDetailPage({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="ncs" className="mt-4">
-          {(i.non_conformances ?? []).length === 0 ? <EmptyState title="No non-conformances raised" /> :
+          {(i.non_conformances ?? []).length === 0 ? <EmptyState title="No non-conformances raised" action={canPerform ? <Button variant="outline" onClick={() => setRaiseNc({})}><AlertOctagon className="h-4 w-4 mr-2" />Raise NC</Button> : undefined} /> :
            <div className="space-y-2">
              {i.non_conformances.map((n: any) => (
                <Link key={n.id} to="/non-conformances/$id" params={{ id: n.id }} className="block rounded-md border p-3 hover:bg-accent/40">
