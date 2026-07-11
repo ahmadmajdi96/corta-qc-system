@@ -25,6 +25,7 @@ import { Route as NonConformancesIndexRouteImport } from './routes/non-conforman
 import { Route as LinesIndexRouteImport } from './routes/lines.index'
 import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
 import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-plans.index'
+import { Route as IncomingIndexRouteImport } from './routes/incoming.index'
 import { Route as HoldsIndexRouteImport } from './routes/holds.index'
 import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
 import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
@@ -116,6 +117,11 @@ const InspectionPlansIndexRoute = InspectionPlansIndexRouteImport.update({
   path: '/inspection-plans/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IncomingIndexRoute = IncomingIndexRouteImport.update({
+  id: '/incoming/',
+  path: '/incoming/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HoldsIndexRoute = HoldsIndexRouteImport.update({
   id: '/holds/',
   path: '/holds/',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/calibration/': typeof CalibrationIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
+  '/incoming/': typeof IncomingIndexRoute
   '/inspection-plans/': typeof InspectionPlansIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/lines/': typeof LinesIndexRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/calibration': typeof CalibrationIndexRoute
   '/corrective-actions': typeof CorrectiveActionsIndexRoute
   '/holds': typeof HoldsIndexRoute
+  '/incoming': typeof IncomingIndexRoute
   '/inspection-plans': typeof InspectionPlansIndexRoute
   '/inspections': typeof InspectionsIndexRoute
   '/lines': typeof LinesIndexRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/calibration/': typeof CalibrationIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
+  '/incoming/': typeof IncomingIndexRoute
   '/inspection-plans/': typeof InspectionPlansIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/lines/': typeof LinesIndexRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/calibration/'
     | '/corrective-actions/'
     | '/holds/'
+    | '/incoming/'
     | '/inspection-plans/'
     | '/inspections/'
     | '/lines/'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/calibration'
     | '/corrective-actions'
     | '/holds'
+    | '/incoming'
     | '/inspection-plans'
     | '/inspections'
     | '/lines'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/calibration/'
     | '/corrective-actions/'
     | '/holds/'
+    | '/incoming/'
     | '/inspection-plans/'
     | '/inspections/'
     | '/lines/'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   CalibrationIndexRoute: typeof CalibrationIndexRoute
   CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
   HoldsIndexRoute: typeof HoldsIndexRoute
+  IncomingIndexRoute: typeof IncomingIndexRoute
   InspectionPlansIndexRoute: typeof InspectionPlansIndexRoute
   InspectionsIndexRoute: typeof InspectionsIndexRoute
   LinesIndexRoute: typeof LinesIndexRoute
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectionPlansIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/incoming/': {
+      id: '/incoming/'
+      path: '/incoming'
+      fullPath: '/incoming/'
+      preLoaderRoute: typeof IncomingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/holds/': {
       id: '/holds/'
       path: '/holds'
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalibrationIndexRoute: CalibrationIndexRoute,
   CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
   HoldsIndexRoute: HoldsIndexRoute,
+  IncomingIndexRoute: IncomingIndexRoute,
   InspectionPlansIndexRoute: InspectionPlansIndexRoute,
   InspectionsIndexRoute: InspectionsIndexRoute,
   LinesIndexRoute: LinesIndexRoute,
