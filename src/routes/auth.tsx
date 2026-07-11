@@ -79,7 +79,7 @@ function AuthPage() {
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Network error";
-      notifyError(msg, { action: { label: "Retry", onClick: () => submit(e as unknown as React.FormEvent) } });
+      notifyError(msg, { retry: () => submit(e as unknown as React.FormEvent) });
     } finally {
       setLoading(false);
     }
