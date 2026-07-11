@@ -12,13 +12,18 @@ import { EmptyState } from "@/components/empty-state";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 
+export type SelectOption = { value: string; label: string };
+
 export type FieldDef = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "textarea";
+  type?: "text" | "number" | "date" | "textarea" | "select";
   required?: boolean;
   placeholder?: string;
+  options?: SelectOption[];
+  loadOptions?: () => Promise<SelectOption[]>;
 };
+
 
 export type ColumnDef<T> = {
   key: string;
