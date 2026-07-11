@@ -301,7 +301,7 @@ apiRouter.post("/roles", requireRoles("administrator"), asyncH(async (req, res) 
   res.status(201).json(envelope(row));
 }));
 
-apiRouter.put("/roles/:id/permissions", requireRoles("administrator"), asyncH(async (req, res) => {
+apiRouter.patch("/roles/:id/permissions", requireRoles("administrator"), asyncH(async (req, res) => {
   const { permission_ids } = z.object({ permission_ids: z.array(z.string().uuid()) }).parse(req.body);
   await q(`DELETE FROM role_permissions WHERE role_id=$1`, [req.params.id]);
   for (const pid of permission_ids) {
