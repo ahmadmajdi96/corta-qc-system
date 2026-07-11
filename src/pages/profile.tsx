@@ -47,36 +47,56 @@ export function ProfilePage() {
   const canEditEmail = isAdmin; // Only admins may edit their own or others' email here
   const canEditName = true; // All authenticated users can update their own name
 
+  function mapDbError(e: any, field: "name" | "email" | "password"): string {
+    const code = e?.code as string | undefined;
+    const msg = (e?.message as string | undefined) ?? "";
+    if (code === "42501" || /permission denied|row-level security|rls/i.test(msg)) {
+      return "You don't have permission to change this. Contact an administrator.";
+    }
+    if (code === "23514" || /violates check constraint/i.test(msg)) return "Value doesn't meet the required format.";
+    if (code === "23505" || /duplicate|already registered|already in use/i.test(msg)) {
+      return field === "email" ? "That email is already registered to another account." : "That value is already in use.";
+    }
+    if (/rate limit/i.test(msg)) return "Too many attempts — please wait a moment and try again.";
+    if (field === "email" && /invalid|not.*valid/i.test(msg)) return "That email address is not valid.";
+    if (field === "email" && /confirm|verify|verification/i.test(msg)) return "Email verification required — check your inbox.";
+    if (field === "password" && /weak|too short|characters/i.test(msg)) return "Password too weak — use at least 8 characters.";
+    return msg || "Something went wrong. Please try again.";
+  }
+
   async function saveName() {
     if (!user) return;
     const parsed = nameSchema.safeParse(fullName);
     if (!parsed.success) { setNameErr(parsed.error.issues[0].message); return; }
     setNameErr(null); setSaving(true);
     try {
-      const { error } = await supabase.from("profiles").update({ full_name: parsed.data }).eq("id", user.id);
+      const { data, error } = await supabase.from("profiles").update({ full_name: parsed.data }).eq("id", user.id).select("id");
       if (error) throw error;
+      if (!data || data.length === 0) throw { code: "42501", message: "No profile row was updated — RLS may be blocking this change." };
       toast.success("Profile saved");
       refetch();
     } catch (e: any) {
-      setNameErr(e.message ?? "Failed to save");
-      notifyError(e.message ?? "Failed to save");
+      const m = mapDbError(e, "name");
+      setNameErr(m);
+      notifyError(m);
     } finally { setSaving(false); }
   }
 
   async function saveEmail() {
     if (!user) return;
-    if (!canEditEmail) return;
+    if (!canEditEmail) { setEmailErr("Only administrators can change email."); return; }
     const parsed = emailSchema.safeParse(email);
     if (!parsed.success) { setEmailErr(parsed.error.issues[0].message); return; }
-    if (parsed.data === profile?.email) { setEmailErr("New email is the same as current"); return; }
+    if (parsed.data === profile?.email) { setEmailErr("New email is the same as current."); return; }
     setEmailErr(null); setEmailSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({ email: parsed.data });
       if (error) throw error;
-      toast.success("Confirmation link sent to the new email");
+      toast.success("Confirmation link sent — check the new inbox to verify.");
     } catch (e: any) {
-      setEmailErr(e.message ?? "Failed to update email");
-      notifyError(e.message ?? "Failed to update email");
+      const m = mapDbError(e, "email");
+      setEmailErr(m);
+      notifyError(m);
     } finally { setEmailSaving(false); }
   }
 
@@ -95,9 +115,10 @@ export function ProfilePage() {
       toast.success("Password updated");
       setPwCurrent(""); setPwNew(""); setPwConfirm("");
     } catch (e: any) {
-      setPwErr(e.message ?? "Failed to update password");
+      setPwErr(mapDbError(e, "password"));
     } finally { setPwSaving(false); }
   }
+
 
   if (!profile) return <Skeleton className="h-64 max-w-2xl" />;
   const rolesArr = roles ?? [];
