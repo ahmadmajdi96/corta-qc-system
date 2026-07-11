@@ -18,6 +18,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
+import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
 import { Route as StationsIndexRouteImport } from './routes/stations.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
@@ -78,6 +79,11 @@ const IndexRoute = IndexRouteImport.update({
 const WorkOrdersIndexRoute = WorkOrdersIndexRouteImport.update({
   id: '/work-orders/',
   path: '/work-orders/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
+  id: '/suppliers/',
+  path: '/suppliers/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StationsIndexRoute = StationsIndexRouteImport.update({
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/stations/': typeof StationsIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id/': typeof InspectionsIdIndexRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/non-conformances': typeof NonConformancesIndexRoute
   '/products': typeof ProductsIndexRoute
   '/stations': typeof StationsIndexRoute
+  '/suppliers': typeof SuppliersIndexRoute
   '/work-orders': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id': typeof InspectionsIdIndexRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/stations/': typeof StationsIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id/': typeof InspectionsIdIndexRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/non-conformances/'
     | '/products/'
     | '/stations/'
+    | '/suppliers/'
     | '/work-orders/'
     | '/inspections/$id/execute'
     | '/inspections/$id/'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/non-conformances'
     | '/products'
     | '/stations'
+    | '/suppliers'
     | '/work-orders'
     | '/inspections/$id/execute'
     | '/inspections/$id'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/non-conformances/'
     | '/products/'
     | '/stations/'
+    | '/suppliers/'
     | '/work-orders/'
     | '/inspections/$id/execute'
     | '/inspections/$id/'
@@ -350,6 +362,7 @@ export interface RootRouteChildren {
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   StationsIndexRoute: typeof StationsIndexRoute
+  SuppliersIndexRoute: typeof SuppliersIndexRoute
   WorkOrdersIndexRoute: typeof WorkOrdersIndexRoute
   InspectionsIdExecuteRoute: typeof InspectionsIdExecuteRoute
   InspectionsIdIndexRoute: typeof InspectionsIdIndexRoute
@@ -418,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/work-orders'
       fullPath: '/work-orders/'
       preLoaderRoute: typeof WorkOrdersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suppliers/': {
+      id: '/suppliers/'
+      path: '/suppliers'
+      fullPath: '/suppliers/'
+      preLoaderRoute: typeof SuppliersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stations/': {
@@ -558,6 +578,7 @@ const rootRouteChildren: RootRouteChildren = {
   NonConformancesIndexRoute: NonConformancesIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   StationsIndexRoute: StationsIndexRoute,
+  SuppliersIndexRoute: SuppliersIndexRoute,
   WorkOrdersIndexRoute: WorkOrdersIndexRoute,
   InspectionsIdExecuteRoute: InspectionsIdExecuteRoute,
   InspectionsIdIndexRoute: InspectionsIdIndexRoute,
