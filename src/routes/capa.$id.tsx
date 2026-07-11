@@ -283,6 +283,7 @@ export const Route = createFileRoute("/capa/$id")({
     auditPage: Number(s.auditPage) || 0,
     auditStep: typeof s.auditStep === "string" ? s.auditStep : "all",
     auditSort: s.auditSort === "asc" ? "asc" as const : "desc" as const,
+    auditSize: [10, 25, 50, 100].includes(Number(s.auditSize)) ? Number(s.auditSize) : 10,
   }),
   head: () => ({ meta: [{ title: "CAPA — CORTA QC" }, { name: "robots", content: "noindex" }] }),
 
