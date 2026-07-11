@@ -32,7 +32,7 @@ function LiveBoard() {
   const wo = useQuery({
     queryKey: ["live", "work_orders"],
     queryFn: async () => {
-      const { data } = await supabase.from("work_orders").select("id,number,status,quantity,quantity_completed,priority").order("created_at", { ascending: false }).limit(8);
+      const { data } = await supabase.from("work_orders").select("id,number,status,quantity_planned,quantity_produced").order("created_at", { ascending: false }).limit(8);
       return data ?? [];
     },
     refetchInterval: 15000,
@@ -40,7 +40,7 @@ function LiveBoard() {
   const holds = useQuery({
     queryKey: ["live", "holds"],
     queryFn: async () => {
-      const { data } = await supabase.from("quality_holds").select("id,number,status,reason,opened_at").eq("status", "open").order("opened_at", { ascending: false }).limit(6);
+      const { data } = await supabase.from("quality_holds").select("id,hold_number,status,reason,created_at").eq("status", "open").order("created_at", { ascending: false }).limit(6);
       return data ?? [];
     },
     refetchInterval: 15000,
