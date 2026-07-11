@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
-export type RoleName = "administrator" | "quality_manager" | "inspector" | "auditor" | "viewer";
+export type RoleName = "administrator" | "quality_manager" | "qc_engineer" | "inspector" | "auditor" | "viewer";
 
 export function useSession() {
   const [user, setUser] = useState<User | null>(null);

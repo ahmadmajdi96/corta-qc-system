@@ -264,8 +264,12 @@ export function InspectionExecutePage({ id }: { id: string }) {
     queryKey: ["measurements", id],
     queryFn: async () => (await supabase.from("inspection_measurements").select("*").eq("inspection_id", id)).data ?? [],
   });
+  const gages = useQuery({
+    queryKey: ["gages", "active"],
+    queryFn: async () => (await supabase.from("gages").select("id, code, name, gage_type, status").eq("status", "active").order("code")).data ?? [],
+  });
 
-  type Row = { value: string; notes: string; na: boolean; attachment_url: string | null };
+  type Row = { value: string; notes: string; na: boolean; attachment_url: string | null; gage_id: string | null };
   const [values, setValues] = useState<Record<string, Row>>({});
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
@@ -276,7 +280,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
     const map: Record<string, Row> = {};
     items.data.forEach((it: any) => {
       const m = existing.data.find((x: any) => x.spec_item_id === it.id);
-      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "", na: !!m?.is_na, attachment_url: m?.attachment_url ?? null };
+      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "", na: !!m?.is_na, attachment_url: m?.attachment_url ?? null, gage_id: m?.gage_id ?? null };
     });
     initedRef.done = true;
     setValues(map);
@@ -329,7 +333,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
         }
       }
       const rows = items.data.map((it: any) => {
-        const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
+        const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
         return {
           inspection_id: id, spec_item_id: it.id,
           measured_value: v.na ? null : (v.value || null),
@@ -337,9 +341,10 @@ export function InspectionExecutePage({ id }: { id: string }) {
           is_pass: v.na ? null : evaluatePass(it, v.value),
           is_na: v.na,
           attachment_url: v.attachment_url,
+          gage_id: v.gage_id,
           recorded_by: user.id, recorded_at: new Date().toISOString(),
         };
-      }).filter((r) => r.measured_value !== null || r.notes !== null || r.is_na || r.attachment_url);
+      }).filter((r) => r.measured_value !== null || r.notes !== null || r.is_na || r.attachment_url || r.gage_id);
       if (rows.length) {
         const { error } = await supabase.from("inspection_measurements").upsert(rows, { onConflict: "inspection_id,spec_item_id" });
         if (error) throw error;
@@ -374,7 +379,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
 
       <div className="space-y-3">
         {(items.data ?? []).map((it: any) => {
-          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
+          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
           const pass = v.na ? null : evaluatePass(it, v.value);
           const err = errors[it.id];
           return (
@@ -416,6 +421,20 @@ export function InspectionExecutePage({ id }: { id: string }) {
                     <Label className="text-xs">Notes</Label>
                     <Input value={v.notes} onChange={(e) => setValues({ ...values, [it.id]: { ...v, notes: e.target.value } })} placeholder="Optional" />
                   </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Gage / Standard</Label>
+                  <Select value={v.gage_id ?? "none"} onValueChange={(val) => setValues({ ...values, [it.id]: { ...v, gage_id: val === "none" ? null : val } })} disabled={v.na}>
+                    <SelectTrigger><SelectValue placeholder="Select gage used" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">— No gage —</SelectItem>
+                      {gages.data?.map((g: any) => (
+                        <SelectItem key={g.id} value={g.id}>
+                          <span className="font-mono text-xs mr-2">{g.code}</span>{g.name} <span className="text-muted-foreground">· {g.gage_type}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                   <label className="flex items-center gap-2 text-xs">

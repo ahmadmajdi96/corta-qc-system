@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +34,7 @@ export function NcDetailPage({ id }: { id: string }) {
   const { data: roles } = useMyRoles();
   const canManage = hasAnyRole(roles, "administrator", "quality_manager");
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [tab, setTab] = useState("info");
@@ -100,6 +101,50 @@ export function NcDetailPage({ id }: { id: string }) {
     onError: (e: Error) => notifyError(e.message),
   });
 
+  const linkedCapa = useQuery({
+    queryKey: ["nc-capa", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("capa_records").select("id, capa_number, status")
+        .eq("nc_id", id).maybeSingle();
+      return data;
+    },
+  });
+
+  const openCapa = useMutation({
+    mutationFn: async () => {
+      if (linkedCapa.data) return linkedCapa.data;
+      const n = nc.data;
+      const problem = [
+        n?.description ? `Problem: ${n.description}` : null,
+        n?.category ? `Category: ${n.category}` : null,
+        n?.severity ? `Severity: ${n.severity}` : null,
+        n?.number ? `Source NC: ${n.number}` : null,
+      ].filter(Boolean).join("\n");
+      const { data, error } = await supabase.from("capa_records").insert({
+        nc_id: id,
+        methodology: "8d",
+        status: "open",
+        d2_problem: problem,
+        d3_containment: n?.containment ?? null,
+        d4_root_cause: n?.root_cause ?? null,
+        created_by: user!.id,
+        owner_id: user!.id,
+      } as any).select("id").single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        user_id: user!.id, action: "capa.opened_from_nc", entity_type: "non_conformance", entity_id: id,
+        details: { capa_id: data.id },
+      });
+      return data;
+    },
+    onSuccess: (c) => {
+      qc.invalidateQueries({ queryKey: ["nc-capa", id] });
+      if (c?.id) navigate({ to: "/capa/$id", params: { id: c.id } });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+
   if (nc.isLoading) return <div className="max-w-4xl"><Skeleton className="h-64" /></div>;
   if (nc.error) return <div className="text-destructive">Failed to load.</div>;
   const n = nc.data;
@@ -131,6 +176,17 @@ export function NcDetailPage({ id }: { id: string }) {
               <Button size="sm" onClick={() => { setTab("cas"); setShowInlineCa(true); }}>
                 <Plus className="h-4 w-4 mr-1" />Define Corrective Action
               </Button>
+              {linkedCapa.data ? (
+                <Button size="sm" variant="secondary" asChild>
+                  <Link to="/capa/$id" params={{ id: linkedCapa.data.id }}>
+                    <FileSearch className="h-4 w-4 mr-1" />Open CAPA {linkedCapa.data.capa_number ?? ""}
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" variant="secondary" onClick={() => openCapa.mutate()} disabled={openCapa.isPending}>
+                  <FileSearch className="h-4 w-4 mr-1" />{openCapa.isPending ? "Opening…" : "Open CAPA (8D)"}
+                </Button>
+              )}
             </div>
           )}
         </div>
