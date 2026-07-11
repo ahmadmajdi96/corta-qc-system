@@ -435,6 +435,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
                 <div className="flex items-center gap-4 flex-wrap">
                   <label className="flex items-center gap-2 text-xs">
                     <input type="checkbox" checked={v.na}
