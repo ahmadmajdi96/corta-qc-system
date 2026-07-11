@@ -33,6 +33,9 @@ function WoDetail() {
   const navigate = useNavigate();
   const [holdOpen, setHoldOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
+  const [regenOpen, setRegenOpen] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+
 
   const PAGE = 10;
   const [inspPage, setInspPage] = useState(0);
