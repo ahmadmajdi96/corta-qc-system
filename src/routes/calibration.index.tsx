@@ -13,6 +13,13 @@ function calTone(next?: string): "success" | "warning" | "danger" | "muted" {
   return "success";
 }
 
+function statusTone(s: string): "success" | "warning" | "danger" | "muted" {
+  if (s === "active") return "success";
+  if (s === "due") return "warning";
+  if (s === "overdue") return "danger";
+  return "muted";
+}
+
 export const Route = createFileRoute("/calibration/")({
   ssr: false,
   head: () => ({ meta: [{ title: "Calibration — CORTA QC" }, { name: "robots", content: "noindex" }] }),
@@ -31,28 +38,25 @@ export const Route = createFileRoute("/calibration/")({
             columns={[
               { key: "code", label: "Code", render: (r: any) => <span className="font-mono text-xs">{r.code}</span> },
               { key: "name", label: "Name" },
-              { key: "type", label: "Type" },
+              { key: "gage_type", label: "Type" },
               { key: "resolution", label: "Resolution", render: (r: any) => r.resolution != null ? <span className="font-mono">{r.resolution}</span> : "—" },
               { key: "next_cal_date", label: "Next cal", render: (r: any) => (
                 <StatusPill tone={calTone(r.next_cal_date)}>
                   {r.next_cal_date ? new Date(r.next_cal_date).toLocaleDateString() : "—"}
                 </StatusPill>
               ) },
-              { key: "status", label: "Status" },
+              { key: "status", label: "Status", render: (r: any) => <StatusPill tone={statusTone(r.status)}>{r.status}</StatusPill> },
             ]}
             fields={[
               { name: "code", label: "Code", required: true, placeholder: "CAL-001" },
               { name: "name", label: "Name", required: true, placeholder: "Mitutoyo Caliper 200mm" },
-              { name: "type", label: "Type", placeholder: "Caliper" },
+              { name: "gage_type", label: "Type", placeholder: "Caliper" },
               { name: "manufacturer", label: "Manufacturer" },
               { name: "serial_number", label: "Serial number" },
               { name: "resolution", label: "Resolution", type: "number" },
-              { name: "range_min", label: "Range min", type: "number" },
-              { name: "range_max", label: "Range max", type: "number" },
               { name: "location", label: "Location" },
               { name: "last_cal_date", label: "Last cal date", type: "date" },
               { name: "next_cal_date", label: "Next cal date", type: "date" },
-              { name: "cal_interval_days", label: "Interval (days)", type: "number" },
             ]}
           />
         </MesPage>
