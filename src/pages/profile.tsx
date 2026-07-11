@@ -75,3 +75,35 @@ export function ProfilePage() {
     </div>
   );
 }
+
+function AvatarUpload({ profile, refetch }: { profile: any; refetch: () => void }) {
+  const { user } = useSession();
+  const [uploading, setUploading] = useState(false);
+  async function upload(file: File) {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const url = data?.signedUrl ?? "";
+      const { error: e2 } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+      if (e2) throw e2;
+      toast.success("Avatar updated"); refetch();
+    } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
+    finally { setUploading(false); }
+  }
+  return (
+    <div className="flex items-center gap-4">
+      <div className="h-16 w-16 rounded-full bg-muted overflow-hidden flex items-center justify-center text-lg font-semibold text-muted-foreground">
+        {profile.avatar_url ? <img src={profile.avatar_url} alt="avatar" className="h-full w-full object-cover" /> : (profile.full_name?.[0] ?? "?").toUpperCase()}
+      </div>
+      <label className="inline-flex items-center gap-2 cursor-pointer text-sm">
+        <span className="rounded border px-3 py-1.5 hover:bg-accent">{uploading ? "Uploading..." : "Change photo"}</span>
+        <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
+      </label>
+    </div>
+  );
+}
