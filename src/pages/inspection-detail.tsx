@@ -229,9 +229,9 @@ export function InspectionDetailPage({ id }: { id: string }) {
         </AlertDialogContent>
       </AlertDialog>
 
-      <RaiseNcDialog open={!!raiseNc} onOpenChange={(o) => !o && setRaiseNc(null)}
+      <RaiseNcDialog open={!!raiseNc} onOpenChange={(o: boolean) => !o && setRaiseNc(null)}
         inspectionId={id} measurement={raiseNc?.measurement}
-        onCreated={(ncId) => { setRaiseNc(null); navigate({ to: "/non-conformances/$id", params: { id: ncId } }); }} />
+        onCreated={(ncId: string) => { setRaiseNc(null); navigate({ to: "/non-conformances/$id", params: { id: ncId } }); }} />
     </div>
   );
 }
