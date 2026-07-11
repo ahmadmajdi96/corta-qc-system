@@ -218,7 +218,7 @@ export function ReportsPage() {
 
         <TabsContent value="capa" className="mt-4 space-y-4">
           {cas.isLoading ? <Skeleton className="h-64" /> :
-           !caTotal ? <EmptyState title="No corrective actions in period" /> :
+           !caTotal ? <EmptyState title="No corrective actions in period" description="Corrective actions appear here once NCs progress into CAPA." /> :
            <>
              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                <StatCard title="Total actions" value={caTotal} />
