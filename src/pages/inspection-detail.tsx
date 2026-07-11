@@ -333,7 +333,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
         }
       }
       const rows = items.data.map((it: any) => {
-        const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
+        const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
         return {
           inspection_id: id, spec_item_id: it.id,
           measured_value: v.na ? null : (v.value || null),
@@ -341,9 +341,10 @@ export function InspectionExecutePage({ id }: { id: string }) {
           is_pass: v.na ? null : evaluatePass(it, v.value),
           is_na: v.na,
           attachment_url: v.attachment_url,
+          gage_id: v.gage_id,
           recorded_by: user.id, recorded_at: new Date().toISOString(),
         };
-      }).filter((r) => r.measured_value !== null || r.notes !== null || r.is_na || r.attachment_url);
+      }).filter((r) => r.measured_value !== null || r.notes !== null || r.is_na || r.attachment_url || r.gage_id);
       if (rows.length) {
         const { error } = await supabase.from("inspection_measurements").upsert(rows, { onConflict: "inspection_id,spec_item_id" });
         if (error) throw error;
