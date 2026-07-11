@@ -14,13 +14,18 @@ export function ProfilePage() {
   const { data: profile, refetch } = useMyProfile();
   const { data: roles } = useMyRoles();
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
+  const [emailSaving, setEmailSaving] = useState(false);
   const [pwCurrent, setPwCurrent] = useState("");
   const [pwNew, setPwNew] = useState("");
   const [pwConfirm, setPwConfirm] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
 
-  useEffect(() => { if (profile?.full_name) setFullName(profile.full_name); }, [profile?.full_name]);
+  useEffect(() => {
+    if (profile?.full_name) setFullName(profile.full_name);
+    if (profile?.email) setEmail(profile.email);
+  }, [profile?.full_name, profile?.email]);
 
   async function saveName() {
     if (!user) return;
@@ -33,12 +38,23 @@ export function ProfilePage() {
     } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
 
+  async function saveEmail() {
+    if (!user) return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { notifyError("Invalid email"); return; }
+    if (email === profile?.email) return;
+    setEmailSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email });
+      if (error) throw error;
+      toast.success("Confirmation sent to new email address");
+    } catch (e: any) { notifyError(e.message); } finally { setEmailSaving(false); }
+  }
+
   async function changePassword() {
     if (pwNew.length < 8) { notifyError("New password must be at least 8 characters"); return; }
     if (pwNew !== pwConfirm) { notifyError("Passwords do not match"); return; }
     setPwSaving(true);
     try {
-      // Re-authenticate by re-signing in with current password to verify it
       const { error: reAuthErr } = await supabase.auth.signInWithPassword({ email: user!.email!, password: pwCurrent });
       if (reAuthErr) throw new Error("Current password is incorrect");
       const { error } = await supabase.auth.updateUser({ password: pwNew });
@@ -49,21 +65,43 @@ export function ProfilePage() {
   }
 
   if (!profile) return <Skeleton className="h-64 max-w-2xl" />;
+  const rolesArr = roles ?? [];
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
-        <p className="text-sm text-muted-foreground">{(roles ?? []).join(", ") || "no role"}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">My Profile</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {rolesArr.length ? rolesArr.map((r) => (
+            <span key={r} className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize">{r.replace(/_/g, " ")}</span>
+          )) : <span className="text-xs text-muted-foreground">No role assigned</span>}
+        </div>
       </div>
       <Card>
         <CardHeader><CardTitle className="text-base">Account</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <AvatarUpload profile={profile} refetch={refetch} />
-          <div><Label>Email</Label><Input value={profile.email} disabled /></div>
-          <div><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
-          <Button onClick={saveName} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+          <div>
+            <Label>User ID</Label>
+            <Input value={user?.id ?? ""} disabled className="font-mono text-xs" />
+          </div>
+          <div>
+            <Label>Full name</Label>
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            <Button className="mt-2" onClick={saveName} disabled={saving || fullName === (profile.full_name ?? "")}>
+              {saving ? "Saving..." : "Save name"}
+            </Button>
+          </div>
+          <div>
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <p className="mt-1 text-xs text-muted-foreground">Changing your email sends a confirmation link to the new address.</p>
+            <Button className="mt-2" onClick={saveEmail} disabled={emailSaving || email === (profile.email ?? "")}>
+              {emailSaving ? "Sending..." : "Update email"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader><CardTitle className="text-base">Change Password</CardTitle></CardHeader>
         <CardContent className="space-y-3">

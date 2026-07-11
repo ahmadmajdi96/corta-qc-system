@@ -4,14 +4,16 @@ import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
 import { MesPage, StatusPill } from "@/components/mes/mes-page";
 import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/lib/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileSearch, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { FileSearch, ArrowLeft, CheckCircle2, History } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { useState, useEffect } from "react";
+
 
 const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d1_team", label: "D1 — Team", help: "Establish a cross-functional team with the right skills." },
@@ -27,6 +29,7 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
   const qc = useQueryClient();
+  const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
 
   const capa = useQuery({
@@ -39,6 +42,14 @@ function CapaDetail() {
     },
   });
 
+  const trail = useQuery({
+    queryKey: ["capa-audit", id],
+    queryFn: async () => (await supabase.from("audit_logs")
+      .select("id, action, details, created_at, profiles:user_id(full_name, email)")
+      .eq("entity_type", "capa").eq("entity_id", id)
+      .order("created_at", { ascending: false }).limit(100)).data ?? [],
+  });
+
   useEffect(() => {
     if (capa.data) {
       const d: Record<string, string> = {};
@@ -48,11 +59,22 @@ function CapaDetail() {
   }, [capa.data]);
 
   const save = useMutation({
-    mutationFn: async (patch: Record<string, any>) => {
-      const { error } = await supabase.from("capa_records").update(patch as any).eq("id", id);
+    mutationFn: async (patch: { key: string; before: string; after: string }) => {
+      const { error } = await supabase.from("capa_records").update({ [patch.key]: patch.after } as any).eq("id", id);
       if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        user_id: user?.id ?? null,
+        action: "capa.step_updated",
+        entity_type: "capa",
+        entity_id: id,
+        details: { step: patch.key, before: patch.before, after: patch.after },
+      });
     },
-    onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["capa", id] }); },
+    onSuccess: () => {
+      toast.success("Saved");
+      qc.invalidateQueries({ queryKey: ["capa", id] });
+      qc.invalidateQueries({ queryKey: ["capa-audit", id] });
+    },
     onError: (e) => notifyError(e),
   });
 
@@ -60,10 +82,18 @@ function CapaDetail() {
     mutationFn: async () => {
       const { error } = await supabase.from("capa_records").update({ status: "closed" }).eq("id", id);
       if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        user_id: user?.id ?? null, action: "capa.closed", entity_type: "capa", entity_id: id,
+      });
     },
-    onSuccess: () => { toast.success("CAPA closed"); qc.invalidateQueries({ queryKey: ["capa", id] }); },
+    onSuccess: () => {
+      toast.success("CAPA closed");
+      qc.invalidateQueries({ queryKey: ["capa", id] });
+      qc.invalidateQueries({ queryKey: ["capa-audit", id] });
+    },
     onError: (e) => notifyError(e),
   });
+
 
   if (capa.isLoading) return <Skeleton className="h-96 w-full" />;
   if (capa.error) return <div className="text-destructive">Failed to load.</div>;
@@ -111,8 +141,11 @@ function CapaDetail() {
                 value={draft[s.key] ?? ""}
                 onChange={(e) => setDraft({ ...draft, [s.key]: e.target.value })}
                 onBlur={(e) => {
-                  if (e.target.value !== (c[s.key] ?? "")) save.mutate({ [s.key]: e.target.value });
+                  const before = c[s.key] ?? "";
+                  const after = e.target.value;
+                  if (after !== before) save.mutate({ key: s.key, before, after });
                 }}
+
                 disabled={c.status === "closed"}
                 placeholder="Type your response..."
               />
@@ -120,9 +153,53 @@ function CapaDetail() {
           );
         })}
       </div>
+
+      <div className="glass-panel rounded-2xl p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+          <History className="h-4 w-4" /> Audit trail
+        </div>
+        {trail.isLoading ? (
+          <Skeleton className="h-16 w-full" />
+        ) : (trail.data ?? []).length === 0 ? (
+          <div className="text-sm text-muted-foreground">No changes recorded yet.</div>
+        ) : (
+          <ul className="divide-y divide-border/40">
+            {(trail.data as any[]).map((e) => {
+              const who = e.profiles?.full_name || e.profiles?.email || "system";
+              const step = e.details?.step ? D_STEPS.find((s) => s.key === e.details.step)?.label ?? e.details.step : null;
+              return (
+                <li key={e.id} className="py-2 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{who}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {e.action === "capa.closed" ? "closed the CAPA" : step ? `updated ${step}` : e.action}
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
+                  </div>
+                  {e.details?.step && (
+                    <div className="mt-1 grid gap-1 md:grid-cols-2 text-xs">
+                      <div className="rounded bg-destructive/5 border border-destructive/20 p-2">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Before</div>
+                        <div className="whitespace-pre-wrap text-muted-foreground">{e.details.before || <em>empty</em>}</div>
+                      </div>
+                      <div className="rounded bg-primary/5 border border-primary/20 p-2">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">After</div>
+                        <div className="whitespace-pre-wrap">{e.details.after || <em>empty</em>}</div>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
+
 
 export const Route = createFileRoute("/capa/$id")({
   ssr: false,

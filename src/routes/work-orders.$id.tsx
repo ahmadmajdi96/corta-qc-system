@@ -11,7 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ScrollText, Play, PauseCircle, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ScrollText, Play, PauseCircle, CheckCircle2, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 
@@ -32,6 +34,12 @@ function WoDetail() {
   const [holdOpen, setHoldOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
 
+  const PAGE = 10;
+  const [inspPage, setInspPage] = useState(0);
+  const [inspStatus, setInspStatus] = useState<string>("all");
+  const [holdPage, setHoldPage] = useState(0);
+  const [holdStatus, setHoldStatus] = useState<string>("all");
+
   const wo = useQuery({
     queryKey: ["wo", id],
     queryFn: async () => {
@@ -45,18 +53,36 @@ function WoDetail() {
   });
 
   const inspections = useQuery({
-    queryKey: ["wo-inspections", id],
-    queryFn: async () => (await supabase.from("inspections")
-      .select("id, status, scheduled_date, plan_id, inspection_plans(name)")
-      .eq("work_order_id", id).order("scheduled_date", { ascending: false })).data ?? [],
+    queryKey: ["wo-inspections", id, inspPage, inspStatus],
+    queryFn: async () => {
+      let q = supabase.from("inspections")
+        .select("id, status, scheduled_date, plan_id, inspection_plans(name)", { count: "exact" })
+        .eq("work_order_id", id);
+      if (inspStatus !== "all") q = q.eq("status", inspStatus);
+      const { data, count, error } = await q
+        .order("scheduled_date", { ascending: false })
+        .range(inspPage * PAGE, inspPage * PAGE + PAGE - 1);
+      if (error) throw error;
+      return { rows: data ?? [], count: count ?? 0 };
+    },
   });
 
   const holds = useQuery({
-    queryKey: ["wo-holds", id],
-    queryFn: async () => (await supabase.from("quality_holds")
-      .select("id, hold_number, status, reason, created_at")
-      .eq("work_order_id", id).order("created_at", { ascending: false })).data ?? [],
+    queryKey: ["wo-holds", id, holdPage, holdStatus],
+    queryFn: async () => {
+      let q = supabase.from("quality_holds")
+        .select("id, hold_number, status, reason, created_at", { count: "exact" })
+        .eq("work_order_id", id);
+      if (holdStatus !== "all") q = q.eq("status", holdStatus as any);
+      const { data, count, error } = await q
+        .order("created_at", { ascending: false })
+        .range(holdPage * PAGE, holdPage * PAGE + PAGE - 1);
+      if (error) throw error;
+      return { rows: data ?? [], count: count ?? 0 };
+    },
   });
+
+
 
   const release = useMutation({
     mutationFn: async () => {
@@ -137,8 +163,10 @@ function WoDetail() {
 
   const complete = useMutation({
     mutationFn: async () => {
-      const openInsp = (inspections.data ?? []).filter((i: any) => i.status !== "completed" && i.status !== "cancelled");
-      if (openInsp.length) throw new Error(`${openInsp.length} inspection(s) still open — complete or cancel them first`);
+      const { count } = await supabase.from("inspections")
+        .select("id", { count: "exact", head: true })
+        .eq("work_order_id", id).not("status", "in", "(completed,cancelled)");
+      if ((count ?? 0) > 0) throw new Error(`${count} inspection(s) still open — complete or cancel them first`);
       const { error } = await supabase.from("work_orders").update({
         status: "completed", actual_end: new Date().toISOString(),
       }).eq("id", id);
@@ -150,6 +178,43 @@ function WoDetail() {
     onSuccess: () => { toast.success("Work order completed"); qc.invalidateQueries({ queryKey: ["wo", id] }); },
     onError: (e) => notifyError(e),
   });
+
+
+  const regenerate = useMutation({
+    mutationFn: async () => {
+      const w = wo.data!;
+      if (!w.product_id) throw new Error("Work order has no product.");
+      const [{ data: plans, error: pErr }, { data: existing, error: eErr }, { data: specs, error: sErr }] = await Promise.all([
+        supabase.from("inspection_plans").select("id, plan_type").eq("product_id", w.product_id).eq("is_active", true),
+        supabase.from("inspections").select("plan_id").eq("work_order_id", id),
+        supabase.from("quality_specifications").select("id").eq("product_id", w.product_id).eq("is_active", true).order("created_at", { ascending: false }).limit(1),
+      ]);
+      if (pErr) throw pErr; if (eErr) throw eErr; if (sErr) throw sErr;
+      const specId = specs?.[0]?.id;
+      if (!specId) throw new Error("No active quality spec on product.");
+      const existingPlanIds = new Set((existing ?? []).map((r: any) => r.plan_id).filter(Boolean));
+      const missing = (plans ?? []).filter((p: any) => !existingPlanIds.has(p.id));
+      if (!missing.length) return { created: 0 };
+      const rows = missing.map((p: any) => ({
+        product_id: w.product_id, spec_id: specId, work_order_id: id, plan_id: p.id, plan_type: p.plan_type,
+        scheduled_date: new Date().toISOString().slice(0, 10),
+        lot_number: w.lot_number ?? null, status: "planned",
+      }));
+      const { error: iErr } = await supabase.from("inspections").insert(rows as any);
+      if (iErr) throw iErr;
+      await supabase.from("audit_logs").insert({
+        user_id: user!.id, action: "wo.inspections_regenerated", entity_type: "work_order", entity_id: id,
+        details: { created: rows.length, plan_ids: missing.map((p: any) => p.id) },
+      });
+      return { created: rows.length };
+    },
+    onSuccess: (r) => {
+      toast.success(r.created ? `Created ${r.created} missing inspection(s)` : "All plans already have inspections");
+      qc.invalidateQueries({ queryKey: ["wo-inspections", id] });
+    },
+    onError: (e) => notifyError(e),
+  });
+
 
   if (wo.isLoading) return <Skeleton className="h-96 w-full" />;
   if (wo.error || !wo.data) return <div className="text-destructive">Failed to load.</div>;
@@ -212,41 +277,88 @@ function WoDetail() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Section title="Inspections" icon={<ScrollText className="h-4 w-4" />}>
-          {inspections.data?.length ? (
-            <ul className="space-y-2">
-              {inspections.data.map((i: any) => (
-                <li key={i.id}>
-                  <Link to="/inspections/$id" params={{ id: i.id }}
-                    className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 p-3 hover:border-primary/40 transition">
-                    <div>
-                      <div className="text-sm">{i.inspection_plans?.name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">{i.scheduled_date}</div>
-                    </div>
-                    <StatusPill tone={i.status === "completed" ? "success" : i.status === "in_progress" ? "info" : "muted"}>{i.status}</StatusPill>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : <div className="text-sm text-muted-foreground">No inspections yet.</div>}
+        <Section
+          title="Inspections"
+          icon={<ScrollText className="h-4 w-4" />}
+          controls={
+            <div className="flex items-center gap-2">
+              <Select value={inspStatus} onValueChange={(v) => { setInspStatus(v); setInspPage(0); }}>
+                <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="in_progress">In progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              {canManage && (
+                <Button size="sm" variant="outline" className="h-8 gap-1"
+                  onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
+                  title="Recreate any missing inspections from active plans">
+                  <RefreshCw className={`h-3.5 w-3.5 ${regenerate.isPending ? "animate-spin" : ""}`} /> Regenerate
+                </Button>
+              )}
+            </div>
+          }
+        >
+          {(inspections.data?.rows.length ?? 0) > 0 ? (
+            <>
+              <ul className="space-y-2">
+                {inspections.data!.rows.map((i: any) => (
+                  <li key={i.id}>
+                    <Link to="/inspections/$id" params={{ id: i.id }}
+                      className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 p-3 hover:border-primary/40 transition">
+                      <div>
+                        <div className="text-sm">{i.inspection_plans?.name ?? "—"}</div>
+                        <div className="text-xs text-muted-foreground">{i.scheduled_date}</div>
+                      </div>
+                      <StatusPill tone={i.status === "completed" ? "success" : i.status === "in_progress" ? "info" : "muted"}>{i.status}</StatusPill>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Pager page={inspPage} total={inspections.data!.count} pageSize={PAGE} onChange={setInspPage} />
+            </>
+          ) : <div className="text-sm text-muted-foreground">No inspections match.</div>}
         </Section>
 
-        <Section title="Quality Holds" icon={<ShieldCheck className="h-4 w-4" />}>
-          {holds.data?.length ? (
-            <ul className="space-y-2">
-              {holds.data.map((h: any) => (
-                <li key={h.id} className="rounded-lg border border-border/60 bg-card/60 p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs">{h.hold_number ?? h.id.slice(0,8)}</span>
-                    <StatusPill tone={h.status === "open" ? "danger" : "muted"}>{h.status}</StatusPill>
-                  </div>
-                  <div className="mt-1 text-sm">{h.reason}</div>
-                </li>
-              ))}
-            </ul>
-          ) : <div className="text-sm text-muted-foreground">No holds.</div>}
+        <Section
+          title="Quality Holds"
+          icon={<ShieldCheck className="h-4 w-4" />}
+          controls={
+            <Select value={holdStatus} onValueChange={(v) => { setHoldStatus(v); setHoldPage(0); }}>
+              <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="under_review">Under review</SelectItem>
+                <SelectItem value="released">Released</SelectItem>
+                <SelectItem value="rework">Rework</SelectItem>
+                <SelectItem value="scrapped">Scrapped</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        >
+          {(holds.data?.rows.length ?? 0) > 0 ? (
+            <>
+              <ul className="space-y-2">
+                {holds.data!.rows.map((h: any) => (
+                  <li key={h.id} className="rounded-lg border border-border/60 bg-card/60 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs">{h.hold_number ?? h.id.slice(0,8)}</span>
+                      <StatusPill tone={h.status === "open" ? "danger" : "muted"}>{h.status}</StatusPill>
+                    </div>
+                    <div className="mt-1 text-sm">{h.reason}</div>
+                  </li>
+                ))}
+              </ul>
+              <Pager page={holdPage} total={holds.data!.count} pageSize={PAGE} onChange={setHoldPage} />
+            </>
+          ) : <div className="text-sm text-muted-foreground">No holds match.</div>}
         </Section>
       </div>
+
 
       <Dialog open={holdOpen} onOpenChange={setHoldOpen}>
         <DialogContent>
@@ -277,14 +389,36 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({ title, icon, controls, children }: { title: string; icon: React.ReactNode; controls?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="glass-panel rounded-2xl p-4">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">{icon}{title}</div>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-semibold">{icon}{title}</div>
+        {controls}
+      </div>
       {children}
     </div>
   );
 }
+
+function Pager({ page, total, pageSize, onChange }: { page: number; total: number; pageSize: number; onChange: (p: number) => void }) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  if (total <= pageSize) return null;
+  return (
+    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+      <span>{total} total · page {page + 1} of {pages}</span>
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" className="h-7 px-2" disabled={page === 0} onClick={() => onChange(page - 1)}>
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 px-2" disabled={page + 1 >= pages} onClick={() => onChange(page + 1)}>
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/work-orders/$id")({
   ssr: false,
