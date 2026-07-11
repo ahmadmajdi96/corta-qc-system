@@ -296,6 +296,7 @@ export function NcListPage() {
          </>
         }
       </div>
+      <AddNcDialog open={addOpen} onOpenChange={setAddOpen} />
     </div>
   );
 }
