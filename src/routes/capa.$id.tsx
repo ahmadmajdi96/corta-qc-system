@@ -261,7 +261,13 @@ function CapaDetail() {
 
 export const Route = createFileRoute("/capa/$id")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    auditPage: Number(s.auditPage) || 0,
+    auditStep: typeof s.auditStep === "string" ? s.auditStep : "all",
+    auditSort: s.auditSort === "asc" ? "asc" as const : "desc" as const,
+  }),
   head: () => ({ meta: [{ title: "CAPA — CORTA QC" }, { name: "robots", content: "noindex" }] }),
+
   component: () => (
     <AuthGate>
       <AppShell>
