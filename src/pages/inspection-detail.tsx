@@ -379,7 +379,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
 
       <div className="space-y-3">
         {(items.data ?? []).map((it: any) => {
-          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
+          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
           const pass = v.na ? null : evaluatePass(it, v.value);
           const err = errors[it.id];
           return (
