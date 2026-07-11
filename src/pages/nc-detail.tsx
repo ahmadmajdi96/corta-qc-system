@@ -82,7 +82,7 @@ export function NcDetailPage({ id }: { id: string }) {
 
   const updateFields = useMutation({
     mutationFn: async (patch: Record<string, any>) => {
-      const { error } = await supabase.from("non_conformances").update(patch).eq("id", id);
+      const { error } = await (supabase.from("non_conformances") as any).update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["nc", id] }); },
