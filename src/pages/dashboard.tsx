@@ -160,7 +160,7 @@ export function DashboardPage() {
             ) : urgentNCs.error ? (
               <div className="text-sm text-destructive">Failed to load.</div>
             ) : !urgentNCs.data?.length ? (
-              <EmptyState title="No urgent NCs" />
+              <EmptyState title="No urgent NCs" action={canRaiseNc ? <Button variant="outline" onClick={() => setRaiseNc(true)}><Plus className="h-4 w-4 mr-2" />Raise NC</Button> : undefined} />
             ) : (
               <ul className="space-y-3">
                 {urgentNCs.data.map((n: any) => (
