@@ -19,9 +19,9 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d3_containment", label: "D3 — Containment", help: "Interim actions to protect the customer from the problem." },
   { key: "d4_root_cause", label: "D4 — Root cause", help: "Identify all root causes using 5-Why / Fishbone / data analysis." },
   { key: "d5_corrective", label: "D5 — Corrective action", help: "Choose and verify permanent corrective actions." },
-  { key: "d6_implementation", label: "D6 — Implementation", help: "Implement the corrective actions and validate results." },
-  { key: "d7_prevention", label: "D7 — Prevent recurrence", help: "Systemic changes (procedures, training, poka-yoke) to prevent recurrence." },
-  { key: "d8_closure", label: "D8 — Closure", help: "Recognize the team and formally close the CAPA." },
+  { key: "d6_implement", label: "D6 — Implementation", help: "Implement the corrective actions and validate results." },
+  { key: "d7_prevent", label: "D7 — Prevent recurrence", help: "Systemic changes (procedures, training, poka-yoke) to prevent recurrence." },
+  { key: "d8_recognition", label: "D8 — Recognition & closure", help: "Recognize the team and formally close the CAPA." },
 ];
 
 function CapaDetail() {
@@ -49,7 +49,7 @@ function CapaDetail() {
 
   const save = useMutation({
     mutationFn: async (patch: Record<string, any>) => {
-      const { error } = await supabase.from("capa_records").update(patch).eq("id", id);
+      const { error } = await supabase.from("capa_records").update(patch as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["capa", id] }); },
@@ -58,7 +58,7 @@ function CapaDetail() {
 
   const close = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("capa_records").update({ status: "closed", closed_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await supabase.from("capa_records").update({ status: "closed" }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success("CAPA closed"); qc.invalidateQueries({ queryKey: ["capa", id] }); },
@@ -88,8 +88,8 @@ function CapaDetail() {
       </div>
 
       <div className="glass-panel rounded-2xl p-6">
-        <div className="mb-1 text-xs uppercase tracking-[0.18em] text-muted-foreground font-mono">{c.number}</div>
-        <h2 className="text-xl font-semibold tracking-tight">{c.title}</h2>
+        <div className="mb-1 text-xs uppercase tracking-[0.18em] text-muted-foreground font-mono">{c.capa_number ?? "—"}</div>
+        <h2 className="text-xl font-semibold tracking-tight">{c.d2_problem ?? "Problem statement pending"}</h2>
       </div>
 
       <div className="space-y-3">
