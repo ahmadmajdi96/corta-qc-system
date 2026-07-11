@@ -118,6 +118,9 @@ CREATE TABLE IF NOT EXISTS quality_specifications (
   UNIQUE(product_id, version)
 );
 CREATE INDEX IF NOT EXISTS idx_specs_product ON quality_specifications(product_id);
+-- AC-10: only ONE active version per product
+CREATE UNIQUE INDEX IF NOT EXISTS ux_specs_one_active_per_product
+  ON quality_specifications(product_id) WHERE is_active = true;
 
 CREATE TABLE IF NOT EXISTS specification_items (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
