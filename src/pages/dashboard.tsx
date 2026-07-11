@@ -212,8 +212,8 @@ function KpiCard({ title, icon, value, loading, error, suffix, onRetry, href }: 
   title: string; icon: ReactNode; value?: string | number; loading?: boolean;
   error?: unknown; suffix?: string; onRetry?: () => void; href?: string;
 }) {
-  return (
-    <Card>
+  const body = (
+    <Card className={href ? "transition hover:border-primary hover:shadow-sm cursor-pointer" : ""}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className="text-muted-foreground">{icon}</div>
@@ -222,18 +222,16 @@ function KpiCard({ title, icon, value, loading, error, suffix, onRetry, href }: 
         {loading ? (
           <Skeleton className="h-8 w-16" />
         ) : error ? (
-          <div className="text-xs text-destructive">Failed. <button className="underline" onClick={onRetry}>Retry</button></div>
+          <div className="text-xs text-destructive">Failed. <button className="underline" onClick={(e) => { e.preventDefault(); onRetry?.(); }}>Retry</button></div>
         ) : (
           <>
-            {href ? (
-              <Link to={href as any} className="text-2xl font-semibold tracking-tight hover:underline">{value ?? "0"}</Link>
-            ) : (
-              <div className="text-2xl font-semibold tracking-tight">{value ?? "0"}</div>
-            )}
+            <div className="text-2xl font-semibold tracking-tight">{value ?? "0"}</div>
             {suffix && <div className="text-xs text-muted-foreground mt-1">{suffix}</div>}
           </>
         )}
       </CardContent>
     </Card>
   );
+  if (href) return <Link to={href as any} className="block">{body}</Link>;
+  return body;
 }
