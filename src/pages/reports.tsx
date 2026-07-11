@@ -154,7 +154,7 @@ export function ReportsPage() {
 
         <TabsContent value="inspections" className="mt-4">
           {inspections.isLoading ? <Skeleton className="h-64" /> :
-           !trendData.length ? <EmptyState title="No inspections in period" /> :
+           !trendData.length ? <EmptyState title="No inspections in period" description="Try widening the date range or plan a new inspection." action={canCreateInspection ? <Button onClick={() => setNewInsp(true)}><Plus className="h-4 w-4 mr-2" />New Inspection</Button> : undefined} /> :
            <Card>
              <CardHeader><CardTitle className="text-base">Inspections per day</CardTitle></CardHeader>
              <CardContent className="h-72">
