@@ -67,6 +67,7 @@ const quality: NavItem[] = [
   { title: "Inspection Plans", url: "/inspection-plans", icon: ListChecks },
   { title: "Non-Conformances", url: "/non-conformances", icon: AlertOctagon },
   { title: "Corrective Actions", url: "/corrective-actions", icon: Wrench },
+  { title: "CAPA (8D)", url: "/capa", icon: FileSearch, roles: ["administrator", "quality_manager", "qc_engineer"] as const },
   { title: "Quality Holds", url: "/holds", icon: ShieldCheck },
   { title: "SPC / Control Charts", url: "/spc", icon: Activity },
   { title: "Calibration", url: "/calibration", icon: Gauge },
