@@ -187,7 +187,7 @@ function CapaDetail() {
           <div className="flex items-center gap-2 text-sm font-semibold">
             <History className="h-4 w-4" /> Audit trail
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <select
               value={auditStep}
               onChange={(e) => setSearch({ auditStep: e.target.value, auditPage: 0 })}
@@ -197,6 +197,14 @@ function CapaDetail() {
               <option value="closed">CAPA closed</option>
               {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
+            <select
+              value={auditSize}
+              onChange={(e) => setSearch({ auditSize: Number(e.target.value), auditPage: 0 })}
+              className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
+              title="Rows per page"
+            >
+              {AUDIT_PAGE_SIZES.map((s) => <option key={s} value={s}>{s} / page</option>)}
+            </select>
             <Button
               variant="outline" size="sm" className="h-8 gap-1"
               onClick={() => setSearch({ auditSort: auditSort === "asc" ? "desc" : "asc", auditPage: 0 })}
@@ -204,6 +212,11 @@ function CapaDetail() {
             >
               Date {auditSort === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
             </Button>
+            {filtersActive && (
+              <Button variant="ghost" size="sm" className="h-8 gap-1 text-muted-foreground" onClick={resetFilters} title="Clear all filters and sorting">
+                <X className="h-3 w-3" /> Reset filters
+              </Button>
+            )}
           </div>
         </div>
         {trail.isLoading ? (
