@@ -12,7 +12,10 @@ import { ErrorState } from "@/components/error-state";
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
 import { jsPDF } from "jspdf";
-import { useSession } from "@/lib/auth";
+import { useSession, useMyRoles, hasAnyRole } from "@/lib/auth";
+import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { AddNcDialog } from "@/components/add-nc-dialog";
+import { Plus } from "lucide-react";
 
 const SEV_COLORS: Record<string,string> = { critical: "hsl(0 84% 60%)", major: "hsl(24 95% 55%)", minor: "hsl(45 93% 47%)" };
 
