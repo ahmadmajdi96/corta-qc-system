@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -28,6 +29,11 @@ import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/profile'
     | '/reports'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/profile'
     | '/reports'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/profile'
     | '/reports'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
@@ -211,6 +223,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -339,6 +359,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
