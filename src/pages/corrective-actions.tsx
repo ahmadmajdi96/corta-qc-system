@@ -78,18 +78,22 @@ export function CaListPage() {
          <Table>
            <TableHeader><TableRow>
              <TableHead>NC</TableHead><TableHead>Description</TableHead>
-             <TableHead>Assigned</TableHead><TableHead>Due</TableHead><TableHead>Status</TableHead>
+             <TableHead>Assigned</TableHead><TableHead>Due</TableHead><TableHead>Overdue</TableHead><TableHead>Status</TableHead>
            </TableRow></TableHeader>
            <TableBody>
-             {list.data.rows.map((c) => (
-               <TableRow key={c.id} className="cursor-pointer" onClick={() => (window.location.href = `/corrective-actions/${c.id}`)}>
-                 <TableCell className="font-mono text-xs">{c.non_conformances?.number}</TableCell>
-                 <TableCell className="max-w-md truncate">{c.description}</TableCell>
-                 <TableCell>{c.profiles?.full_name ?? "—"}</TableCell>
-                 <TableCell>{c.due_date ?? "—"}</TableCell>
-                 <TableCell><StatusBadge status={c.status} kind="ca" /></TableCell>
-               </TableRow>
-             ))}
+             {list.data.rows.map((c) => {
+               const overdue = c.due_date && c.status !== "verified" && c.status !== "completed" && new Date(c.due_date) < new Date();
+               return (
+                 <TableRow key={c.id} className="cursor-pointer" onClick={() => (window.location.href = `/corrective-actions/${c.id}`)}>
+                   <TableCell className="font-mono text-xs">{c.non_conformances?.number}</TableCell>
+                   <TableCell className="max-w-md truncate">{c.description}</TableCell>
+                   <TableCell>{c.profiles?.full_name ?? "—"}</TableCell>
+                   <TableCell>{c.due_date ?? "—"}</TableCell>
+                   <TableCell>{overdue ? <span className="inline-flex items-center rounded bg-destructive/15 text-destructive px-2 py-0.5 text-xs font-medium">Overdue</span> : <span className="text-muted-foreground">—</span>}</TableCell>
+                   <TableCell><StatusBadge status={c.status} kind="ca" /></TableCell>
+                 </TableRow>
+               );
+             })}
            </TableBody>
          </Table>
          <div className="flex items-center justify-between px-4 py-3 border-t text-sm text-muted-foreground">
