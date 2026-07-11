@@ -36,7 +36,8 @@ export function NcDetailPage({ id }: { id: string }) {
   const qc = useQueryClient();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [caOpen, setCaOpen] = useState(false);
+  const [tab, setTab] = useState("info");
+  const [showInlineCa, setShowInlineCa] = useState(false);
 
   const nc = useQuery({
     queryKey: ["nc", id],
