@@ -52,6 +52,127 @@ export type Database = {
           },
         ]
       }
+      calibration_records: {
+        Row: {
+          certificate_ref: string | null
+          created_at: string
+          gage_id: string
+          id: string
+          next_due: string | null
+          notes: string | null
+          performed_at: string
+          performed_by: string | null
+          result: Database["public"]["Enums"]["calibration_result"]
+        }
+        Insert: {
+          certificate_ref?: string | null
+          created_at?: string
+          gage_id: string
+          id?: string
+          next_due?: string | null
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          result: Database["public"]["Enums"]["calibration_result"]
+        }
+        Update: {
+          certificate_ref?: string | null
+          created_at?: string
+          gage_id?: string
+          id?: string
+          next_due?: string | null
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          result?: Database["public"]["Enums"]["calibration_result"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calibration_records_gage_id_fkey"
+            columns: ["gage_id"]
+            isOneToOne: false
+            referencedRelation: "gages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capa_records: {
+        Row: {
+          capa_number: string | null
+          created_at: string
+          created_by: string | null
+          d1_team: string | null
+          d2_problem: string | null
+          d3_containment: string | null
+          d4_root_cause: string | null
+          d5_corrective: string | null
+          d6_implement: string | null
+          d7_prevent: string | null
+          d8_recognition: string | null
+          due_date: string | null
+          effectiveness_verified_at: string | null
+          effectiveness_verified_by: string | null
+          id: string
+          methodology: Database["public"]["Enums"]["capa_methodology"]
+          nc_id: string | null
+          owner_id: string | null
+          status: Database["public"]["Enums"]["capa_status"]
+          updated_at: string
+        }
+        Insert: {
+          capa_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          d1_team?: string | null
+          d2_problem?: string | null
+          d3_containment?: string | null
+          d4_root_cause?: string | null
+          d5_corrective?: string | null
+          d6_implement?: string | null
+          d7_prevent?: string | null
+          d8_recognition?: string | null
+          due_date?: string | null
+          effectiveness_verified_at?: string | null
+          effectiveness_verified_by?: string | null
+          id?: string
+          methodology?: Database["public"]["Enums"]["capa_methodology"]
+          nc_id?: string | null
+          owner_id?: string | null
+          status?: Database["public"]["Enums"]["capa_status"]
+          updated_at?: string
+        }
+        Update: {
+          capa_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          d1_team?: string | null
+          d2_problem?: string | null
+          d3_containment?: string | null
+          d4_root_cause?: string | null
+          d5_corrective?: string | null
+          d6_implement?: string | null
+          d7_prevent?: string | null
+          d8_recognition?: string | null
+          due_date?: string | null
+          effectiveness_verified_at?: string | null
+          effectiveness_verified_by?: string | null
+          id?: string
+          methodology?: Database["public"]["Enums"]["capa_methodology"]
+          nc_id?: string | null
+          owner_id?: string | null
+          status?: Database["public"]["Enums"]["capa_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capa_records_nc_id_fkey"
+            columns: ["nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corrective_actions: {
         Row: {
           assigned_to: string | null
@@ -149,9 +270,135 @@ export type Database = {
         }
         Relationships: []
       }
+      gages: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          gage_type: string | null
+          id: string
+          last_cal_date: string | null
+          location: string | null
+          manufacturer: string | null
+          name: string
+          next_cal_date: string | null
+          notes: string | null
+          resolution: number | null
+          serial_number: string | null
+          status: Database["public"]["Enums"]["gage_status"]
+          unit_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          gage_type?: string | null
+          id?: string
+          last_cal_date?: string | null
+          location?: string | null
+          manufacturer?: string | null
+          name: string
+          next_cal_date?: string | null
+          notes?: string | null
+          resolution?: number | null
+          serial_number?: string | null
+          status?: Database["public"]["Enums"]["gage_status"]
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          gage_type?: string | null
+          id?: string
+          last_cal_date?: string | null
+          location?: string | null
+          manufacturer?: string | null
+          name?: string
+          next_cal_date?: string | null
+          notes?: string | null
+          resolution?: number | null
+          serial_number?: string | null
+          status?: Database["public"]["Enums"]["gage_status"]
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gages_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incoming_lots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          lot_number: string
+          notes: string | null
+          po_number: string | null
+          product_id: string | null
+          received_at: string
+          received_qty: number
+          status: Database["public"]["Enums"]["incoming_lot_status"]
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lot_number: string
+          notes?: string | null
+          po_number?: string | null
+          product_id?: string | null
+          received_at?: string
+          received_qty?: number
+          status?: Database["public"]["Enums"]["incoming_lot_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lot_number?: string
+          notes?: string | null
+          po_number?: string | null
+          product_id?: string | null
+          received_at?: string
+          received_qty?: number
+          status?: Database["public"]["Enums"]["incoming_lot_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incoming_lots_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_lots_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspection_measurements: {
         Row: {
           attachment_url: string | null
+          gage_id: string | null
           id: string
           inspection_id: string
           is_na: boolean
@@ -164,6 +411,7 @@ export type Database = {
         }
         Insert: {
           attachment_url?: string | null
+          gage_id?: string | null
           id?: string
           inspection_id: string
           is_na?: boolean
@@ -176,6 +424,7 @@ export type Database = {
         }
         Update: {
           attachment_url?: string | null
+          gage_id?: string | null
           id?: string
           inspection_id?: string
           is_na?: boolean
@@ -187,6 +436,13 @@ export type Database = {
           spec_item_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inspection_measurements_gage_id_fkey"
+            columns: ["gage_id"]
+            isOneToOne: false
+            referencedRelation: "gages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspection_measurements_inspection_id_fkey"
             columns: ["inspection_id"]
@@ -206,6 +462,53 @@ export type Database = {
             columns: ["spec_item_id"]
             isOneToOne: false
             referencedRelation: "specification_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspection_plans: {
+        Row: {
+          aql_level: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          plan_type: Database["public"]["Enums"]["plan_type"]
+          product_id: string | null
+          sample_size_rule: string | null
+          updated_at: string
+        }
+        Insert: {
+          aql_level?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          plan_type: Database["public"]["Enums"]["plan_type"]
+          product_id?: string | null
+          sample_size_rule?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aql_level?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          plan_type?: Database["public"]["Enums"]["plan_type"]
+          product_id?: string | null
+          sample_size_rule?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_plans_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -282,56 +585,108 @@ export type Database = {
           cancel_reason: string | null
           completed_at: string | null
           created_at: string
+          hold_id: string | null
           id: string
+          incoming_lot_id: string | null
+          line_id: string | null
           lot_number: string | null
           notes: string | null
+          operator_id: string | null
           performed_by: string | null
+          plan_id: string | null
+          plan_type: Database["public"]["Enums"]["plan_type"] | null
           product_id: string
           schedule_id: string | null
           scheduled_date: string
           spec_id: string
           started_at: string | null
+          station_id: string | null
           status: string
           updated_at: string
+          work_order_id: string | null
         }
         Insert: {
           cancel_reason?: string | null
           completed_at?: string | null
           created_at?: string
+          hold_id?: string | null
           id?: string
+          incoming_lot_id?: string | null
+          line_id?: string | null
           lot_number?: string | null
           notes?: string | null
+          operator_id?: string | null
           performed_by?: string | null
+          plan_id?: string | null
+          plan_type?: Database["public"]["Enums"]["plan_type"] | null
           product_id: string
           schedule_id?: string | null
           scheduled_date: string
           spec_id: string
           started_at?: string | null
+          station_id?: string | null
           status?: string
           updated_at?: string
+          work_order_id?: string | null
         }
         Update: {
           cancel_reason?: string | null
           completed_at?: string | null
           created_at?: string
+          hold_id?: string | null
           id?: string
+          incoming_lot_id?: string | null
+          line_id?: string | null
           lot_number?: string | null
           notes?: string | null
+          operator_id?: string | null
           performed_by?: string | null
+          plan_id?: string | null
+          plan_type?: Database["public"]["Enums"]["plan_type"] | null
           product_id?: string
           schedule_id?: string | null
           scheduled_date?: string
           spec_id?: string
           started_at?: string | null
+          station_id?: string | null
           status?: string
           updated_at?: string
+          work_order_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "inspections_hold_id_fkey"
+            columns: ["hold_id"]
+            isOneToOne: false
+            referencedRelation: "quality_holds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_incoming_lot_id_fkey"
+            columns: ["incoming_lot_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "production_lines"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspections_performed_by_profile_fkey"
             columns: ["performed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_plans"
             referencedColumns: ["id"]
           },
           {
@@ -353,6 +708,20 @@ export type Database = {
             columns: ["spec_id"]
             isOneToOne: false
             referencedRelation: "quality_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -378,12 +747,58 @@ export type Database = {
         }
         Relationships: []
       }
+      msa_studies: {
+        Row: {
+          created_at: string
+          gage_id: string
+          id: string
+          notes: string | null
+          performed_at: string
+          performed_by: string | null
+          result: Json | null
+          study_type: Database["public"]["Enums"]["msa_study_type"]
+          verdict: Database["public"]["Enums"]["msa_verdict"] | null
+        }
+        Insert: {
+          created_at?: string
+          gage_id: string
+          id?: string
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          result?: Json | null
+          study_type: Database["public"]["Enums"]["msa_study_type"]
+          verdict?: Database["public"]["Enums"]["msa_verdict"] | null
+        }
+        Update: {
+          created_at?: string
+          gage_id?: string
+          id?: string
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          result?: Json | null
+          study_type?: Database["public"]["Enums"]["msa_study_type"]
+          verdict?: Database["public"]["Enums"]["msa_verdict"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "msa_studies_gage_id_fkey"
+            columns: ["gage_id"]
+            isOneToOne: false
+            referencedRelation: "gages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       non_conformances: {
         Row: {
+          capa_id: string | null
           category: string | null
           closed_at: string | null
           containment: string | null
           description: string
+          hold_id: string | null
           id: string
           inspection_id: string | null
           measurement_id: string | null
@@ -395,12 +810,15 @@ export type Database = {
           severity: string
           status: string
           updated_at: string
+          work_order_id: string | null
         }
         Insert: {
+          capa_id?: string | null
           category?: string | null
           closed_at?: string | null
           containment?: string | null
           description: string
+          hold_id?: string | null
           id?: string
           inspection_id?: string | null
           measurement_id?: string | null
@@ -412,12 +830,15 @@ export type Database = {
           severity: string
           status?: string
           updated_at?: string
+          work_order_id?: string | null
         }
         Update: {
+          capa_id?: string | null
           category?: string | null
           closed_at?: string | null
           containment?: string | null
           description?: string
+          hold_id?: string | null
           id?: string
           inspection_id?: string | null
           measurement_id?: string | null
@@ -429,8 +850,23 @@ export type Database = {
           severity?: string
           status?: string
           updated_at?: string
+          work_order_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "non_conformances_capa_id_fkey"
+            columns: ["capa_id"]
+            isOneToOne: false
+            referencedRelation: "capa_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "non_conformances_hold_id_fkey"
+            columns: ["hold_id"]
+            isOneToOne: false
+            referencedRelation: "quality_holds"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "non_conformances_inspection_id_fkey"
             columns: ["inspection_id"]
@@ -452,6 +888,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "non_conformances_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
         ]
       }
       permissions: {
@@ -471,6 +914,54 @@ export type Database = {
           resource?: string
         }
         Relationships: []
+      }
+      plan_characteristics: {
+        Row: {
+          created_at: string
+          id: string
+          is_critical: boolean
+          plan_id: string
+          sample_frequency: string | null
+          sequence: number
+          spec_item_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_critical?: boolean
+          plan_id: string
+          sample_frequency?: string | null
+          sequence?: number
+          spec_item_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_critical?: boolean
+          plan_id?: string
+          sample_frequency?: string | null
+          sequence?: number
+          spec_item_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_characteristics_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_characteristics_spec_item_id_fkey"
+            columns: ["spec_item_id"]
+            isOneToOne: false
+            referencedRelation: "specification_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_categories: {
         Row: {
@@ -497,6 +988,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      production_lines: {
+        Row: {
+          area: string | null
+          code: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -571,6 +1095,82 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quality_holds: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          disposition: Database["public"]["Enums"]["disposition"] | null
+          hold_number: string | null
+          id: string
+          lot_number: string | null
+          notes: string | null
+          product_id: string | null
+          reason: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity_id: string | null
+          status: Database["public"]["Enums"]["hold_status"]
+          updated_at: string
+          work_order_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          disposition?: Database["public"]["Enums"]["disposition"] | null
+          hold_number?: string | null
+          id?: string
+          lot_number?: string | null
+          notes?: string | null
+          product_id?: string | null
+          reason: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity_id?: string | null
+          status?: Database["public"]["Enums"]["hold_status"]
+          updated_at?: string
+          work_order_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          disposition?: Database["public"]["Enums"]["disposition"] | null
+          hold_number?: string | null
+          id?: string
+          lot_number?: string | null
+          notes?: string | null
+          product_id?: string | null
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity_id?: string | null
+          status?: Database["public"]["Enums"]["hold_status"]
+          updated_at?: string
+          work_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_holds_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_holds_severity_id_fkey"
+            columns: ["severity_id"]
+            isOneToOne: false
+            referencedRelation: "severities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_holds_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quality_specifications: {
         Row: {
@@ -689,6 +1289,101 @@ export type Database = {
         }
         Relationships: []
       }
+      spc_samples: {
+        Row: {
+          cp: number | null
+          cpk: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          lcl: number | null
+          out_of_control_rules: Json | null
+          product_id: string | null
+          r_value: number | null
+          sample_time: string
+          sigma: number | null
+          spec_item_id: string | null
+          station_id: string | null
+          subgroup_id: string | null
+          subgroup_size: number | null
+          ucl: number | null
+          values: Json | null
+          work_order_id: string | null
+          x_bar: number | null
+        }
+        Insert: {
+          cp?: number | null
+          cpk?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lcl?: number | null
+          out_of_control_rules?: Json | null
+          product_id?: string | null
+          r_value?: number | null
+          sample_time?: string
+          sigma?: number | null
+          spec_item_id?: string | null
+          station_id?: string | null
+          subgroup_id?: string | null
+          subgroup_size?: number | null
+          ucl?: number | null
+          values?: Json | null
+          work_order_id?: string | null
+          x_bar?: number | null
+        }
+        Update: {
+          cp?: number | null
+          cpk?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lcl?: number | null
+          out_of_control_rules?: Json | null
+          product_id?: string | null
+          r_value?: number | null
+          sample_time?: string
+          sigma?: number | null
+          spec_item_id?: string | null
+          station_id?: string | null
+          subgroup_id?: string | null
+          subgroup_size?: number | null
+          ucl?: number | null
+          values?: Json | null
+          work_order_id?: string | null
+          x_bar?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spc_samples_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_samples_spec_item_id_fkey"
+            columns: ["spec_item_id"]
+            isOneToOne: false
+            referencedRelation: "specification_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_samples_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_samples_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       specification_items: {
         Row: {
           id: string
@@ -739,6 +1434,92 @@ export type Database = {
           },
         ]
       }
+      stations: {
+        Row: {
+          code: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          line_id: string | null
+          name: string
+          sequence: number | null
+          station_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          line_id?: string | null
+          name: string
+          sequence?: number | null
+          station_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          line_id?: string | null
+          name?: string
+          sequence?: number | null
+          station_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stations_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "production_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          code: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          rating: number | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          rating?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          rating?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           role_id: string
@@ -762,6 +1543,129 @@ export type Database = {
           },
         ]
       }
+      wo_operations: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          sequence: number
+          started_at: string | null
+          station_id: string | null
+          status: Database["public"]["Enums"]["wo_operation_status"]
+          updated_at: string
+          work_order_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          sequence?: number
+          started_at?: string | null
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["wo_operation_status"]
+          updated_at?: string
+          work_order_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          sequence?: number
+          started_at?: string | null
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["wo_operation_status"]
+          updated_at?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wo_operations_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wo_operations_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_orders: {
+        Row: {
+          actual_end: string | null
+          actual_start: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          line_id: string | null
+          lot_number: string | null
+          notes: string | null
+          number: string
+          planned_end: string | null
+          planned_start: string | null
+          product_id: string | null
+          quantity_planned: number
+          quantity_produced: number
+          status: Database["public"]["Enums"]["work_order_status"]
+          updated_at: string
+        }
+        Insert: {
+          actual_end?: string | null
+          actual_start?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          line_id?: string | null
+          lot_number?: string | null
+          notes?: string | null
+          number: string
+          planned_end?: string | null
+          planned_start?: string | null
+          product_id?: string | null
+          quantity_planned?: number
+          quantity_produced?: number
+          status?: Database["public"]["Enums"]["work_order_status"]
+          updated_at?: string
+        }
+        Update: {
+          actual_end?: string | null
+          actual_start?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          line_id?: string | null
+          lot_number?: string | null
+          notes?: string | null
+          number?: string
+          planned_end?: string | null
+          planned_start?: string | null
+          product_id?: string | null
+          quantity_planned?: number
+          quantity_produced?: number
+          status?: Database["public"]["Enums"]["work_order_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "production_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -777,7 +1681,39 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      calibration_result: "pass" | "fail" | "conditional"
+      capa_methodology: "8d" | "5why" | "fishbone"
+      capa_status:
+        | "draft"
+        | "in_progress"
+        | "verification"
+        | "closed"
+        | "cancelled"
+      disposition: "use_as_is" | "rework" | "scrap" | "return_to_supplier"
+      gage_status: "active" | "due" | "overdue" | "out_of_service"
+      hold_status: "open" | "under_review" | "released" | "scrapped" | "rework"
+      incoming_lot_status:
+        | "received"
+        | "sampling"
+        | "accepted"
+        | "rejected"
+        | "partial"
+      msa_study_type: "gage_rr" | "linearity" | "bias" | "stability"
+      msa_verdict: "acceptable" | "marginal" | "unacceptable"
+      plan_type: "incoming" | "in_process" | "final"
+      wo_operation_status:
+        | "pending"
+        | "in_progress"
+        | "completed"
+        | "skipped"
+        | "failed"
+      work_order_status:
+        | "planned"
+        | "released"
+        | "in_progress"
+        | "completed"
+        | "closed"
+        | "on_hold"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -904,6 +1840,44 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      calibration_result: ["pass", "fail", "conditional"],
+      capa_methodology: ["8d", "5why", "fishbone"],
+      capa_status: [
+        "draft",
+        "in_progress",
+        "verification",
+        "closed",
+        "cancelled",
+      ],
+      disposition: ["use_as_is", "rework", "scrap", "return_to_supplier"],
+      gage_status: ["active", "due", "overdue", "out_of_service"],
+      hold_status: ["open", "under_review", "released", "scrapped", "rework"],
+      incoming_lot_status: [
+        "received",
+        "sampling",
+        "accepted",
+        "rejected",
+        "partial",
+      ],
+      msa_study_type: ["gage_rr", "linearity", "bias", "stability"],
+      msa_verdict: ["acceptable", "marginal", "unacceptable"],
+      plan_type: ["incoming", "in_process", "final"],
+      wo_operation_status: [
+        "pending",
+        "in_progress",
+        "completed",
+        "skipped",
+        "failed",
+      ],
+      work_order_status: [
+        "planned",
+        "released",
+        "in_progress",
+        "completed",
+        "closed",
+        "on_hold",
+      ],
+    },
   },
 } as const

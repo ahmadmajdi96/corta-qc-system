@@ -9,16 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpcRouteImport } from './routes/spc'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LiveRouteImport } from './routes/live'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
+import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
+import { Route as StationsIndexRouteImport } from './routes/stations.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
+import { Route as LinesIndexRouteImport } from './routes/lines.index'
 import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
+import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-plans.index'
+import { Route as IncomingIndexRouteImport } from './routes/incoming.index'
+import { Route as HoldsIndexRouteImport } from './routes/holds.index'
 import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
+import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
@@ -27,6 +37,11 @@ import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-act
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
+const SpcRoute = SpcRouteImport.update({
+  id: '/spc',
+  path: '/spc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -40,6 +55,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -57,6 +77,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkOrdersIndexRoute = WorkOrdersIndexRouteImport.update({
+  id: '/work-orders/',
+  path: '/work-orders/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
+  id: '/suppliers/',
+  path: '/suppliers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StationsIndexRoute = StationsIndexRouteImport.update({
+  id: '/stations/',
+  path: '/stations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
@@ -67,14 +102,39 @@ const NonConformancesIndexRoute = NonConformancesIndexRouteImport.update({
   path: '/non-conformances/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LinesIndexRoute = LinesIndexRouteImport.update({
+  id: '/lines/',
+  path: '/lines/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InspectionsIndexRoute = InspectionsIndexRouteImport.update({
   id: '/inspections/',
   path: '/inspections/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InspectionPlansIndexRoute = InspectionPlansIndexRouteImport.update({
+  id: '/inspection-plans/',
+  path: '/inspection-plans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncomingIndexRoute = IncomingIndexRouteImport.update({
+  id: '/incoming/',
+  path: '/incoming/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HoldsIndexRoute = HoldsIndexRouteImport.update({
+  id: '/holds/',
+  path: '/holds/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
   id: '/corrective-actions/',
   path: '/corrective-actions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalibrationIndexRoute = CalibrationIndexRouteImport.update({
+  id: '/calibration/',
+  path: '/calibration/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
@@ -117,18 +177,28 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/spc': typeof SpcRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/calibration/': typeof CalibrationIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
+  '/holds/': typeof HoldsIndexRoute
+  '/incoming/': typeof IncomingIndexRoute
+  '/inspection-plans/': typeof InspectionPlansIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
+  '/lines/': typeof LinesIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/stations/': typeof StationsIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
+  '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id/': typeof InspectionsIdIndexRoute
 }
@@ -136,18 +206,28 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/spc': typeof SpcRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/calibration': typeof CalibrationIndexRoute
   '/corrective-actions': typeof CorrectiveActionsIndexRoute
+  '/holds': typeof HoldsIndexRoute
+  '/incoming': typeof IncomingIndexRoute
+  '/inspection-plans': typeof InspectionPlansIndexRoute
   '/inspections': typeof InspectionsIndexRoute
+  '/lines': typeof LinesIndexRoute
   '/non-conformances': typeof NonConformancesIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/stations': typeof StationsIndexRoute
+  '/suppliers': typeof SuppliersIndexRoute
+  '/work-orders': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id': typeof InspectionsIdIndexRoute
 }
@@ -156,18 +236,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/spc': typeof SpcRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/calibration/': typeof CalibrationIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
+  '/holds/': typeof HoldsIndexRoute
+  '/incoming/': typeof IncomingIndexRoute
+  '/inspection-plans/': typeof InspectionPlansIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
+  '/lines/': typeof LinesIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/stations/': typeof StationsIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
+  '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
   '/inspections/$id/': typeof InspectionsIdIndexRoute
 }
@@ -177,18 +267,28 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/live'
     | '/login'
     | '/profile'
     | '/reports'
+    | '/spc'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/calibration/'
     | '/corrective-actions/'
+    | '/holds/'
+    | '/incoming/'
+    | '/inspection-plans/'
     | '/inspections/'
+    | '/lines/'
     | '/non-conformances/'
     | '/products/'
+    | '/stations/'
+    | '/suppliers/'
+    | '/work-orders/'
     | '/inspections/$id/execute'
     | '/inspections/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -196,18 +296,28 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/live'
     | '/login'
     | '/profile'
     | '/reports'
+    | '/spc'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/calibration'
     | '/corrective-actions'
+    | '/holds'
+    | '/incoming'
+    | '/inspection-plans'
     | '/inspections'
+    | '/lines'
     | '/non-conformances'
     | '/products'
+    | '/stations'
+    | '/suppliers'
+    | '/work-orders'
     | '/inspections/$id/execute'
     | '/inspections/$id'
   id:
@@ -215,18 +325,28 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/live'
     | '/login'
     | '/profile'
     | '/reports'
+    | '/spc'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/calibration/'
     | '/corrective-actions/'
+    | '/holds/'
+    | '/incoming/'
+    | '/inspection-plans/'
     | '/inspections/'
+    | '/lines/'
     | '/non-conformances/'
     | '/products/'
+    | '/stations/'
+    | '/suppliers/'
+    | '/work-orders/'
     | '/inspections/$id/execute'
     | '/inspections/$id/'
   fileRoutesById: FileRoutesById
@@ -235,24 +355,41 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  LiveRoute: typeof LiveRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
+  SpcRoute: typeof SpcRoute
   CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
+  CalibrationIndexRoute: typeof CalibrationIndexRoute
   CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
+  HoldsIndexRoute: typeof HoldsIndexRoute
+  IncomingIndexRoute: typeof IncomingIndexRoute
+  InspectionPlansIndexRoute: typeof InspectionPlansIndexRoute
   InspectionsIndexRoute: typeof InspectionsIndexRoute
+  LinesIndexRoute: typeof LinesIndexRoute
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  StationsIndexRoute: typeof StationsIndexRoute
+  SuppliersIndexRoute: typeof SuppliersIndexRoute
+  WorkOrdersIndexRoute: typeof WorkOrdersIndexRoute
   InspectionsIdExecuteRoute: typeof InspectionsIdExecuteRoute
   InspectionsIdIndexRoute: typeof InspectionsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spc': {
+      id: '/spc'
+      path: '/spc'
+      fullPath: '/spc'
+      preLoaderRoute: typeof SpcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
@@ -272,6 +409,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -295,6 +439,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/work-orders/': {
+      id: '/work-orders/'
+      path: '/work-orders'
+      fullPath: '/work-orders/'
+      preLoaderRoute: typeof WorkOrdersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suppliers/': {
+      id: '/suppliers/'
+      path: '/suppliers'
+      fullPath: '/suppliers/'
+      preLoaderRoute: typeof SuppliersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stations/': {
+      id: '/stations/'
+      path: '/stations'
+      fullPath: '/stations/'
+      preLoaderRoute: typeof StationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/': {
       id: '/products/'
       path: '/products'
@@ -309,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NonConformancesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lines/': {
+      id: '/lines/'
+      path: '/lines'
+      fullPath: '/lines/'
+      preLoaderRoute: typeof LinesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inspections/': {
       id: '/inspections/'
       path: '/inspections'
@@ -316,11 +488,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inspection-plans/': {
+      id: '/inspection-plans/'
+      path: '/inspection-plans'
+      fullPath: '/inspection-plans/'
+      preLoaderRoute: typeof InspectionPlansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incoming/': {
+      id: '/incoming/'
+      path: '/incoming'
+      fullPath: '/incoming/'
+      preLoaderRoute: typeof IncomingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/holds/': {
+      id: '/holds/'
+      path: '/holds'
+      fullPath: '/holds/'
+      preLoaderRoute: typeof HoldsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/corrective-actions/': {
       id: '/corrective-actions/'
       path: '/corrective-actions'
       fullPath: '/corrective-actions/'
       preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calibration/': {
+      id: '/calibration/'
+      path: '/calibration'
+      fullPath: '/calibration/'
+      preLoaderRoute: typeof CalibrationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/$id': {
@@ -379,18 +579,28 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  LiveRoute: LiveRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
+  SpcRoute: SpcRoute,
   CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
+  CalibrationIndexRoute: CalibrationIndexRoute,
   CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
+  HoldsIndexRoute: HoldsIndexRoute,
+  IncomingIndexRoute: IncomingIndexRoute,
+  InspectionPlansIndexRoute: InspectionPlansIndexRoute,
   InspectionsIndexRoute: InspectionsIndexRoute,
+  LinesIndexRoute: LinesIndexRoute,
   NonConformancesIndexRoute: NonConformancesIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  StationsIndexRoute: StationsIndexRoute,
+  SuppliersIndexRoute: SuppliersIndexRoute,
+  WorkOrdersIndexRoute: WorkOrdersIndexRoute,
   InspectionsIdExecuteRoute: InspectionsIdExecuteRoute,
   InspectionsIdIndexRoute: InspectionsIdIndexRoute,
 }
