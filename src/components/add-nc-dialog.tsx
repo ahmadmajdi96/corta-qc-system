@@ -45,7 +45,11 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         description, severity, category: category || null,
         raised_by: user.user!.id, status: "open",
       } as any);
-      if (error) throw error;
+      if (error) {
+        const serverFe = parseServerFieldErrors(error);
+        if (Object.keys(serverFe).length) setErrs(serverFe);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast.success("Non-conformance created");
