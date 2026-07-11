@@ -142,6 +142,7 @@ export function InspectionsListPage() {
           </>
         )}
       </div>
+      <NewInspectionDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
