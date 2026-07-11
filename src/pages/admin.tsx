@@ -43,22 +43,38 @@ export function AdminPage() {
   );
 }
 
+const USERS_PAGE_SIZE = 20;
+
 function UsersTab() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [page, setPage] = useState(0);
   const [editing, setEditing] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+
+  // debounce search
+  useState(() => { const t = setTimeout(() => setDebounced(search), 300); return () => clearTimeout(t); });
+  // simpler: effect-free debounce via useEffect below not needed if we just apply on submit
+  // But we want smoothness — inline:
+  if (search !== debounced && !(typeof window === "undefined")) {
+    // schedule
+    setTimeout(() => { setDebounced(search); setPage(0); }, 300);
+  }
 
   const users = useQuery({
-    queryKey: ["admin-users", search],
+    queryKey: ["admin-users", debounced, page],
     queryFn: async () => {
-      let q = supabase.from("profiles").select("*, user_roles(role_id, roles(name))").order("created_at", { ascending: false });
-      if (search) q = q.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
-      const { data, error } = await q;
+      let q = supabase.from("profiles").select("*, user_roles(role_id, roles(name))", { count: "exact" }).order("created_at", { ascending: false });
+      if (debounced) q = q.or(`full_name.ilike.%${debounced}%,email.ilike.%${debounced}%`);
+      q = q.range(page * USERS_PAGE_SIZE, page * USERS_PAGE_SIZE + USERS_PAGE_SIZE - 1);
+      const { data, error, count } = await q;
       if (error) throw error;
-      return data as any[];
+      return { rows: (data ?? []) as any[], count: count ?? 0 };
     },
   });
+  const totalPages = Math.max(1, Math.ceil((users.data?.count ?? 0) / USERS_PAGE_SIZE));
 
   const roles = useQuery({ queryKey: ["roles"], queryFn: async () => (await supabase.from("roles").select("*").order("name")).data ?? [] });
 
@@ -75,18 +91,19 @@ function UsersTab() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Input placeholder="Search name/email" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-md" />
-        <Button variant="outline" onClick={() => { setEditing(null); setDialogOpen(true); }}><Plus className="h-4 w-4 mr-2" />Invite user</Button>
+        <Button variant="outline" onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-2" />New user</Button>
       </div>
       <div className="rounded-lg border bg-card">
         {users.isLoading ? <Skeleton className="h-32" /> :
-         !users.data?.length ? <EmptyState title="No users" /> :
+         !users.data?.rows.length ? <EmptyState title="No users" /> :
+         <>
          <Table>
            <TableHeader><TableRow>
              <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Roles</TableHead>
              <TableHead>Active</TableHead><TableHead>Last login</TableHead><TableHead>Actions</TableHead>
            </TableRow></TableHeader>
            <TableBody>
-             {users.data.map((u) => (
+             {users.data.rows.map((u) => (
                <TableRow key={u.id}>
                  <TableCell>{u.full_name}</TableCell>
                  <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
@@ -99,10 +116,69 @@ function UsersTab() {
                </TableRow>
              ))}
            </TableBody>
-         </Table>}
+         </Table>
+         <div className="flex items-center justify-between px-4 py-3 border-t text-sm text-muted-foreground">
+           <div>{users.data.count} users</div>
+           <div className="flex gap-2">
+             <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</Button>
+             <div className="px-2 py-1">Page {page + 1} of {totalPages}</div>
+             <Button variant="outline" size="sm" disabled={page + 1 >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+           </div>
+         </div>
+         </>}
       </div>
       <UserDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} roles={(roles.data ?? []) as any[]} onSaved={() => qc.invalidateQueries({ queryKey: ["admin-users"] })} />
+      <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} roles={(roles.data ?? []) as any[]} onCreated={() => qc.invalidateQueries({ queryKey: ["admin-users"] })} />
     </div>
+  );
+}
+
+function CreateUserDialog({ open, onOpenChange, roles, onCreated }: {
+  open: boolean; onOpenChange: (v: boolean) => void; roles: { id: string; name: string }[]; onCreated: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  async function submit() {
+    setSaving(true);
+    try {
+      const { adminCreateUser } = await import("@/lib/admin.functions");
+      await adminCreateUser({ data: { email, password, full_name: fullName, roles: selected } });
+      toast.success("User created");
+      onCreated(); onOpenChange(false);
+      setEmail(""); setPassword(""); setFullName(""); setSelected([]);
+    } catch (e: any) { toast.error(e.message ?? "Failed"); } finally { setSaving(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Create new user</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div><Label>Full name</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} /></div>
+          <div><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+          <div><Label>Temporary password (min 8)</Label><Input type="text" value={password} onChange={e => setPassword(e.target.value)} /></div>
+          <div>
+            <Label>Assign roles</Label>
+            <div className="space-y-1 mt-1">
+              {roles.map((r) => (
+                <label key={r.id} className="flex items-center gap-2 text-sm">
+                  <Checkbox checked={selected.includes(r.name)} onCheckedChange={(v) => setSelected(v ? [...selected, r.name] : selected.filter(x => x !== r.name))} />
+                  {r.name}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={submit} disabled={saving || !email || password.length < 8 || !fullName}>{saving ? "Creating..." : "Create user"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -115,12 +191,11 @@ function UserDialog({ open, onOpenChange, initial, roles, onSaved }: {
   const [saving, setSaving] = useState(false);
 
   async function submit() {
-    if (!initial) { toast.error("User creation from admin UI is not enabled. Users self-sign-up on /auth."); return; }
+    if (!initial) return;
     setSaving(true);
     try {
       const { error } = await supabase.from("profiles").update({ full_name: fullName }).eq("id", initial.id);
       if (error) throw error;
-      // Replace roles
       await supabase.from("user_roles").delete().eq("user_id", initial.id);
       if (selected.length) {
         await supabase.from("user_roles").insert(selected.map((role_id) => ({ user_id: initial.id, role_id })));
@@ -132,12 +207,8 @@ function UserDialog({ open, onOpenChange, initial, roles, onSaved }: {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>{initial ? "Edit User" : "Invite User"}</DialogTitle></DialogHeader>
-        {!initial ? (
-          <div className="text-sm text-muted-foreground">
-            New users sign up themselves on the auth page. After signup, edit them here to assign roles.
-          </div>
-        ) : (
+        <DialogHeader><DialogTitle>Edit user</DialogTitle></DialogHeader>
+        {initial && (
           <div className="space-y-3">
             <div><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
             <div><Label>Email</Label><Input disabled value={initial.email} /></div>
