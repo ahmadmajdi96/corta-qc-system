@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2, Lock, MailCheck, MailWarning } from "lucide-react";
 
 const nameSchema = z.string().trim()
   .min(2, "Full name must be at least 2 characters")
@@ -33,6 +33,8 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [emailSaving, setEmailSaving] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
+  const [resending, setResending] = useState(false);
+  const emailVerified = !!(user as any)?.email_confirmed_at;
 
   const [nameErr, setNameErr] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
@@ -98,6 +100,21 @@ export function ProfilePage() {
       setEmailErr(m);
       notifyError(m);
     } finally { setEmailSaving(false); }
+  }
+
+  async function resendVerification() {
+    if (!user?.email) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
+      if (error) throw error;
+      toast.success(`Verification email sent to ${user.email}`);
+    } catch (e: any) {
+      const msg = /rate limit/i.test(e?.message ?? "")
+        ? "Too many attempts — please wait a moment and try again."
+        : e?.message ?? "Failed to send verification email.";
+      toast.error(msg);
+    } finally { setResending(false); }
   }
 
   async function changePassword() {
@@ -170,6 +187,15 @@ export function ProfilePage() {
             <Label className="flex items-center gap-1.5">
               Email
               {!canEditEmail && <Lock className="h-3 w-3 text-muted-foreground" />}
+              {emailVerified ? (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+                  <MailCheck className="h-3 w-3" /> Verified
+                </span>
+              ) : user?.email ? (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
+                  <MailWarning className="h-3 w-3" /> Unverified
+                </span>
+              ) : null}
             </Label>
             <Input
               type="email"
@@ -185,16 +211,24 @@ export function ProfilePage() {
                 : "Email changes require an administrator. Contact your admin to update."}
             </p>
             {emailErr && <p className="mt-1 text-xs text-destructive">{emailErr}</p>}
-            {canEditEmail && (
-              <Button
-                className="mt-2 gap-2"
-                onClick={saveEmail}
-                disabled={emailSaving || email.trim() === (profile.email ?? "").trim()}
-              >
-                {emailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                {emailSaving ? "Sending..." : "Update email"}
-              </Button>
-            )}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {canEditEmail && (
+                <Button
+                  className="gap-2"
+                  onClick={saveEmail}
+                  disabled={emailSaving || email.trim() === (profile.email ?? "").trim()}
+                >
+                  {emailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {emailSaving ? "Sending..." : "Update email"}
+                </Button>
+              )}
+              {!emailVerified && user?.email && (
+                <Button variant="outline" className="gap-2" onClick={resendVerification} disabled={resending}>
+                  {resending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MailCheck className="h-3.5 w-3.5" />}
+                  {resending ? "Sending..." : "Resend verification email"}
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown } from "lucide-react";
+import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown, X } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { useEffect, useState } from "react";
@@ -27,21 +27,26 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d8_recognition", label: "D8 — Recognition & closure", help: "Recognize the team and formally close the CAPA." },
 ];
 
-const AUDIT_PAGE = 10;
+const AUDIT_PAGE_SIZES = [10, 25, 50, 100] as const;
+const AUDIT_DEFAULTS = { auditPage: 0, auditStep: "all", auditSort: "desc" as const, auditSize: 10 };
 
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
-  const search = useSearch({ from: "/capa/$id" }) as { auditPage?: number; auditStep?: string; auditSort?: "asc" | "desc" };
+  const search = useSearch({ from: "/capa/$id" }) as { auditPage?: number; auditStep?: string; auditSort?: "asc" | "desc"; auditSize?: number };
   const navigate = useNavigate({ from: "/capa/$id" });
   const qc = useQueryClient();
   const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
 
-  const auditPage = search.auditPage ?? 0;
-  const auditStep = search.auditStep ?? "all";
-  const auditSort: "asc" | "desc" = search.auditSort ?? "desc";
-  const setSearch = (patch: Partial<{ auditPage: number; auditStep: string; auditSort: "asc" | "desc" }>) =>
+  const auditPage = search.auditPage ?? AUDIT_DEFAULTS.auditPage;
+  const auditStep = search.auditStep ?? AUDIT_DEFAULTS.auditStep;
+  const auditSort: "asc" | "desc" = search.auditSort ?? AUDIT_DEFAULTS.auditSort;
+  const auditSize = AUDIT_PAGE_SIZES.includes(search.auditSize as any) ? (search.auditSize as number) : AUDIT_DEFAULTS.auditSize;
+  const filtersActive = auditStep !== AUDIT_DEFAULTS.auditStep || auditSort !== AUDIT_DEFAULTS.auditSort || auditSize !== AUDIT_DEFAULTS.auditSize || auditPage !== AUDIT_DEFAULTS.auditPage;
+  const setSearch = (patch: Partial<{ auditPage: number; auditStep: string; auditSort: "asc" | "desc"; auditSize: number }>) =>
     navigate({ search: (prev: any) => ({ ...prev, ...patch }), replace: true });
+  const resetFilters = () =>
+    navigate({ search: (prev: any) => ({ ...prev, auditPage: undefined, auditStep: undefined, auditSort: undefined, auditSize: undefined }), replace: true });
 
   const capa = useQuery({
 
@@ -55,7 +60,7 @@ function CapaDetail() {
   });
 
   const trail = useQuery({
-    queryKey: ["capa-audit", id, auditPage, auditStep, auditSort],
+    queryKey: ["capa-audit", id, auditPage, auditStep, auditSort, auditSize],
     queryFn: async () => {
       let q = supabase.from("audit_logs")
         .select("id, action, details, created_at, profiles:user_id(full_name, email)", { count: "exact" })
@@ -64,7 +69,7 @@ function CapaDetail() {
       else if (auditStep !== "all") q = q.eq("action", "capa.step_updated").contains("details", { step: auditStep });
       const { data, count, error } = await q
         .order("created_at", { ascending: auditSort === "asc" })
-        .range(auditPage * AUDIT_PAGE, auditPage * AUDIT_PAGE + AUDIT_PAGE - 1);
+        .range(auditPage * auditSize, auditPage * auditSize + auditSize - 1);
       if (error) throw error;
       return { rows: data ?? [], count: count ?? 0 };
     },
@@ -182,7 +187,7 @@ function CapaDetail() {
           <div className="flex items-center gap-2 text-sm font-semibold">
             <History className="h-4 w-4" /> Audit trail
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <select
               value={auditStep}
               onChange={(e) => setSearch({ auditStep: e.target.value, auditPage: 0 })}
@@ -192,6 +197,14 @@ function CapaDetail() {
               <option value="closed">CAPA closed</option>
               {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
+            <select
+              value={auditSize}
+              onChange={(e) => setSearch({ auditSize: Number(e.target.value), auditPage: 0 })}
+              className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
+              title="Rows per page"
+            >
+              {AUDIT_PAGE_SIZES.map((s) => <option key={s} value={s}>{s} / page</option>)}
+            </select>
             <Button
               variant="outline" size="sm" className="h-8 gap-1"
               onClick={() => setSearch({ auditSort: auditSort === "asc" ? "desc" : "asc", auditPage: 0 })}
@@ -199,6 +212,11 @@ function CapaDetail() {
             >
               Date {auditSort === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
             </Button>
+            {filtersActive && (
+              <Button variant="ghost" size="sm" className="h-8 gap-1 text-muted-foreground" onClick={resetFilters} title="Clear all filters and sorting">
+                <X className="h-3 w-3" /> Reset filters
+              </Button>
+            )}
           </div>
         </div>
         {trail.isLoading ? (
@@ -238,13 +256,13 @@ function CapaDetail() {
                 );
               })}
             </ul>
-            {trail.data!.count > AUDIT_PAGE && (
+            {trail.data!.count > auditSize && (
               <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / AUDIT_PAGE)}</span>
+                <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / auditSize)}</span>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setSearch({ auditPage: auditPage - 1 })}>Prev</Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2"
-                    disabled={(auditPage + 1) * AUDIT_PAGE >= trail.data!.count}
+                    disabled={(auditPage + 1) * auditSize >= trail.data!.count}
                     onClick={() => setSearch({ auditPage: auditPage + 1 })}>Next</Button>
                 </div>
               </div>
@@ -265,6 +283,7 @@ export const Route = createFileRoute("/capa/$id")({
     auditPage: Number(s.auditPage) || 0,
     auditStep: typeof s.auditStep === "string" ? s.auditStep : "all",
     auditSort: s.auditSort === "asc" ? "asc" as const : "desc" as const,
+    auditSize: [10, 25, 50, 100].includes(Number(s.auditSize)) ? Number(s.auditSize) : 10,
   }),
   head: () => ({ meta: [{ title: "CAPA — CORTA QC" }, { name: "robots", content: "noindex" }] }),
 
