@@ -43,6 +43,11 @@ export const Route = createFileRoute("/work-orders/")({
               { name: "planned_end", label: "Planned end", type: "date" },
               { name: "notes", label: "Notes", type: "textarea" },
             ]}
+            extraActions={(r: any) => (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/work-orders/$id" params={{ id: r.id }}>Open</Link>
+              </Button>
+            )}
           />
         </MesPage>
       </AppShell>
