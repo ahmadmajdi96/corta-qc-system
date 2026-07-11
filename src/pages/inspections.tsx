@@ -17,6 +17,9 @@ import { useMyRoles, hasAnyRole } from "@/lib/auth";
 const PAGE_SIZE = 25;
 
 export function InspectionsListPage() {
+  const roles = useMyRoles();
+  const canCreate = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const [newOpen, setNewOpen] = useState(false);
   const [status, setStatus] = useState<string>("all");
   const [productId, setProductId] = useState<string>("all");
   const [lot, setLot] = useState("");
