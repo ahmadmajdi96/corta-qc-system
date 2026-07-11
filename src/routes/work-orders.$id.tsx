@@ -395,14 +395,36 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({ title, icon, controls, children }: { title: string; icon: React.ReactNode; controls?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="glass-panel rounded-2xl p-4">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">{icon}{title}</div>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-semibold">{icon}{title}</div>
+        {controls}
+      </div>
       {children}
     </div>
   );
 }
+
+function Pager({ page, total, pageSize, onChange }: { page: number; total: number; pageSize: number; onChange: (p: number) => void }) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  if (total <= pageSize) return null;
+  return (
+    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+      <span>{total} total · page {page + 1} of {pages}</span>
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" className="h-7 px-2" disabled={page === 0} onClick={() => onChange(page - 1)}>
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 px-2" disabled={page + 1 >= pages} onClick={() => onChange(page + 1)}>
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/work-orders/$id")({
   ssr: false,
