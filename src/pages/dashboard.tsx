@@ -1,17 +1,25 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { StatusBadge } from "@/components/status-badge";
-import { useSession } from "@/lib/auth";
-import { AlertOctagon, ClipboardCheck, Wrench, TrendingUp } from "lucide-react";
+import { useSession, useMyRoles, hasAnyRole } from "@/lib/auth";
+import { AlertOctagon, ClipboardCheck, Wrench, TrendingUp, Plus } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { RaiseNcDialog } from "@/components/raise-nc-dialog";
 
 export function DashboardPage() {
   const today = new Date().toISOString().slice(0, 10);
   const { user } = useSession();
+  const roles = useMyRoles();
+  const canCreateInspection = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const canRaiseNc = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const [newInsp, setNewInsp] = useState(false);
+  const [raiseNc, setRaiseNc] = useState(false);
 
   const summary = useQuery({
     queryKey: ["dashboard-summary", today],
