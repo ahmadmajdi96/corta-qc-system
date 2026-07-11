@@ -4,14 +4,16 @@ import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
 import { MesPage, StatusPill } from "@/components/mes/mes-page";
 import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/lib/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileSearch, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { FileSearch, ArrowLeft, CheckCircle2, History } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { useState, useEffect } from "react";
+
 
 const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d1_team", label: "D1 — Team", help: "Establish a cross-functional team with the right skills." },
