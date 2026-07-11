@@ -73,7 +73,7 @@ function WoDetail() {
       let q = supabase.from("quality_holds")
         .select("id, hold_number, status, reason, created_at", { count: "exact" })
         .eq("work_order_id", id);
-      if (holdStatus !== "all") q = q.eq("status", holdStatus);
+      if (holdStatus !== "all") q = q.eq("status", holdStatus as any);
       const { data, count, error } = await q
         .order("created_at", { ascending: false })
         .range(holdPage * PAGE, holdPage * PAGE + PAGE - 1);
@@ -81,6 +81,7 @@ function WoDetail() {
       return { rows: data ?? [], count: count ?? 0 };
     },
   });
+
 
 
   const release = useMutation({
