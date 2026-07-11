@@ -34,6 +34,12 @@ function WoDetail() {
   const [holdOpen, setHoldOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
 
+  const PAGE = 10;
+  const [inspPage, setInspPage] = useState(0);
+  const [inspStatus, setInspStatus] = useState<string>("all");
+  const [holdPage, setHoldPage] = useState(0);
+  const [holdStatus, setHoldStatus] = useState<string>("all");
+
   const wo = useQuery({
     queryKey: ["wo", id],
     queryFn: async () => {
@@ -47,18 +53,35 @@ function WoDetail() {
   });
 
   const inspections = useQuery({
-    queryKey: ["wo-inspections", id],
-    queryFn: async () => (await supabase.from("inspections")
-      .select("id, status, scheduled_date, plan_id, inspection_plans(name)")
-      .eq("work_order_id", id).order("scheduled_date", { ascending: false })).data ?? [],
+    queryKey: ["wo-inspections", id, inspPage, inspStatus],
+    queryFn: async () => {
+      let q = supabase.from("inspections")
+        .select("id, status, scheduled_date, plan_id, inspection_plans(name)", { count: "exact" })
+        .eq("work_order_id", id);
+      if (inspStatus !== "all") q = q.eq("status", inspStatus);
+      const { data, count, error } = await q
+        .order("scheduled_date", { ascending: false })
+        .range(inspPage * PAGE, inspPage * PAGE + PAGE - 1);
+      if (error) throw error;
+      return { rows: data ?? [], count: count ?? 0 };
+    },
   });
 
   const holds = useQuery({
-    queryKey: ["wo-holds", id],
-    queryFn: async () => (await supabase.from("quality_holds")
-      .select("id, hold_number, status, reason, created_at")
-      .eq("work_order_id", id).order("created_at", { ascending: false })).data ?? [],
+    queryKey: ["wo-holds", id, holdPage, holdStatus],
+    queryFn: async () => {
+      let q = supabase.from("quality_holds")
+        .select("id, hold_number, status, reason, created_at", { count: "exact" })
+        .eq("work_order_id", id);
+      if (holdStatus !== "all") q = q.eq("status", holdStatus);
+      const { data, count, error } = await q
+        .order("created_at", { ascending: false })
+        .range(holdPage * PAGE, holdPage * PAGE + PAGE - 1);
+      if (error) throw error;
+      return { rows: data ?? [], count: count ?? 0 };
+    },
   });
+
 
   const release = useMutation({
     mutationFn: async () => {
