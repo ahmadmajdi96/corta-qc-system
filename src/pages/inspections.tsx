@@ -9,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
-import { CalendarDays, ListIcon } from "lucide-react";
+import { CalendarDays, ListIcon, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { useMyRoles, hasAnyRole } from "@/lib/auth";
 
 const PAGE_SIZE = 25;
 
