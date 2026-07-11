@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
 import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
+import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
@@ -44,6 +45,11 @@ const NonConformancesIndexRoute = NonConformancesIndexRouteImport.update({
 const InspectionsIndexRoute = InspectionsIndexRouteImport.update({
   id: '/inspections/',
   path: '/inspections/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
+  id: '/corrective-actions/',
+  path: '/corrective-actions/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/corrective-actions': typeof CorrectiveActionsIndexRoute
   '/inspections': typeof InspectionsIndexRoute
   '/non-conformances': typeof NonConformancesIndexRoute
   '/products': typeof ProductsIndexRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/corrective-actions/'
     | '/inspections/'
     | '/non-conformances/'
     | '/products/'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/corrective-actions'
     | '/inspections'
     | '/non-conformances'
     | '/products'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/corrective-actions/'
     | '/inspections/'
     | '/non-conformances/'
     | '/products/'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
+  CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
   InspectionsIndexRoute: typeof InspectionsIndexRoute
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/inspections'
       fullPath: '/inspections/'
       preLoaderRoute: typeof InspectionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/corrective-actions/': {
+      id: '/corrective-actions/'
+      path: '/corrective-actions'
+      fullPath: '/corrective-actions/'
+      preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/$id': {
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
+  CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
   InspectionsIndexRoute: InspectionsIndexRoute,
   NonConformancesIndexRoute: NonConformancesIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
