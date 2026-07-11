@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, FileSearch } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { Textarea } from "@/components/ui/textarea";
