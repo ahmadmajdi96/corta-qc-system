@@ -248,14 +248,33 @@ function WoDetail() {
   const w = wo.data;
   const status = w.status as string;
 
+  const inspCount = inspections.data?.count ?? 0;
+  const holdCount = holds.data?.count ?? 0;
+  const metOnline = !wo.error && !inspections.error && !holds.error;
+  const metSyncedAt = lastSync ?? (w.updated_at ? new Date(w.updated_at) : null);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Link to="/work-orders" className="text-sm text-muted-foreground hover:underline inline-flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" /> Back to Work Orders
         </Link>
-        <StatusPill tone={tone(status)}>{status}</StatusPill>
+        <div className="flex items-center gap-2">
+          <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
+            metOnline
+              ? "border-success/30 bg-success/10 text-success"
+              : "border-destructive/30 bg-destructive/10 text-destructive"
+          }`} title={metOnline ? "Connected to MES backend" : "MES backend unreachable"}>
+            <Wifi className="h-3 w-3" />
+            <span className="font-medium">MES {metOnline ? "online" : "offline"}</span>
+            {metSyncedAt && (
+              <span className="text-muted-foreground">· synced {metSyncedAt.toLocaleTimeString()}</span>
+            )}
+          </div>
+          <StatusPill tone={tone(status)}>{status}</StatusPill>
+        </div>
       </div>
+
 
       <div className="glass-panel rounded-2xl p-6">
         <div className="mb-1 text-xs uppercase tracking-[0.18em] text-muted-foreground font-mono">{w.number}</div>
