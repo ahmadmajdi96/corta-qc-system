@@ -184,3 +184,24 @@ export function SimpleList<T extends { id: string }>({
     </>
   );
 }
+
+function AsyncSelectField({ field, value, onChange }: { field: FieldDef; value: string; onChange: (v: string) => void }) {
+  const opts = useQuery({
+    queryKey: ["field-options", field.name],
+    queryFn: async () => (field.loadOptions ? field.loadOptions() : (field.options ?? [])),
+    staleTime: 60_000,
+  });
+  const list = opts.data ?? field.options ?? [];
+  return (
+    <select
+      id={field.name}
+      className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      <option value="">{opts.isLoading ? "Loading..." : field.placeholder ?? "— Select —"}</option>
+      {list.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+
