@@ -33,6 +33,8 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [emailSaving, setEmailSaving] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
+  const [resending, setResending] = useState(false);
+  const emailVerified = !!(user as any)?.email_confirmed_at;
 
   const [nameErr, setNameErr] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
