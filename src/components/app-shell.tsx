@@ -245,7 +245,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen w-full">
         <AppSidebar roles={rolesArr} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar profile={profile} roles={rolesArr} onSignOut={onSignOut} />
+          <TopBar profile={profile ?? undefined} roles={rolesArr} onSignOut={onSignOut} />
           <main className="flex-1 p-4 sm:p-6">{children}</main>
         </div>
       </div>
