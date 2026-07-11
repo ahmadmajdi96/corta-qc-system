@@ -100,7 +100,7 @@ export function InspectionsListPage() {
         ) : list.error ? (
           <div className="p-6 text-sm text-destructive">Failed to load.</div>
         ) : !list.data?.rows.length ? (
-          <EmptyState title="No inspections match" />
+          <EmptyState title="No inspections match" action={canCreate ? <Button onClick={() => setNewOpen(true)}><Plus className="h-4 w-4 mr-2" />New Inspection</Button> : undefined} />
         ) : (
           <>
             <Table>
