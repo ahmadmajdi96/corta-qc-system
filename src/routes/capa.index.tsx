@@ -3,6 +3,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
 import { MesPage, StatusPill } from "@/components/mes/mes-page";
 import { SimpleList } from "@/components/mes/simple-list";
+import { supabase } from "@/integrations/supabase/client";
 import { FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +12,15 @@ function tone(s: string): "success" | "warning" | "danger" | "info" | "muted" {
   if (s === "in_progress" || s === "verification") return "info";
   if (s === "cancelled") return "muted";
   return "warning";
+}
+
+async function loadOptions(table: string, label: string, extra = "") {
+  const { data, error } = await supabase.from(table as any).select(`id, ${label}${extra}`).limit(200);
+  if (error) return [];
+  return (data ?? []).map((r: any) => ({
+    value: r.id,
+    label: extra ? `${r[label]} · ${r[extra.replace(/^,\s*/, "")] ?? ""}` : r[label] ?? r.id.slice(0, 8),
+  }));
 }
 
 export const Route = createFileRoute("/capa/")({
@@ -37,7 +47,30 @@ export const Route = createFileRoute("/capa/")({
             ]}
             fields={[
               { name: "capa_number", label: "Number", placeholder: "CAPA-2026-0001" },
-              { name: "methodology", label: "Methodology", placeholder: "8d | 5why | fishbone" },
+              {
+                name: "methodology", label: "Methodology", type: "select",
+                options: [
+                  { value: "8d", label: "8D — Eight Disciplines" },
+                  { value: "5why", label: "5-Why" },
+                  { value: "fishbone", label: "Fishbone / Ishikawa" },
+                  { value: "a3", label: "A3" },
+                ],
+              },
+              {
+                name: "nc_id", label: "Linked Non-Conformance", type: "select",
+                placeholder: "— None —",
+                loadOptions: () => loadOptions("non_conformances", "number", ", description"),
+              },
+              {
+                name: "product_id", label: "Product", type: "select",
+                placeholder: "— None —",
+                loadOptions: () => loadOptions("products", "name", ", sku"),
+              },
+              {
+                name: "owner_id", label: "Owner", type: "select",
+                placeholder: "— None —",
+                loadOptions: () => loadOptions("profiles", "full_name", ", email"),
+              },
               { name: "due_date", label: "Due date", type: "date" },
               { name: "d2_problem", label: "Problem description (D2)", type: "textarea" },
             ]}
@@ -52,3 +85,4 @@ export const Route = createFileRoute("/capa/")({
     </AuthGate>
   ),
 });
+
