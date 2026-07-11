@@ -14,10 +14,11 @@ import { EmptyState } from "@/components/empty-state";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Plus, Pencil } from "lucide-react";
+import { Trash2, Plus, Pencil, MoreHorizontal, UserX, UserCheck } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useMyRoles, hasAnyRole } from "@/lib/auth";
-import { EmptyState as _E } from "@/components/empty-state";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function AdminPage() {
   const { data: roles } = useMyRoles();
@@ -108,12 +109,38 @@ function UsersTab() {
                <TableRow key={u.id}>
                  <TableCell>{u.full_name}</TableCell>
                  <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                 <TableCell><div className="flex flex-wrap gap-1">
-                   {(u.user_roles ?? []).map((r: any) => <span key={r.role_id} className="text-xs bg-muted px-2 py-0.5 rounded">{r.roles?.name}</span>)}
-                 </div></TableCell>
+                 <TableCell>
+                   <div className="flex flex-wrap gap-1">
+                     {(u.user_roles ?? []).length === 0 && <span className="text-xs text-muted-foreground">— none —</span>}
+                     {(u.user_roles ?? []).map((r: any) => (
+                       <Badge key={r.role_id} variant="secondary" className="text-xs">{r.roles?.name}</Badge>
+                     ))}
+                   </div>
+                 </TableCell>
                  <TableCell><Switch checked={u.is_active} onCheckedChange={(v) => setActive.mutate({ id: u.id, is_active: v })} /></TableCell>
                  <TableCell className="text-xs">{u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : "—"}</TableCell>
-                 <TableCell><Button size="sm" variant="ghost" onClick={() => { setEditing(u); setDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button></TableCell>
+                 <TableCell>
+                   <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                       <Button size="icon" variant="ghost" aria-label="Actions"><MoreHorizontal className="h-4 w-4" /></Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end">
+                       <DropdownMenuItem onClick={() => { setEditing(u); setDialogOpen(true); }}>
+                         <Pencil className="h-4 w-4 mr-2" />Edit user & roles
+                       </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                       {u.is_active ? (
+                         <DropdownMenuItem onClick={() => setActive.mutate({ id: u.id, is_active: false })}>
+                           <UserX className="h-4 w-4 mr-2" />Deactivate
+                         </DropdownMenuItem>
+                       ) : (
+                         <DropdownMenuItem onClick={() => setActive.mutate({ id: u.id, is_active: true })}>
+                           <UserCheck className="h-4 w-4 mr-2" />Reactivate
+                         </DropdownMenuItem>
+                       )}
+                     </DropdownMenuContent>
+                   </DropdownMenu>
+                 </TableCell>
                </TableRow>
              ))}
            </TableBody>
@@ -365,6 +392,11 @@ function SettingsTab() {
             <Button onClick={addUnit}><Plus className="h-4 w-4 mr-2" />Add</Button>
           </div>
           {units.isLoading ? <Skeleton className="h-24" /> :
+           !(units.data as any[])?.length ? (
+             <EmptyState title="No measurement units yet"
+               description="Add units like °C, mm, kg so quality specifications can reference them."
+               action={<Button size="sm" onClick={() => { setNewUnit({ code: "°C", label: "Celsius" }); }}><Plus className="h-4 w-4 mr-2" />Prefill Celsius</Button>} />
+           ) :
            <table className="w-full text-sm">
              <thead><tr className="text-left border-b"><th className="py-1">Code</th><th>Label</th><th /></tr></thead>
              <tbody>
@@ -382,6 +414,10 @@ function SettingsTab() {
         <CardHeader><CardTitle className="text-base">Severities</CardTitle></CardHeader>
         <CardContent>
           {severities.isLoading ? <Skeleton className="h-24" /> :
+           !(severities.data as any[])?.length ? (
+             <EmptyState title="No severities configured"
+               description="Severities (critical, major, minor…) drive NC prioritisation." />
+           ) :
            <table className="w-full text-sm">
              <thead><tr className="text-left border-b"><th className="py-1">Code</th><th>Label</th><th>Color</th><th>Order</th></tr></thead>
              <tbody>

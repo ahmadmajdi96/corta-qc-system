@@ -36,7 +36,8 @@ export function NcDetailPage({ id }: { id: string }) {
   const qc = useQueryClient();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [caOpen, setCaOpen] = useState(false);
+  const [tab, setTab] = useState("info");
+  const [showInlineCa, setShowInlineCa] = useState(false);
 
   const nc = useQuery({
     queryKey: ["nc", id],
@@ -127,13 +128,15 @@ export function NcDetailPage({ id }: { id: string }) {
                   {t.label}
                 </Button>
               ))}
-              <Button size="sm" onClick={() => setCaOpen(true)}><Plus className="h-4 w-4 mr-1" />Add CA</Button>
+              <Button size="sm" onClick={() => { setTab("cas"); setShowInlineCa(true); }}>
+                <Plus className="h-4 w-4 mr-1" />Define Corrective Action
+              </Button>
             </div>
           )}
         </div>
       </div>
 
-      <Tabs defaultValue="info">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="info">Details</TabsTrigger>
           <TabsTrigger value="cas">Corrective Actions ({n.corrective_actions?.length ?? 0})</TabsTrigger>
@@ -172,21 +175,36 @@ export function NcDetailPage({ id }: { id: string }) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="cas" className="mt-4">
-          {!(n.corrective_actions ?? []).length ? <EmptyState title="No corrective actions yet" /> :
-           <div className="space-y-2">
-             {n.corrective_actions.map((ca: any) => (
-               <Link key={ca.id} to="/corrective-actions/$id" params={{ id: ca.id }} className="block rounded border p-3 hover:bg-accent/40">
-                 <div className="flex items-center justify-between">
-                   <div className="text-sm line-clamp-1">{ca.description}</div>
-                   <StatusBadge status={ca.status} kind="ca" />
-                 </div>
-                 <div className="text-xs text-muted-foreground mt-1">
-                   Assigned: {ca.profiles?.full_name ?? "—"} · Due: {ca.due_date ?? "—"}
-                 </div>
-               </Link>
-             ))}
-           </div>}
+        <TabsContent value="cas" className="mt-4 space-y-3">
+          {(n.corrective_actions ?? []).length ? (
+            <div className="space-y-2">
+              {n.corrective_actions.map((ca: any) => (
+                <Link key={ca.id} to="/corrective-actions/$id" params={{ id: ca.id }} className="block rounded border p-3 hover:bg-accent/40">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm line-clamp-1">{ca.description}</div>
+                    <StatusBadge status={ca.status} kind="ca" />
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Assigned: {ca.profiles?.full_name ?? "—"} · Due: {ca.due_date ?? "—"}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : !showInlineCa ? (
+            <EmptyState title="No corrective actions yet"
+              action={canManage ? <Button onClick={() => setShowInlineCa(true)}><Plus className="h-4 w-4 mr-2" />Define Corrective Action</Button> : undefined} />
+          ) : null}
+
+          {canManage && (
+            showInlineCa ? (
+              <InlineCaForm ncId={id} onCancel={() => setShowInlineCa(false)}
+                onCreated={() => { setShowInlineCa(false); qc.invalidateQueries({ queryKey: ["nc", id] }); }} />
+            ) : (n.corrective_actions ?? []).length ? (
+              <Button variant="outline" size="sm" onClick={() => setShowInlineCa(true)}>
+                <Plus className="h-4 w-4 mr-2" />Define another corrective action
+              </Button>
+            ) : null
+          )}
         </TabsContent>
 
         <TabsContent value="audit" className="mt-4">
@@ -217,8 +235,6 @@ export function NcDetailPage({ id }: { id: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <NewCaDialog open={caOpen} onOpenChange={setCaOpen} ncId={id} onCreated={() => qc.invalidateQueries({ queryKey: ["nc", id] })} />
     </div>
   );
 }
@@ -227,7 +243,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return <div className="grid grid-cols-3 gap-4"><div className="text-muted-foreground">{label}</div><div className="col-span-2">{children}</div></div>;
 }
 
-function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; onOpenChange: (v: boolean) => void; ncId: string; onCreated: () => void }) {
+function InlineCaForm({ ncId, onCancel, onCreated }: { ncId: string; onCancel: () => void; onCreated: () => void }) {
   const { user } = useSession();
   const [desc, setDesc] = useState("");
   const [due, setDue] = useState("");
@@ -235,7 +251,6 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
   const [saving, setSaving] = useState(false);
   const users = useQuery({
     queryKey: ["users-all"],
-    enabled: open,
     queryFn: async () => (await supabase.from("profiles").select("id, full_name, email").eq("is_active", true).order("full_name")).data ?? [],
   });
   async function submit() {
@@ -251,17 +266,17 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
         user_id: user!.id, action: "ca.create", entity_type: "non_conformance", entity_id: ncId,
       });
       toast.success("Corrective action added");
-      onCreated(); onOpenChange(false);
-      setDesc(""); setDue(""); setAssignee(null);
+      onCreated();
     } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Add Corrective Action</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <div><Label>Description</Label><Textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} /></div>
-          <div><Label>Assign to</Label>
+    <Card className="border-primary/40">
+      <CardHeader><CardTitle className="text-sm">Define Corrective Action</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <div><Label>Description</Label><Textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Describe the corrective action to be taken..." /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label>Assign to</Label>
             <Select value={assignee ?? "none"} onValueChange={(v) => setAssignee(v === "none" ? null : v)}>
               <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
               <SelectContent>
@@ -272,11 +287,11 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
           </div>
           <div><Label>Due date</Label><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={saving}>{saving ? "Adding..." : "Add"}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button onClick={submit} disabled={saving || !desc.trim()}>{saving ? "Adding..." : "Add corrective action"}</Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

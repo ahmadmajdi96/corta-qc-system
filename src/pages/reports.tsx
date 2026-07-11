@@ -12,13 +12,21 @@ import { ErrorState } from "@/components/error-state";
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
 import { jsPDF } from "jspdf";
-import { useSession } from "@/lib/auth";
+import { useSession, useMyRoles, hasAnyRole } from "@/lib/auth";
+import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { AddNcDialog } from "@/components/add-nc-dialog";
+import { Plus } from "lucide-react";
 
 const SEV_COLORS: Record<string,string> = { critical: "hsl(0 84% 60%)", major: "hsl(24 95% 55%)", minor: "hsl(45 93% 47%)" };
 
 export function ReportsPage() {
   const qc = useQueryClient();
   const { user } = useSession();
+  const { data: roles } = useMyRoles();
+  const canCreateInspection = hasAnyRole(roles, "administrator", "quality_manager", "inspector");
+  const canRaiseNc = hasAnyRole(roles, "administrator", "quality_manager", "inspector");
+  const [newInsp, setNewInsp] = useState(false);
+  const [newNc, setNewNc] = useState(false);
   const [from, setFrom] = useState(() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().slice(0,10); });
   const [to, setTo] = useState(() => new Date().toISOString().slice(0,10));
 
@@ -146,7 +154,7 @@ export function ReportsPage() {
 
         <TabsContent value="inspections" className="mt-4">
           {inspections.isLoading ? <Skeleton className="h-64" /> :
-           !trendData.length ? <EmptyState title="No inspections in period" /> :
+           !trendData.length ? <EmptyState title="No inspections in period" description="Try widening the date range or plan a new inspection." action={canCreateInspection ? <Button onClick={() => setNewInsp(true)}><Plus className="h-4 w-4 mr-2" />New Inspection</Button> : undefined} /> :
            <Card>
              <CardHeader><CardTitle className="text-base">Inspections per day</CardTitle></CardHeader>
              <CardContent className="h-72">
@@ -168,7 +176,7 @@ export function ReportsPage() {
 
         <TabsContent value="ncs" className="mt-4 space-y-4">
           {ncs.isLoading ? <Skeleton className="h-64" /> :
-           !totalNc ? <EmptyState title="No NCs for selected period" /> :
+           !totalNc ? <EmptyState title="No NCs for selected period" description="No non-conformances were raised in this window." action={canRaiseNc ? <Button variant="outline" onClick={() => setNewNc(true)}><Plus className="h-4 w-4 mr-2" />Raise NC</Button> : undefined} /> :
            <>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                <StatCard title="Total NCs" value={totalNc} />
@@ -210,7 +218,7 @@ export function ReportsPage() {
 
         <TabsContent value="capa" className="mt-4 space-y-4">
           {cas.isLoading ? <Skeleton className="h-64" /> :
-           !caTotal ? <EmptyState title="No corrective actions in period" /> :
+           !caTotal ? <EmptyState title="No corrective actions in period" description="Corrective actions appear here once NCs progress into CAPA." /> :
            <>
              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                <StatCard title="Total actions" value={caTotal} />
@@ -267,6 +275,8 @@ export function ReportsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      <NewInspectionDialog open={newInsp} onOpenChange={setNewInsp} />
+      <AddNcDialog open={newNc} onOpenChange={setNewNc} />
     </div>
   );
 }

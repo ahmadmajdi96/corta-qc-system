@@ -154,9 +154,16 @@ export function ProductsListPage() {
                     <TableCell><Link to="/products/$id" params={{ id: p.id }} className="hover:underline">{p.name}</Link></TableCell>
                     <TableCell className="text-sm text-muted-foreground">{p.product_categories?.name ?? "—"}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${p.is_active ? "bg-status-completed/15 text-status-completed" : "bg-muted text-muted-foreground"}`}>
+                      <button
+                        type="button"
+                        disabled={!canManage || setActive.isPending}
+                        onClick={() => canManage && setDeactivate(p)}
+                        title={canManage ? "Click to toggle" : "Read-only"}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition ${p.is_active ? "bg-status-completed/15 text-status-completed hover:bg-status-completed/25" : "bg-muted text-muted-foreground hover:bg-muted/80"} ${canManage ? "cursor-pointer" : "cursor-default"}`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${p.is_active ? "bg-status-completed" : "bg-muted-foreground"}`} />
                         {p.is_active ? "Active" : "Inactive"}
-                      </span>
+                      </button>
                     </TableCell>
                     {canManage && (
                       <TableCell>
