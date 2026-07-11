@@ -116,10 +116,45 @@ export type Database = {
           },
         ]
       }
+      export_jobs: {
+        Row: {
+          created_at: string
+          export_type: string
+          filters: Json | null
+          format: string
+          id: string
+          row_count: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          export_type: string
+          filters?: Json | null
+          format: string
+          id?: string
+          row_count?: number | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          export_type?: string
+          filters?: Json | null
+          format?: string
+          id?: string
+          row_count?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       inspection_measurements: {
         Row: {
+          attachment_url: string | null
           id: string
           inspection_id: string
+          is_na: boolean
           is_pass: boolean | null
           measured_value: string | null
           notes: string | null
@@ -128,8 +163,10 @@ export type Database = {
           spec_item_id: string
         }
         Insert: {
+          attachment_url?: string | null
           id?: string
           inspection_id: string
+          is_na?: boolean
           is_pass?: boolean | null
           measured_value?: string | null
           notes?: string | null
@@ -138,8 +175,10 @@ export type Database = {
           spec_item_id: string
         }
         Update: {
+          attachment_url?: string | null
           id?: string
           inspection_id?: string
+          is_na?: boolean
           is_pass?: boolean | null
           measured_value?: string | null
           notes?: string | null
@@ -346,7 +385,7 @@ export type Database = {
           containment: string | null
           description: string
           id: string
-          inspection_id: string
+          inspection_id: string | null
           measurement_id: string | null
           number: string
           raised_at: string
@@ -363,7 +402,7 @@ export type Database = {
           containment?: string | null
           description: string
           id?: string
-          inspection_id: string
+          inspection_id?: string | null
           measurement_id?: string | null
           number: string
           raised_at?: string
@@ -380,7 +419,7 @@ export type Database = {
           containment?: string | null
           description?: string
           id?: string
-          inspection_id?: string
+          inspection_id?: string | null
           measurement_id?: string | null
           number?: string
           raised_at?: string
