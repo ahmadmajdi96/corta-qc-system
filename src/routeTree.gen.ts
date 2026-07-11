@@ -15,6 +15,7 @@ import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
 import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
+import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
@@ -49,6 +50,11 @@ const ProductsIdRoute = ProductsIdRouteImport.update({
   path: '/products/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NonConformancesListRoute = NonConformancesListRouteImport.update({
+  id: '/non-conformances/list',
+  path: '/non-conformances/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
   id: '/inspections/calendar',
   path: '/inspections/calendar',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
+  '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
+  '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/inspections': typeof InspectionsIndexRoute
   '/non-conformances': typeof NonConformancesIndexRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
+  '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/inspections/calendar'
+    | '/non-conformances/list'
     | '/products/$id'
     | '/inspections/'
     | '/non-conformances/'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/inspections/calendar'
+    | '/non-conformances/list'
     | '/products/$id'
     | '/inspections'
     | '/non-conformances'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/inspections/calendar'
+    | '/non-conformances/list'
     | '/products/$id'
     | '/inspections/'
     | '/non-conformances/'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
+  NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
   InspectionsIndexRoute: typeof InspectionsIndexRoute
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/non-conformances/list': {
+      id: '/non-conformances/list'
+      path: '/non-conformances/list'
+      fullPath: '/non-conformances/list'
+      preLoaderRoute: typeof NonConformancesListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inspections/calendar': {
       id: '/inspections/calendar'
       path: '/inspections/calendar'
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
+  NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
   InspectionsIndexRoute: InspectionsIndexRoute,
   NonConformancesIndexRoute: NonConformancesIndexRoute,
