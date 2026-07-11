@@ -34,6 +34,7 @@ export function NcDetailPage({ id }: { id: string }) {
   const { data: roles } = useMyRoles();
   const canManage = hasAnyRole(roles, "administrator", "quality_manager");
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [tab, setTab] = useState("info");
