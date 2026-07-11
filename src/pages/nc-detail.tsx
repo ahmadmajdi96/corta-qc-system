@@ -128,7 +128,9 @@ export function NcDetailPage({ id }: { id: string }) {
                   {t.label}
                 </Button>
               ))}
-              <Button size="sm" onClick={() => setCaOpen(true)}><Plus className="h-4 w-4 mr-1" />Add CA</Button>
+              <Button size="sm" onClick={() => { setTab("cas"); setShowInlineCa(true); }}>
+                <Plus className="h-4 w-4 mr-1" />Define Corrective Action
+              </Button>
             </div>
           )}
         </div>
