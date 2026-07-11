@@ -187,6 +187,7 @@ function WoDetail() {
     mutationFn: async () => {
       const w = wo.data!;
       if (!w.product_id) throw new Error("Work order has no product.");
+      // Fetch plans, existing inspections, and active spec together (idempotent basis)
       const [{ data: plans, error: pErr }, { data: existing, error: eErr }, { data: specs, error: sErr }] = await Promise.all([
         supabase.from("inspection_plans").select("id, plan_type").eq("product_id", w.product_id).eq("is_active", true),
         supabase.from("inspections").select("plan_id").eq("work_order_id", id),
@@ -197,26 +198,49 @@ function WoDetail() {
       if (!specId) throw new Error("No active quality spec on product.");
       const existingPlanIds = new Set((existing ?? []).map((r: any) => r.plan_id).filter(Boolean));
       const missing = (plans ?? []).filter((p: any) => !existingPlanIds.has(p.id));
-      if (!missing.length) return { created: 0 };
-      const rows = missing.map((p: any) => ({
-        product_id: w.product_id, spec_id: specId, work_order_id: id, plan_id: p.id, plan_type: p.plan_type,
-        scheduled_date: new Date().toISOString().slice(0, 10),
-        lot_number: w.lot_number ?? null, status: "planned",
-      }));
-      const { error: iErr } = await supabase.from("inspections").insert(rows as any);
-      if (iErr) throw iErr;
+      if (!missing.length) return { created: 0, skipped: (plans ?? []).length };
+
+      // Insert one at a time so a mid-flight duplicate (e.g. two operators clicking
+      // regenerate) is caught per-row without aborting the batch.
+      let created = 0;
+      const skippedIds: string[] = [];
+      for (const p of missing) {
+        // Race-safe re-check right before insert
+        const { data: dupe } = await supabase.from("inspections")
+          .select("id").eq("work_order_id", id).eq("plan_id", p.id).limit(1).maybeSingle();
+        if (dupe) { skippedIds.push(p.id); continue; }
+        const { error: iErr } = await supabase.from("inspections").insert({
+          product_id: w.product_id, spec_id: specId, work_order_id: id, plan_id: p.id, plan_type: p.plan_type,
+          scheduled_date: new Date().toISOString().slice(0, 10),
+          lot_number: w.lot_number ?? null, status: "planned",
+        } as any);
+        if (iErr) {
+          // Treat unique-violation as already-created (idempotent)
+          if ((iErr as any).code === "23505") { skippedIds.push(p.id); continue; }
+          throw iErr;
+        }
+        created++;
+      }
       await supabase.from("audit_logs").insert({
         user_id: user!.id, action: "wo.inspections_regenerated", entity_type: "work_order", entity_id: id,
-        details: { created: rows.length, plan_ids: missing.map((p: any) => p.id) },
+        details: { created, skipped: skippedIds.length, plan_ids: missing.map((p: any) => p.id) },
       });
-      return { created: rows.length };
+      return { created, skipped: skippedIds.length };
     },
     onSuccess: (r) => {
-      toast.success(r.created ? `Created ${r.created} missing inspection(s)` : "All plans already have inspections");
+      setLastSync(new Date());
+      setRegenOpen(false);
+      toast.success(
+        r.created > 0
+          ? `Created ${r.created} inspection(s)${r.skipped ? ` · skipped ${r.skipped} already present` : ""}`
+          : "All plans already have inspections — nothing to create"
+      );
       qc.invalidateQueries({ queryKey: ["wo-inspections", id] });
+      qc.invalidateQueries({ queryKey: ["wo", id] });
     },
     onError: (e) => notifyError(e),
   });
+
 
 
   if (wo.isLoading) return <Skeleton className="h-96 w-full" />;
