@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { notifyError } from "@/lib/toast";
+import { notifyError, parseServerFieldErrors } from "@/lib/toast";
 import { z } from "zod";
 
 const schema = z.object({
@@ -45,7 +45,11 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         description, severity, category: category || null,
         raised_by: user.user!.id, status: "open",
       } as any);
-      if (error) throw error;
+      if (error) {
+        const serverFe = parseServerFieldErrors(error);
+        if (Object.keys(serverFe).length) setErrs(serverFe);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast.success("Non-conformance created");
@@ -54,7 +58,7 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       setDescription(""); setSeverity("minor"); setProductId(""); setCategory("");
       onOpenChange(false);
     },
-    onError: (e: Error) => notifyError(e.message),
+    onError: (e: Error) => notifyError(e.message, { retry: () => mut.mutate() }),
   });
 
   return (

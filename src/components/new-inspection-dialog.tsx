@@ -8,9 +8,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { notifyError } from "@/lib/toast";
+import { notifyError, parseServerFieldErrors } from "@/lib/toast";
 import { useSession } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
+
+const inspectionSchema = z.object({
+  product_id: z.string().uuid({ message: "Select a product" }),
+  scheduled_date: z.string().min(1, { message: "Scheduled date is required" }),
+  lot_number: z.string().max(64).optional(),
+  notes: z.string().max(1000).optional(),
+});
 
 export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
   open: boolean;
@@ -24,8 +32,9 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
   const [scheduledDate, setScheduledDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [lot, setLot] = useState("");
   const [notes, setNotes] = useState("");
+  const [errs, setErrs] = useState<Record<string, string>>({});
 
-  useEffect(() => { if (open) setProductId(defaultProductId); }, [open, defaultProductId]);
+  useEffect(() => { if (open) { setProductId(defaultProductId); setErrs({}); } }, [open, defaultProductId]);
 
   const { data: products } = useQuery({
     queryKey: ["products-active"],
@@ -39,29 +48,33 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!productId) throw new Error("Select a product");
+      const parsed = inspectionSchema.safeParse({
+        product_id: productId, scheduled_date: scheduledDate,
+        lot_number: lot || undefined, notes: notes || undefined,
+      });
+      if (!parsed.success) {
+        const fe: Record<string, string> = {};
+        parsed.error.issues.forEach(i => { fe[String(i.path[0])] = i.message; });
+        setErrs(fe);
+        throw new Error("Please fix the errors");
+      }
+      setErrs({});
       const { data: spec, error: specErr } = await supabase
-        .from("quality_specifications")
-        .select("id")
-        .eq("product_id", productId)
-        .eq("is_active", true)
-        .maybeSingle();
+        .from("quality_specifications").select("id")
+        .eq("product_id", productId!).eq("is_active", true).maybeSingle();
       if (specErr) throw specErr;
       if (!spec) throw new Error("This product has no active specification. Create one first.");
-      const { data, error } = await supabase
-        .from("inspections")
-        .insert({
-          product_id: productId,
-          spec_id: spec.id,
-          scheduled_date: scheduledDate,
-          lot_number: lot || null,
-          notes: notes || null,
-          status: "planned",
-          performed_by: user?.id ?? null,
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
+      const { data, error } = await supabase.from("inspections").insert({
+        product_id: productId!, spec_id: spec.id, scheduled_date: scheduledDate,
+        lot_number: lot || null, notes: notes || null, status: "planned",
+        performed_by: user?.id ?? null,
+      }).select("id").single();
+      if (error) {
+        // Map server field errors when present
+        const serverFe = parseServerFieldErrors(error);
+        if (Object.keys(serverFe).length) setErrs(serverFe);
+        throw error;
+      }
       await supabase.from("audit_logs").insert({
         user_id: user?.id, action: "inspection.create", entity_type: "inspection", entity_id: data.id,
         details: { source: "ad_hoc" },
@@ -74,7 +87,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
       onOpenChange(false);
       navigate({ to: "/inspections/$id/execute", params: { id } });
     },
-    onError: (e: Error) => notifyError(e.message),
+    onError: (e: Error) => notifyError(e.message, { retry: () => create.mutate() }),
   });
 
   return (
@@ -83,7 +96,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
         <DialogHeader><DialogTitle>New Inspection</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Product</Label>
+            <Label>Product *</Label>
             <Select value={productId} onValueChange={setProductId}>
               <SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
               <SelectContent>
@@ -92,23 +105,27 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
                 ))}
               </SelectContent>
             </Select>
+            {errs.product_id && <p className="text-xs text-destructive">{errs.product_id}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label>Scheduled date</Label>
+            <Label>Scheduled date *</Label>
             <Input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+            {errs.scheduled_date && <p className="text-xs text-destructive">{errs.scheduled_date}</p>}
           </div>
           <div className="space-y-1.5">
             <Label>Lot number</Label>
             <Input value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Optional" />
+            {errs.lot_number && <p className="text-xs text-destructive">{errs.lot_number}</p>}
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Optional" />
+            {errs.notes && <p className="text-xs text-destructive">{errs.notes}</p>}
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => create.mutate()} disabled={create.isPending || !productId}>
+          <Button onClick={() => create.mutate()} disabled={create.isPending}>
             {create.isPending ? "Creating..." : "Create"}
           </Button>
         </DialogFooter>
@@ -116,3 +133,4 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
     </Dialog>
   );
 }
+

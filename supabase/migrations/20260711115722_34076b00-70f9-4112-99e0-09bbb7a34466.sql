@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS ux_quality_specifications_one_active_per_product ON public.quality_specifications (product_id) WHERE is_active = true;
