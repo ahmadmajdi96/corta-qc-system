@@ -58,7 +58,7 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       setDescription(""); setSeverity("minor"); setProductId(""); setCategory("");
       onOpenChange(false);
     },
-    onError: (e: Error) => notifyError(e.message),
+    onError: (e: Error) => notifyError(e.message, { retry: () => mut.mutate() }),
   });
 
   return (
