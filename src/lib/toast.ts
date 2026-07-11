@@ -16,7 +16,7 @@ function messageOf(err: unknown, fallback = "Something went wrong"): string {
  */
 export function notifyError(err: unknown, opts?: { retry?: () => void; fallback?: string }) {
   const msg = messageOf(err, opts?.fallback);
-  notifyError(msg, {
+  toast.error(msg, {
     duration: 5000,
     action: {
       label: "Retry",
