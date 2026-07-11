@@ -133,7 +133,7 @@ export function DashboardPage() {
             ) : todaysInspections.error ? (
               <div className="text-sm text-destructive">Failed to load. <button className="underline" onClick={() => todaysInspections.refetch()}>Retry</button></div>
             ) : !todaysInspections.data?.length ? (
-              <EmptyState title="No inspections today" />
+              <EmptyState title="No inspections today" action={canCreateInspection ? <Button onClick={() => setNewInsp(true)}><Plus className="h-4 w-4 mr-2" />New Inspection</Button> : undefined} />
             ) : (
               <ul className="divide-y">
                 {todaysInspections.data.map((i: any) => (
