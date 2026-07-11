@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpcRouteImport } from './routes/spc'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
@@ -31,6 +32,11 @@ import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-act
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
+const SpcRoute = SpcRouteImport.update({
+  id: '/spc',
+  path: '/spc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/spc': typeof SpcRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/spc': typeof SpcRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/spc': typeof SpcRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reports'
+    | '/spc'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reports'
+    | '/spc'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reports'
+    | '/spc'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
+  SpcRoute: typeof SpcRoute
   CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
   NonConformancesIdRoute: typeof NonConformancesIdRoute
@@ -305,6 +318,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spc': {
+      id: '/spc'
+      path: '/spc'
+      fullPath: '/spc'
+      preLoaderRoute: typeof SpcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
@@ -463,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
+  SpcRoute: SpcRoute,
   CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
   NonConformancesIdRoute: NonConformancesIdRoute,
