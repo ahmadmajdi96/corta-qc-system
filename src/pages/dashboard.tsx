@@ -217,7 +217,7 @@ export function DashboardPage() {
         .select("id, number, severity, category, raised_at, description, status")
         .eq("status", "open")
         .order("raised_at", { ascending: false })
-        .limit: 6 as any as never; // placeholder to remove
+        .limit(6);
       if (error) throw error;
       return data ?? [];
     },
