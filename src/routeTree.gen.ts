@@ -24,6 +24,7 @@ import { Route as InspectionsIndexRouteImport } from './routes/inspections.index
 import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-plans.index'
 import { Route as HoldsIndexRouteImport } from './routes/holds.index'
 import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
+import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
@@ -107,6 +108,11 @@ const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
   path: '/corrective-actions/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalibrationIndexRoute = CalibrationIndexRouteImport.update({
+  id: '/calibration/',
+  path: '/calibration/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
   id: '/products/$id',
   path: '/products/$id',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/calibration/': typeof CalibrationIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
   '/inspection-plans/': typeof InspectionPlansIndexRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/calibration': typeof CalibrationIndexRoute
   '/corrective-actions': typeof CorrectiveActionsIndexRoute
   '/holds': typeof HoldsIndexRoute
   '/inspection-plans': typeof InspectionPlansIndexRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/calibration/': typeof CalibrationIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
   '/inspection-plans/': typeof InspectionPlansIndexRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/calibration/'
     | '/corrective-actions/'
     | '/holds/'
     | '/inspection-plans/'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/calibration'
     | '/corrective-actions'
     | '/holds'
     | '/inspection-plans'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/calibration/'
     | '/corrective-actions/'
     | '/holds/'
     | '/inspection-plans/'
@@ -305,6 +317,7 @@ export interface RootRouteChildren {
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
+  CalibrationIndexRoute: typeof CalibrationIndexRoute
   CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
   HoldsIndexRoute: typeof HoldsIndexRoute
   InspectionPlansIndexRoute: typeof InspectionPlansIndexRoute
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calibration/': {
+      id: '/calibration/'
+      path: '/calibration'
+      fullPath: '/calibration/'
+      preLoaderRoute: typeof CalibrationIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/$id': {
       id: '/products/$id'
       path: '/products/$id'
@@ -489,6 +509,7 @@ const rootRouteChildren: RootRouteChildren = {
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
+  CalibrationIndexRoute: CalibrationIndexRoute,
   CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
   HoldsIndexRoute: HoldsIndexRoute,
   InspectionPlansIndexRoute: InspectionPlansIndexRoute,
