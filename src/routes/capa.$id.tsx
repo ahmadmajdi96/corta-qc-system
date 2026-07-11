@@ -27,21 +27,26 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d8_recognition", label: "D8 — Recognition & closure", help: "Recognize the team and formally close the CAPA." },
 ];
 
-const AUDIT_PAGE = 10;
+const AUDIT_PAGE_SIZES = [10, 25, 50, 100] as const;
+const AUDIT_DEFAULTS = { auditPage: 0, auditStep: "all", auditSort: "desc" as const, auditSize: 10 };
 
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
-  const search = useSearch({ from: "/capa/$id" }) as { auditPage?: number; auditStep?: string; auditSort?: "asc" | "desc" };
+  const search = useSearch({ from: "/capa/$id" }) as { auditPage?: number; auditStep?: string; auditSort?: "asc" | "desc"; auditSize?: number };
   const navigate = useNavigate({ from: "/capa/$id" });
   const qc = useQueryClient();
   const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
 
-  const auditPage = search.auditPage ?? 0;
-  const auditStep = search.auditStep ?? "all";
-  const auditSort: "asc" | "desc" = search.auditSort ?? "desc";
-  const setSearch = (patch: Partial<{ auditPage: number; auditStep: string; auditSort: "asc" | "desc" }>) =>
+  const auditPage = search.auditPage ?? AUDIT_DEFAULTS.auditPage;
+  const auditStep = search.auditStep ?? AUDIT_DEFAULTS.auditStep;
+  const auditSort: "asc" | "desc" = search.auditSort ?? AUDIT_DEFAULTS.auditSort;
+  const auditSize = AUDIT_PAGE_SIZES.includes(search.auditSize as any) ? (search.auditSize as number) : AUDIT_DEFAULTS.auditSize;
+  const filtersActive = auditStep !== AUDIT_DEFAULTS.auditStep || auditSort !== AUDIT_DEFAULTS.auditSort || auditSize !== AUDIT_DEFAULTS.auditSize || auditPage !== AUDIT_DEFAULTS.auditPage;
+  const setSearch = (patch: Partial<{ auditPage: number; auditStep: string; auditSort: "asc" | "desc"; auditSize: number }>) =>
     navigate({ search: (prev: any) => ({ ...prev, ...patch }), replace: true });
+  const resetFilters = () =>
+    navigate({ search: (prev: any) => ({ ...prev, auditPage: undefined, auditStep: undefined, auditSort: undefined, auditSize: undefined }), replace: true });
 
   const capa = useQuery({
 
