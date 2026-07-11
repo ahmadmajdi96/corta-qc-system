@@ -26,13 +26,18 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d8_recognition", label: "D8 — Recognition & closure", help: "Recognize the team and formally close the CAPA." },
 ];
 
+const AUDIT_PAGE = 10;
+
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
   const qc = useQueryClient();
   const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const [auditPage, setAuditPage] = useState(0);
+  const [auditStep, setAuditStep] = useState<string>("all");
 
   const capa = useQuery({
+
     queryKey: ["capa", id],
     queryFn: async () => {
       const { data, error } = await supabase.from("capa_records").select("*").eq("id", id).maybeSingle();
