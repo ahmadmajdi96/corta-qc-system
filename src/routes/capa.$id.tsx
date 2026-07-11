@@ -29,6 +29,7 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
   const qc = useQueryClient();
+  const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
 
   const capa = useQuery({
@@ -41,6 +42,14 @@ function CapaDetail() {
     },
   });
 
+  const trail = useQuery({
+    queryKey: ["capa-audit", id],
+    queryFn: async () => (await supabase.from("audit_logs")
+      .select("id, action, details, created_at, profiles:user_id(full_name, email)")
+      .eq("entity_type", "capa").eq("entity_id", id)
+      .order("created_at", { ascending: false }).limit(100)).data ?? [],
+  });
+
   useEffect(() => {
     if (capa.data) {
       const d: Record<string, string> = {};
@@ -50,11 +59,22 @@ function CapaDetail() {
   }, [capa.data]);
 
   const save = useMutation({
-    mutationFn: async (patch: Record<string, any>) => {
-      const { error } = await supabase.from("capa_records").update(patch as any).eq("id", id);
+    mutationFn: async (patch: { key: string; before: string; after: string }) => {
+      const { error } = await supabase.from("capa_records").update({ [patch.key]: patch.after } as any).eq("id", id);
       if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        user_id: user?.id ?? null,
+        action: "capa.step_updated",
+        entity_type: "capa",
+        entity_id: id,
+        details: { step: patch.key, before: patch.before, after: patch.after },
+      });
     },
-    onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["capa", id] }); },
+    onSuccess: () => {
+      toast.success("Saved");
+      qc.invalidateQueries({ queryKey: ["capa", id] });
+      qc.invalidateQueries({ queryKey: ["capa-audit", id] });
+    },
     onError: (e) => notifyError(e),
   });
 
@@ -62,10 +82,18 @@ function CapaDetail() {
     mutationFn: async () => {
       const { error } = await supabase.from("capa_records").update({ status: "closed" }).eq("id", id);
       if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        user_id: user?.id ?? null, action: "capa.closed", entity_type: "capa", entity_id: id,
+      });
     },
-    onSuccess: () => { toast.success("CAPA closed"); qc.invalidateQueries({ queryKey: ["capa", id] }); },
+    onSuccess: () => {
+      toast.success("CAPA closed");
+      qc.invalidateQueries({ queryKey: ["capa", id] });
+      qc.invalidateQueries({ queryKey: ["capa-audit", id] });
+    },
     onError: (e) => notifyError(e),
   });
+
 
   if (capa.isLoading) return <Skeleton className="h-96 w-full" />;
   if (capa.error) return <div className="text-destructive">Failed to load.</div>;
