@@ -176,7 +176,7 @@ export function ReportsPage() {
 
         <TabsContent value="ncs" className="mt-4 space-y-4">
           {ncs.isLoading ? <Skeleton className="h-64" /> :
-           !totalNc ? <EmptyState title="No NCs for selected period" /> :
+           !totalNc ? <EmptyState title="No NCs for selected period" description="No non-conformances were raised in this window." action={canRaiseNc ? <Button variant="outline" onClick={() => setNewNc(true)}><Plus className="h-4 w-4 mr-2" />Raise NC</Button> : undefined} /> :
            <>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                <StatCard title="Total NCs" value={totalNc} />
