@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { useMyRoles, hasAnyRole, useSession } from "@/lib/auth";
 import { Label } from "@/components/ui/label";
@@ -143,7 +144,7 @@ export function CaDetailPage({ id }: { id: string }) {
       });
     },
     onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["ca", id] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   if (ca.isLoading) return <Skeleton className="h-64 max-w-3xl" />;

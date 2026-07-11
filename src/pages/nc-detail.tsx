@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -86,7 +87,7 @@ export function NcDetailPage({ id }: { id: string }) {
       qc.invalidateQueries({ queryKey: ["nc", id] });
       qc.invalidateQueries({ queryKey: ["audit", "non_conformance", id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   const updateFields = useMutation({
@@ -95,7 +96,7 @@ export function NcDetailPage({ id }: { id: string }) {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["nc", id] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   if (nc.isLoading) return <div className="max-w-4xl"><Skeleton className="h-64" /></div>;
@@ -238,7 +239,7 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
     queryFn: async () => (await supabase.from("profiles").select("id, full_name, email").eq("is_active", true).order("full_name")).data ?? [],
   });
   async function submit() {
-    if (!desc.trim()) { toast.error("Description required"); return; }
+    if (!desc.trim()) { notifyError("Description required"); return; }
     setSaving(true);
     try {
       const { error } = await supabase.from("corrective_actions").insert({
@@ -252,7 +253,7 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
       toast.success("Corrective action added");
       onCreated(); onOpenChange(false);
       setDesc(""); setDue(""); setAssignee(null);
-    } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

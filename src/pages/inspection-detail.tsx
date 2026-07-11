@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Play, CheckCircle2, XCircle, RefreshCcw, AlertOctagon, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useMyRoles, hasAnyRole, useSession } from "@/lib/auth";
@@ -76,7 +77,7 @@ export function InspectionDetailPage({ id }: { id: string }) {
       qc.invalidateQueries({ queryKey: ["inspection", id] });
       qc.invalidateQueries({ queryKey: ["audit", "inspection", id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   if (insp.isLoading) return <div className="max-w-5xl space-y-3"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>;
@@ -183,7 +184,7 @@ export function InspectionDetailPage({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="ncs" className="mt-4">
-          {(i.non_conformances ?? []).length === 0 ? <EmptyState title="No non-conformances raised" /> :
+          {(i.non_conformances ?? []).length === 0 ? <EmptyState title="No non-conformances raised" action={canPerform ? <Button variant="outline" onClick={() => setRaiseNc({})}><AlertOctagon className="h-4 w-4 mr-2" />Raise NC</Button> : undefined} /> :
            <div className="space-y-2">
              {i.non_conformances.map((n: any) => (
                <Link key={n.id} to="/non-conformances/$id" params={{ id: n.id }} className="block rounded-md border p-3 hover:bg-accent/40">
@@ -304,7 +305,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
       const url = (data as any)?.signedUrl ?? path;
       setValues(v => ({ ...v, [itemId]: { ...(v[itemId] ?? { value: "", notes: "", na: false, attachment_url: null }), attachment_url: url } }));
       toast.success("Photo attached");
-    } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
+    } catch (e: any) { notifyError(e.message ?? "Upload failed"); }
     finally { setUploading(null); }
   }
 
@@ -353,7 +354,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
       qc.invalidateQueries({ queryKey: ["inspection", id] });
       qc.invalidateQueries({ queryKey: ["measurements", id] });
       if (complete) navigate({ to: "/inspections/$id", params: { id } });
-    } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
 
   if (insp.isLoading || items.isLoading) return <div className="max-w-3xl"><Skeleton className="h-64" /></div>;

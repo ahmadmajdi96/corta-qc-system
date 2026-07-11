@@ -1,17 +1,25 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { StatusBadge } from "@/components/status-badge";
-import { useSession } from "@/lib/auth";
-import { AlertOctagon, ClipboardCheck, Wrench, TrendingUp } from "lucide-react";
+import { useSession, useMyRoles, hasAnyRole } from "@/lib/auth";
+import { AlertOctagon, ClipboardCheck, Wrench, TrendingUp, Plus } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { AddNcDialog } from "@/components/add-nc-dialog";
 
 export function DashboardPage() {
   const today = new Date().toISOString().slice(0, 10);
   const { user } = useSession();
+  const roles = useMyRoles();
+  const canCreateInspection = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const canRaiseNc = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const [newInsp, setNewInsp] = useState(false);
+  const [raiseNc, setRaiseNc] = useState(false);
 
   const summary = useQuery({
     queryKey: ["dashboard-summary", today],
@@ -125,7 +133,7 @@ export function DashboardPage() {
             ) : todaysInspections.error ? (
               <div className="text-sm text-destructive">Failed to load. <button className="underline" onClick={() => todaysInspections.refetch()}>Retry</button></div>
             ) : !todaysInspections.data?.length ? (
-              <EmptyState title="No inspections today" />
+              <EmptyState title="No inspections today" action={canCreateInspection ? <Button onClick={() => setNewInsp(true)}><Plus className="h-4 w-4 mr-2" />New Inspection</Button> : undefined} />
             ) : (
               <ul className="divide-y">
                 {todaysInspections.data.map((i: any) => (
@@ -152,7 +160,7 @@ export function DashboardPage() {
             ) : urgentNCs.error ? (
               <div className="text-sm text-destructive">Failed to load.</div>
             ) : !urgentNCs.data?.length ? (
-              <EmptyState title="No urgent NCs" />
+              <EmptyState title="No urgent NCs" action={canRaiseNc ? <Button variant="outline" onClick={() => setRaiseNc(true)}><Plus className="h-4 w-4 mr-2" />Raise NC</Button> : undefined} />
             ) : (
               <ul className="space-y-3">
                 {urgentNCs.data.map((n: any) => (
@@ -193,6 +201,9 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      <NewInspectionDialog open={newInsp} onOpenChange={setNewInsp} />
+      <AddNcDialog open={raiseNc} onOpenChange={setRaiseNc} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { useSession } from "@/lib/auth";
 
 export function RaiseNcDialog({ open, onOpenChange, inspectionId, measurement, onCreated }: {
@@ -23,7 +24,7 @@ export function RaiseNcDialog({ open, onOpenChange, inspectionId, measurement, o
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (!description.trim()) { toast.error("Description required"); return; }
+    if (!description.trim()) { notifyError("Description required"); return; }
     setSaving(true);
     try {
       const { data, error } = await supabase.from("non_conformances").insert({
@@ -40,7 +41,7 @@ export function RaiseNcDialog({ open, onOpenChange, inspectionId, measurement, o
       });
       toast.success("Non-conformance raised");
       onCreated(data.id);
-    } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
 
   return (

@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { useSession } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -73,7 +74,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
       onOpenChange(false);
       navigate({ to: "/inspections/$id/execute", params: { id } });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   return (

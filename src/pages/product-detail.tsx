@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Pencil, Save, X, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { useMyRoles, hasAnyRole, useSession } from "@/lib/auth";
 import { NewInspectionDialog } from "@/components/new-inspection-dialog";
 import { StatusBadge } from "@/components/status-badge";
@@ -66,7 +67,7 @@ export function ProductDetailPage({ id }: { id: string }) {
       qc.invalidateQueries({ queryKey: ["product", id] });
       qc.invalidateQueries({ queryKey: ["products"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   const specs = useQuery({
@@ -257,7 +258,7 @@ function SpecCard({ spec, canManage, onChanged }: { spec: any; canManage: boolea
           {canManage && spec.is_active && (
             <Button size="sm" variant="ghost" onClick={async () => {
               const { error } = await supabase.from("quality_specifications").update({ is_active: false }).eq("id", spec.id);
-              if (error) toast.error(error.message); else { toast.success("Deactivated"); onChanged(); }
+              if (error) notifyError(error.message); else { toast.success("Deactivated"); onChanged(); }
             }}>Deactivate</Button>
           )}
         </div>
@@ -294,7 +295,7 @@ function SpecEditorDialog({ open, onOpenChange, productId, userId, nextVersion, 
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (items.some((i) => !i.name.trim())) { toast.error("Each item needs a name"); return; }
+    if (items.some((i) => !i.name.trim())) { notifyError("Each item needs a name"); return; }
     setSaving(true);
     try {
       // Deactivate current
@@ -317,7 +318,7 @@ function SpecEditorDialog({ open, onOpenChange, productId, userId, nextVersion, 
       onCreated();
       onOpenChange(false);
       setItems([{ sequence: 1, name: "", measurement_type: "numeric", unit: "", target_value: "", lower_tolerance: "", upper_tolerance: "", pass_criteria: "", is_critical: false }]);
-    } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
 
   return (

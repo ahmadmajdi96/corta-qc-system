@@ -15,6 +15,7 @@ import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent 
 import { Plus, Trash2 } from "lucide-react";
 import { AddNcDialog } from "@/components/add-nc-dialog";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { useConfirm } from "@/components/confirm-provider";
 import { useMyRoles, hasAnyRole } from "@/lib/auth";
 
@@ -95,7 +96,7 @@ export function NcBoardPage() {
     },
     onError: (e: any, _v, ctx) => {
       qc.setQueryData(["nc-board", product, severity, from, to], ctx?.prev);
-      toast.error(e.message ?? "Move failed — reverted");
+      notifyError(e.message ?? "Move failed — reverted");
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["nc-board"] }),
   });
@@ -106,7 +107,7 @@ export function NcBoardPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("NC deleted"); qc.invalidateQueries({ queryKey: ["nc-board"] }); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => notifyError(e.message),
   });
 
   async function handleDelete(nc: any) {
@@ -194,6 +195,9 @@ export function NcBoardPage() {
 const PAGE_SIZE = 25;
 
 export function NcListPage() {
+  const roles = useMyRoles();
+  const canRaise = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const [addOpen, setAddOpen] = useState(false);
   const [status, setStatus] = useState("all");
   const [severity, setSeverity] = useState("all");
   const [search, setSearch] = useState("");
@@ -226,7 +230,10 @@ export function NcListPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Non-Conformances</h1>
           <p className="text-sm text-muted-foreground">Table view</p>
         </div>
-        <Button asChild variant="outline"><Link to="/non-conformances">Board view</Link></Button>
+        <div className="flex gap-2">
+         {canRaise && <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-2" />Add NC</Button>}
+         <Button asChild variant="outline"><Link to="/non-conformances">Board view</Link></Button>
+        </div>
       </div>
 
       <Card><CardContent className="pt-4">
@@ -254,7 +261,7 @@ export function NcListPage() {
       <div className="rounded-lg border bg-card">
         {list.isError ? <ErrorState onRetry={() => list.refetch()} /> :
          list.isLoading ? <div className="p-6"><Skeleton className="h-32" /></div> :
-         !list.data?.rows.length ? <EmptyState title="No NCs match" /> :
+         !list.data?.rows.length ? <EmptyState title="No NCs match" action={canRaise ? <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-2" />Add NC</Button> : undefined} /> :
          <>
          <Table>
            <TableHeader>
@@ -289,6 +296,7 @@ export function NcListPage() {
          </>
         }
       </div>
+      <AddNcDialog open={addOpen} onOpenChange={setAddOpen} />
     </div>
   );
 }

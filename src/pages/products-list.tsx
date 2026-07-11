@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Search, Pencil, Power } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { z } from "zod";
 import { useMyRoles, hasAnyRole } from "@/lib/auth";
 import { EmptyState } from "@/components/empty-state";
@@ -84,7 +85,7 @@ export function ProductsListPage() {
       setDialogOpen(false); setEditing(null);
       qc.invalidateQueries({ queryKey: ["products"] });
     },
-    onError: (e: Error) => toast.error(e.message.includes("duplicate") ? "SKU already exists" : e.message),
+    onError: (e: Error) => notifyError(e.message.includes("duplicate") ? "SKU already exists" : e.message),
   });
 
   const setActive = useMutation({
@@ -93,7 +94,7 @@ export function ProductsListPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["products"] }); setDeactivate(null); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   const totalPages = Math.max(1, Math.ceil((list.data?.count ?? 0) / PAGE_SIZE));

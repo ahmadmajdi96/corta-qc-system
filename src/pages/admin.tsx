@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { EmptyState } from "@/components/empty-state";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
@@ -84,7 +85,7 @@ function UsersTab() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   return (
@@ -150,7 +151,7 @@ function CreateUserDialog({ open, onOpenChange, roles, onCreated }: {
       toast.success("User created");
       onCreated(); onOpenChange(false);
       setEmail(""); setPassword(""); setFullName(""); setSelected([]);
-    } catch (e: any) { toast.error(e.message ?? "Failed"); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message ?? "Failed"); } finally { setSaving(false); }
   }
 
   return (
@@ -201,7 +202,7 @@ function UserDialog({ open, onOpenChange, initial, roles, onSaved }: {
         await supabase.from("user_roles").insert(selected.map((role_id) => ({ user_id: initial.id, role_id })));
       }
       toast.success("User updated"); onSaved(); onOpenChange(false);
-    } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
 
   return (
@@ -251,7 +252,7 @@ function RolesTab() {
       if (permIds.length) await supabase.from("role_permissions").insert(permIds.map((permission_id) => ({ role_id: roleId, permission_id })));
     },
     onSuccess: () => { toast.success("Permissions saved"); qc.invalidateQueries({ queryKey: ["roles-with-perms"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
@@ -267,7 +268,7 @@ function RolesTab() {
   async function addRole() {
     if (!newRoleName.trim()) return;
     const { error } = await supabase.from("roles").insert({ name: newRoleName.trim(), description: newRoleDesc || null });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError(error.message); return; }
     toast.success("Role added"); setAddRoleOpen(false); setNewRoleName(""); setNewRoleDesc("");
     qc.invalidateQueries({ queryKey: ["roles-with-perms"] });
     qc.invalidateQueries({ queryKey: ["roles"] });
@@ -342,13 +343,13 @@ function SettingsTab() {
   async function addUnit() {
     if (!newUnit.code.trim() || !newUnit.label.trim()) return;
     const { error } = await supabase.from("measurement_units").insert(newUnit);
-    if (error) toast.error(error.message);
+    if (error) notifyError(error.message);
     else { toast.success("Added"); setNewUnit({ code: "", label: "" }); qc.invalidateQueries({ queryKey: ["units"] }); }
   }
   async function del() {
     if (!confirmDel) return;
     const { error } = await supabase.from(confirmDel.table).delete().eq("id", confirmDel.id);
-    if (error) toast.error(error.message);
+    if (error) notifyError(error.message);
     else { toast.success("Deleted"); qc.invalidateQueries({ queryKey: [confirmDel.table.includes("unit") ? "units" : "severities"] }); }
     setConfirmDel(null);
   }

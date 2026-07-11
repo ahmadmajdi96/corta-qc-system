@@ -9,12 +9,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
-import { CalendarDays, ListIcon } from "lucide-react";
+import { CalendarDays, ListIcon, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { useMyRoles, hasAnyRole } from "@/lib/auth";
 
 const PAGE_SIZE = 25;
 
 export function InspectionsListPage() {
+  const roles = useMyRoles();
+  const canCreate = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const [newOpen, setNewOpen] = useState(false);
   const [status, setStatus] = useState<string>("all");
   const [productId, setProductId] = useState<string>("all");
   const [lot, setLot] = useState("");
@@ -95,7 +100,7 @@ export function InspectionsListPage() {
         ) : list.error ? (
           <div className="p-6 text-sm text-destructive">Failed to load.</div>
         ) : !list.data?.rows.length ? (
-          <EmptyState title="No inspections match" />
+          <EmptyState title="No inspections match" action={canCreate ? <Button onClick={() => setNewOpen(true)}><Plus className="h-4 w-4 mr-2" />New Inspection</Button> : undefined} />
         ) : (
           <>
             <Table>
@@ -137,6 +142,7 @@ export function InspectionsListPage() {
           </>
         )}
       </div>
+      <NewInspectionDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
