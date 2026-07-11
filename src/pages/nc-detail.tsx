@@ -121,13 +121,14 @@ export function NcDetailPage({ id }: { id: string }) {
         n?.number ? `Source NC: ${n.number}` : null,
       ].filter(Boolean).join("\n");
       const { data, error } = await supabase.from("capa_records").insert({
-        non_conformance_id: id,
+        nc_id: id,
         methodology: "8d",
         status: "open",
         d2_problem: problem,
         d3_containment: n?.containment ?? null,
         d4_root_cause: n?.root_cause ?? null,
-        opened_by: user!.id,
+        created_by: user!.id,
+        owner_id: user!.id,
       } as any).select("id").single();
       if (error) throw error;
       await supabase.from("audit_logs").insert({
