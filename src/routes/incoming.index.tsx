@@ -1,20 +1,46 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
-import { ComingSoonPage } from "@/components/coming-soon";
+import { MesPage, StatusPill } from "@/components/mes/mes-page";
+import { SimpleList } from "@/components/mes/simple-list";
 import { Truck } from "lucide-react";
+
+function tone(s: string): "success" | "warning" | "danger" | "info" | "muted" {
+  if (s === "accepted") return "success";
+  if (s === "rejected") return "danger";
+  if (s === "quarantine") return "warning";
+  return "info";
+}
 
 export const Route = createFileRoute("/incoming/")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Incoming Lots — CORTA QC" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Incoming Inspection — CORTA QC" }, { name: "robots", content: "noindex" }] }),
   component: () => (
     <AuthGate>
       <AppShell>
-        <ComingSoonPage
-          title="Incoming Lots"
-          description="Receiving inspection queue with supplier + PO context."
+        <MesPage
           icon={<Truck className="h-5 w-5" />}
-        />
+          title="Incoming Inspection"
+          description="Track received lots, sampling verdicts and dispositions from suppliers."
+        >
+          <SimpleList
+            table="incoming_lots"
+            entityName="Lot"
+            emptyIcon={<Truck className="h-6 w-6" />}
+            columns={[
+              { key: "lot_number", label: "Lot", render: (r: any) => <span className="font-mono text-xs">{r.lot_number}</span> },
+              { key: "quantity", label: "Qty", render: (r: any) => <span className="font-mono">{r.quantity}</span> },
+              { key: "received_at", label: "Received", render: (r: any) => new Date(r.received_at).toLocaleDateString() },
+              { key: "status", label: "Status", render: (r: any) => <StatusPill tone={tone(r.status)}>{r.status}</StatusPill> },
+              { key: "disposition", label: "Disposition" },
+            ]}
+            fields={[
+              { name: "lot_number", label: "Lot number", required: true },
+              { name: "quantity", label: "Quantity", type: "number", required: true },
+              { name: "notes", label: "Notes", type: "textarea" },
+            ]}
+          />
+        </MesPage>
       </AppShell>
     </AuthGate>
   ),
