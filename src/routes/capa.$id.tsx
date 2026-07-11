@@ -178,19 +178,28 @@ function CapaDetail() {
       </div>
 
       <div className="glass-panel rounded-2xl p-4">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <History className="h-4 w-4" /> Audit trail
           </div>
-          <select
-            value={auditStep}
-            onChange={(e) => { setAuditStep(e.target.value); setAuditPage(0); }}
-            className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
-          >
-            <option value="all">All events</option>
-            <option value="closed">CAPA closed</option>
-            {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={auditStep}
+              onChange={(e) => setSearch({ auditStep: e.target.value, auditPage: 0 })}
+              className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
+            >
+              <option value="all">All events</option>
+              <option value="closed">CAPA closed</option>
+              {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+            <Button
+              variant="outline" size="sm" className="h-8 gap-1"
+              onClick={() => setSearch({ auditSort: auditSort === "asc" ? "desc" : "asc", auditPage: 0 })}
+              title={`Sort by date: ${auditSort === "asc" ? "oldest first" : "newest first"}`}
+            >
+              Date {auditSort === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+            </Button>
+          </div>
         </div>
         {trail.isLoading ? (
           <Skeleton className="h-16 w-full" />
@@ -233,16 +242,17 @@ function CapaDetail() {
               <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                 <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / AUDIT_PAGE)}</span>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setAuditPage(auditPage - 1)}>Prev</Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setSearch({ auditPage: auditPage - 1 })}>Prev</Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2"
                     disabled={(auditPage + 1) * AUDIT_PAGE >= trail.data!.count}
-                    onClick={() => setAuditPage(auditPage + 1)}>Next</Button>
+                    onClick={() => setSearch({ auditPage: auditPage + 1 })}>Next</Button>
                 </div>
               </div>
             )}
           </>
         )}
       </div>
+
 
     </div>
   );
