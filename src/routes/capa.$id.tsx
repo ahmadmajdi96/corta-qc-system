@@ -256,13 +256,13 @@ function CapaDetail() {
                 );
               })}
             </ul>
-            {trail.data!.count > AUDIT_PAGE && (
+            {trail.data!.count > auditSize && (
               <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / AUDIT_PAGE)}</span>
+                <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / auditSize)}</span>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setSearch({ auditPage: auditPage - 1 })}>Prev</Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2"
-                    disabled={(auditPage + 1) * AUDIT_PAGE >= trail.data!.count}
+                    disabled={(auditPage + 1) * auditSize >= trail.data!.count}
                     onClick={() => setSearch({ auditPage: auditPage + 1 })}>Next</Button>
                 </div>
               </div>
