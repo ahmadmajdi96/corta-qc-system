@@ -28,12 +28,14 @@ import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-pl
 import { Route as IncomingIndexRouteImport } from './routes/incoming.index'
 import { Route as HoldsIndexRouteImport } from './routes/holds.index'
 import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
+import { Route as CapaIndexRouteImport } from './routes/capa.index'
 import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
 import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
 import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
+import { Route as CapaIdRouteImport } from './routes/capa.$id'
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
@@ -132,6 +134,11 @@ const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
   path: '/corrective-actions/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CapaIndexRoute = CapaIndexRouteImport.update({
+  id: '/capa/',
+  path: '/capa/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CalibrationIndexRoute = CalibrationIndexRouteImport.update({
   id: '/calibration/',
   path: '/calibration/',
@@ -162,6 +169,11 @@ const CorrectiveActionsIdRoute = CorrectiveActionsIdRouteImport.update({
   path: '/corrective-actions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CapaIdRoute = CapaIdRouteImport.update({
+  id: '/capa/$id',
+  path: '/capa/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InspectionsIdIndexRoute = InspectionsIdIndexRouteImport.update({
   id: '/inspections/$id/',
   path: '/inspections/$id/',
@@ -182,12 +194,14 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/spc': typeof SpcRoute
+  '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/calibration/': typeof CalibrationIndexRoute
+  '/capa/': typeof CapaIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
   '/incoming/': typeof IncomingIndexRoute
@@ -211,12 +225,14 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/spc': typeof SpcRoute
+  '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/calibration': typeof CalibrationIndexRoute
+  '/capa': typeof CapaIndexRoute
   '/corrective-actions': typeof CorrectiveActionsIndexRoute
   '/holds': typeof HoldsIndexRoute
   '/incoming': typeof IncomingIndexRoute
@@ -241,12 +257,14 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/spc': typeof SpcRoute
+  '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/calibration/': typeof CalibrationIndexRoute
+  '/capa/': typeof CapaIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
   '/incoming/': typeof IncomingIndexRoute
@@ -272,12 +290,14 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/spc'
+    | '/capa/$id'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
     | '/calibration/'
+    | '/capa/'
     | '/corrective-actions/'
     | '/holds/'
     | '/incoming/'
@@ -301,12 +321,14 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/spc'
+    | '/capa/$id'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
     | '/calibration'
+    | '/capa'
     | '/corrective-actions'
     | '/holds'
     | '/incoming'
@@ -330,12 +352,14 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/spc'
+    | '/capa/$id'
     | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
     | '/calibration/'
+    | '/capa/'
     | '/corrective-actions/'
     | '/holds/'
     | '/incoming/'
@@ -360,12 +384,14 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   SpcRoute: typeof SpcRoute
+  CapaIdRoute: typeof CapaIdRoute
   CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
   CalibrationIndexRoute: typeof CalibrationIndexRoute
+  CapaIndexRoute: typeof CapaIndexRoute
   CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
   HoldsIndexRoute: typeof HoldsIndexRoute
   IncomingIndexRoute: typeof IncomingIndexRoute
@@ -516,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/capa/': {
+      id: '/capa/'
+      path: '/capa'
+      fullPath: '/capa/'
+      preLoaderRoute: typeof CapaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/calibration/': {
       id: '/calibration/'
       path: '/calibration'
@@ -558,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorrectiveActionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/capa/$id': {
+      id: '/capa/$id'
+      path: '/capa/$id'
+      fullPath: '/capa/$id'
+      preLoaderRoute: typeof CapaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inspections/$id/': {
       id: '/inspections/$id/'
       path: '/inspections/$id'
@@ -584,12 +624,14 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   SpcRoute: SpcRoute,
+  CapaIdRoute: CapaIdRoute,
   CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
   CalibrationIndexRoute: CalibrationIndexRoute,
+  CapaIndexRoute: CapaIndexRoute,
   CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
   HoldsIndexRoute: HoldsIndexRoute,
   IncomingIndexRoute: IncomingIndexRoute,
