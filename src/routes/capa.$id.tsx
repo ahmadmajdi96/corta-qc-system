@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
@@ -9,10 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileSearch, ArrowLeft, CheckCircle2, History } from "lucide-react";
+import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 
 
 const D_STEPS: { key: string; label: string; help: string }[] = [
