@@ -176,12 +176,52 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
             <Input value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Optional" />
             {errs.lot_number && <p className="text-xs text-destructive">{errs.lot_number}</p>}
           </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Work order</Label>
+              <Select value={workOrderId ?? "__none"} onValueChange={(v) => setWorkOrderId(v === "__none" ? undefined : v)}>
+                <SelectTrigger><SelectValue placeholder="Ad-hoc (no WO)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">Ad-hoc (no WO)</SelectItem>
+                  {workOrders?.map((w: any) => (
+                    <SelectItem key={w.id} value={w.id}>{w.number} · {w.status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Station</Label>
+              <Select value={stationId ?? "__none"} onValueChange={(v) => setStationId(v === "__none" ? undefined : v)}>
+                <SelectTrigger><SelectValue placeholder="Any station" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">Any station</SelectItem>
+                  {stations?.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id}>{s.code} — {s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Inspection plan</Label>
+            <Select value={planId ?? "__none"} onValueChange={(v) => setPlanId(v === "__none" ? undefined : v)}>
+              <SelectTrigger><SelectValue placeholder="No plan" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">No plan</SelectItem>
+                {plans?.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name} ({p.plan_type})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">Choose a product first to filter WOs & plans.</p>
+          </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Optional" />
             {errs.notes && <p className="text-xs text-destructive">{errs.notes}</p>}
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={() => create.mutate()} disabled={create.isPending}>
