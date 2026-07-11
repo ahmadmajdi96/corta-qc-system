@@ -163,17 +163,10 @@ function WoDetail() {
 
   const complete = useMutation({
     mutationFn: async () => {
-      const { data: openInspList, error: ie } = await supabase.from("inspections")
-        .select("id", { count: "exact", head: true })
-        .eq("work_order_id", id).not("status", "in", "(completed,cancelled)");
-      if (ie) throw ie;
-      const openCount = (openInspList as any)?.length ?? 0;
-      // fallback: use count via select if head query didn't return it
       const { count } = await supabase.from("inspections")
         .select("id", { count: "exact", head: true })
         .eq("work_order_id", id).not("status", "in", "(completed,cancelled)");
-      const total = count ?? openCount;
-      if (total > 0) throw new Error(`${total} inspection(s) still open — complete or cancel them first`);
+      if ((count ?? 0) > 0) throw new Error(`${count} inspection(s) still open — complete or cancel them first`);
       const { error } = await supabase.from("work_orders").update({
         status: "completed", actual_end: new Date().toISOString(),
       }).eq("id", id);
@@ -185,6 +178,7 @@ function WoDetail() {
     onSuccess: () => { toast.success("Work order completed"); qc.invalidateQueries({ queryKey: ["wo", id] }); },
     onError: (e) => notifyError(e),
   });
+
 
   const regenerate = useMutation({
     mutationFn: async () => {
