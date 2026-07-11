@@ -111,17 +111,17 @@ export function DashboardPage() {
         <KpiCard title="Inspections Today" icon={<ClipboardCheck className="h-4 w-4" />}
           value={summary.data?.inspectionsToday} loading={summary.isLoading} error={summary.error}
           suffix={summary.data ? `${summary.data.completionRate}% completed` : undefined}
-          onRetry={() => summary.refetch()} href="/inspections" />
+          onRetry={() => summary.refetch()} href={`/inspections?date=${today}`} />
         <KpiCard title="Open NCs" icon={<AlertOctagon className="h-4 w-4" />}
           value={summary.data?.openNCs} loading={summary.isLoading} error={summary.error}
           onRetry={() => summary.refetch()} href="/non-conformances?status=open" />
         <KpiCard title="Overdue Corrective Actions" icon={<Wrench className="h-4 w-4" />}
           value={summary.data?.overdueCAs} loading={summary.isLoading} error={summary.error}
-          onRetry={() => summary.refetch()} href="/corrective-actions" />
+          onRetry={() => summary.refetch()} href="/corrective-actions?overdue=1" />
         <KpiCard title="Pass Rate (7 days)" icon={<TrendingUp className="h-4 w-4" />}
           value={summary.data?.passRate != null ? `${summary.data.passRate}%` : "—"}
           loading={summary.isLoading} error={summary.error}
-          onRetry={() => summary.refetch()} href="/reports" />
+          onRetry={() => summary.refetch()} href="/inspections" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
