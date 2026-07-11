@@ -8,7 +8,7 @@ import { Truck } from "lucide-react";
 function tone(s: string): "success" | "warning" | "danger" | "info" | "muted" {
   if (s === "accepted") return "success";
   if (s === "rejected") return "danger";
-  if (s === "quarantine") return "warning";
+  if (s === "sampling" || s === "partial") return "warning";
   return "info";
 }
 
@@ -29,14 +29,15 @@ export const Route = createFileRoute("/incoming/")({
             emptyIcon={<Truck className="h-6 w-6" />}
             columns={[
               { key: "lot_number", label: "Lot", render: (r: any) => <span className="font-mono text-xs">{r.lot_number}</span> },
-              { key: "quantity", label: "Qty", render: (r: any) => <span className="font-mono">{r.quantity}</span> },
+              { key: "po_number", label: "PO" },
+              { key: "received_qty", label: "Qty", render: (r: any) => <span className="font-mono">{r.received_qty}</span> },
               { key: "received_at", label: "Received", render: (r: any) => new Date(r.received_at).toLocaleDateString() },
               { key: "status", label: "Status", render: (r: any) => <StatusPill tone={tone(r.status)}>{r.status}</StatusPill> },
-              { key: "disposition", label: "Disposition" },
             ]}
             fields={[
               { name: "lot_number", label: "Lot number", required: true },
-              { name: "quantity", label: "Quantity", type: "number", required: true },
+              { name: "po_number", label: "PO number" },
+              { name: "received_qty", label: "Received qty", type: "number", required: true },
               { name: "notes", label: "Notes", type: "textarea" },
             ]}
           />

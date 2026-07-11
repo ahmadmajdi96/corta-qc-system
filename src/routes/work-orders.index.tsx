@@ -7,9 +7,8 @@ import { ScrollText } from "lucide-react";
 
 function tone(status: string): "success" | "warning" | "danger" | "info" | "muted" {
   if (status === "released" || status === "in_progress") return "info";
-  if (status === "completed") return "success";
+  if (status === "completed" || status === "closed") return "success";
   if (status === "on_hold") return "danger";
-  if (status === "cancelled") return "muted";
   return "warning";
 }
 
@@ -27,19 +26,18 @@ export const Route = createFileRoute("/work-orders/")({
           <SimpleList
             table="work_orders"
             entityName="Work Order"
-            orderBy="created_at"
             emptyIcon={<ScrollText className="h-6 w-6" />}
             columns={[
               { key: "number", label: "Number", render: (r: any) => <span className="font-mono text-xs">{r.number}</span> },
-              { key: "quantity", label: "Qty", render: (r: any) => <span className="font-mono">{r.quantity_completed ?? 0}/{r.quantity ?? 0}</span> },
-              { key: "priority", label: "Priority" },
+              { key: "lot_number", label: "Lot" },
+              { key: "qty", label: "Qty", render: (r: any) => <span className="font-mono">{r.quantity_produced ?? 0}/{r.quantity_planned ?? 0}</span> },
               { key: "status", label: "Status", render: (r: any) => <StatusPill tone={tone(r.status)}>{r.status}</StatusPill> },
               { key: "planned_start", label: "Planned start", render: (r: any) => r.planned_start ? new Date(r.planned_start).toLocaleString() : "—" },
             ]}
             fields={[
               { name: "number", label: "Number", required: true, placeholder: "WO-2026-0001" },
-              { name: "quantity", label: "Quantity", type: "number", required: true },
-              { name: "priority", label: "Priority", placeholder: "normal | high | urgent" },
+              { name: "quantity_planned", label: "Planned quantity", type: "number", required: true },
+              { name: "lot_number", label: "Lot number" },
               { name: "planned_start", label: "Planned start", type: "date" },
               { name: "planned_end", label: "Planned end", type: "date" },
               { name: "notes", label: "Notes", type: "textarea" },

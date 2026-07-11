@@ -32,7 +32,7 @@ function LiveBoard() {
   const wo = useQuery({
     queryKey: ["live", "work_orders"],
     queryFn: async () => {
-      const { data } = await supabase.from("work_orders").select("id,number,status,quantity,quantity_completed,priority").order("created_at", { ascending: false }).limit(8);
+      const { data } = await supabase.from("work_orders").select("id,number,status,quantity_planned,quantity_produced").order("created_at", { ascending: false }).limit(8);
       return data ?? [];
     },
     refetchInterval: 15000,
@@ -40,7 +40,7 @@ function LiveBoard() {
   const holds = useQuery({
     queryKey: ["live", "holds"],
     queryFn: async () => {
-      const { data } = await supabase.from("quality_holds").select("id,number,status,reason,opened_at").eq("status", "open").order("opened_at", { ascending: false }).limit(6);
+      const { data } = await supabase.from("quality_holds").select("id,hold_number,status,reason,created_at").eq("status", "open").order("created_at", { ascending: false }).limit(6);
       return data ?? [];
     },
     refetchInterval: 15000,
@@ -94,7 +94,7 @@ function LiveBoard() {
                     <span className="font-mono text-xs text-primary">{w.number}</span>
                     <StatusPill tone={w.status === "completed" ? "success" : w.status === "on_hold" ? "danger" : "info"}>{w.status}</StatusPill>
                   </div>
-                  <span className="font-mono text-xs text-muted-foreground">{w.quantity_completed ?? 0}/{w.quantity ?? 0}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{(w as any).quantity_produced ?? 0}/{(w as any).quantity_planned ?? 0}</span>
                 </div>
               ))}
             </div>
@@ -113,8 +113,8 @@ function LiveBoard() {
               {holds.data.map((h: any) => (
                 <div key={h.id} className="rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-sm">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-warning">{h.number}</span>
-                    <span className="text-[11px] text-muted-foreground">{new Date(h.opened_at).toLocaleTimeString()}</span>
+                    <span className="font-mono text-xs text-warning">{(h as any).hold_number ?? "—"}</span>
+                    <span className="text-[11px] text-muted-foreground">{new Date((h as any).created_at).toLocaleTimeString()}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground line-clamp-2">{h.reason}</div>
                 </div>

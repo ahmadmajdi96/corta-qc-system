@@ -21,15 +21,17 @@ export const Route = createFileRoute("/stations/")({
             entityName="Station"
             emptyIcon={<Cpu className="h-6 w-6" />}
             columns={[
-              { key: "code", label: "Code", render: (r: any) => <span className="font-mono text-xs">{r.code}</span> },
+              { key: "code", label: "Code", render: (r: any) => <span className="font-mono text-xs">{r.code ?? "—"}</span> },
               { key: "name", label: "Name" },
-              { key: "operation", label: "Operation" },
+              { key: "station_type", label: "Type" },
+              { key: "sequence", label: "Seq" },
               { key: "is_active", label: "Status", render: (r: any) => <StatusPill tone={r.is_active ? "success" : "muted"}>{r.is_active ? "Active" : "Inactive"}</StatusPill> },
             ]}
             fields={[
-              { name: "code", label: "Code", required: true, placeholder: "STA-01" },
+              { name: "code", label: "Code", placeholder: "STA-01" },
               { name: "name", label: "Name", required: true, placeholder: "Torque Station" },
-              { name: "operation", label: "Operation", placeholder: "Fastening" },
+              { name: "station_type", label: "Type", placeholder: "Fastening" },
+              { name: "sequence", label: "Sequence", type: "number" },
             ]}
           />
         </MesPage>

@@ -21,13 +21,13 @@ export const Route = createFileRoute("/lines/")({
             entityName="Line"
             emptyIcon={<Factory className="h-6 w-6" />}
             columns={[
-              { key: "code", label: "Code", render: (r: any) => <span className="font-mono text-xs">{r.code}</span> },
+              { key: "code", label: "Code", render: (r: any) => <span className="font-mono text-xs">{r.code ?? "—"}</span> },
               { key: "name", label: "Name" },
               { key: "area", label: "Area" },
               { key: "is_active", label: "Status", render: (r: any) => <StatusPill tone={r.is_active ? "success" : "muted"}>{r.is_active ? "Active" : "Inactive"}</StatusPill> },
             ]}
             fields={[
-              { name: "code", label: "Code", required: true, placeholder: "LINE-01" },
+              { name: "code", label: "Code", placeholder: "LINE-01" },
               { name: "name", label: "Name", required: true, placeholder: "Assembly Line 1" },
               { name: "area", label: "Area", placeholder: "Main floor" },
             ]}
