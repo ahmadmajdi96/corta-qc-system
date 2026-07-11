@@ -15,6 +15,7 @@ import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent 
 import { Plus, Trash2 } from "lucide-react";
 import { AddNcDialog } from "@/components/add-nc-dialog";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { useConfirm } from "@/components/confirm-provider";
 import { useMyRoles, hasAnyRole } from "@/lib/auth";
 
@@ -95,7 +96,7 @@ export function NcBoardPage() {
     },
     onError: (e: any, _v, ctx) => {
       qc.setQueryData(["nc-board", product, severity, from, to], ctx?.prev);
-      toast.error(e.message ?? "Move failed — reverted");
+      notifyError(e.message ?? "Move failed — reverted");
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["nc-board"] }),
   });
@@ -106,7 +107,7 @@ export function NcBoardPage() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success("NC deleted"); qc.invalidateQueries({ queryKey: ["nc-board"] }); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => notifyError(e.message),
   });
 
   async function handleDelete(nc: any) {

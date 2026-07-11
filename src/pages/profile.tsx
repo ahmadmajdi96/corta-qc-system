@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProfilePage() {
@@ -29,12 +30,12 @@ export function ProfilePage() {
       if (error) throw error;
       toast.success("Profile saved");
       refetch();
-    } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
 
   async function changePassword() {
-    if (pwNew.length < 8) { toast.error("New password must be at least 8 characters"); return; }
-    if (pwNew !== pwConfirm) { toast.error("Passwords do not match"); return; }
+    if (pwNew.length < 8) { notifyError("New password must be at least 8 characters"); return; }
+    if (pwNew !== pwConfirm) { notifyError("Passwords do not match"); return; }
     setPwSaving(true);
     try {
       // Re-authenticate by re-signing in with current password to verify it
@@ -44,7 +45,7 @@ export function ProfilePage() {
       if (error) throw error;
       toast.success("Password updated");
       setPwCurrent(""); setPwNew(""); setPwConfirm("");
-    } catch (e: any) { toast.error(e.message); } finally { setPwSaving(false); }
+    } catch (e: any) { notifyError(e.message); } finally { setPwSaving(false); }
   }
 
   if (!profile) return <Skeleton className="h-64 max-w-2xl" />;
@@ -92,7 +93,7 @@ function AvatarUpload({ profile, refetch }: { profile: any; refetch: () => void 
       const { error: e2 } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
       if (e2) throw e2;
       toast.success("Avatar updated"); refetch();
-    } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
+    } catch (e: any) { notifyError(e.message ?? "Upload failed"); }
     finally { setUploading(false); }
   }
   return (

@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 
 function messageOf(err: unknown, fallback = "Something went wrong"): string {
   if (!err) return fallback;
@@ -16,7 +17,7 @@ function messageOf(err: unknown, fallback = "Something went wrong"): string {
  */
 export function notifyError(err: unknown, opts?: { retry?: () => void; fallback?: string }) {
   const msg = messageOf(err, opts?.fallback);
-  toast.error(msg, {
+  notifyError(msg, {
     duration: 5000,
     action: {
       label: "Retry",

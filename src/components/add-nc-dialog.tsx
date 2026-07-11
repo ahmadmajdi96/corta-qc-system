@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 import { z } from "zod";
 
 const schema = z.object({
@@ -53,7 +54,7 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       setDescription(""); setSeverity("minor"); setProductId(""); setCategory("");
       onOpenChange(false);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => notifyError(e.message),
   });
 
   return (

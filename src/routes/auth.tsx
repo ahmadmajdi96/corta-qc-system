@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -78,7 +79,7 @@ function AuthPage() {
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Network error";
-      toast.error(msg, { action: { label: "Retry", onClick: () => submit(e as unknown as React.FormEvent) } });
+      notifyError(msg, { action: { label: "Retry", onClick: () => submit(e as unknown as React.FormEvent) } });
     } finally {
       setLoading(false);
     }
