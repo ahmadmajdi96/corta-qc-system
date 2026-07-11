@@ -194,11 +194,43 @@ export function InspectionCalendarPage() {
     setAnchor(d);
   };
 
+  const dotColor = (s: string) =>
+    s === "completed" ? "bg-status-completed" :
+    s === "in_progress" ? "bg-status-in-progress" :
+    s === "cancelled" ? "bg-status-cancelled" :
+    "bg-status-planned";
+
   const chipCls = (s: string) =>
     s === "completed" ? "bg-status-completed/20 text-status-completed" :
     s === "in_progress" ? "bg-status-in-progress/20 text-status-in-progress" :
     s === "cancelled" ? "bg-status-cancelled/20 text-status-cancelled" :
     "bg-status-planned/20 text-status-planned";
+
+  const InspItem = ({ i, compact }: { i: any; compact?: boolean }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={`w-full text-left flex items-center gap-1 truncate rounded px-1 ${compact ? "text-[10px]" : "text-[11px] py-0.5"} ${chipCls(i.status)} hover:brightness-105`}
+          aria-label={`${i.products?.name} — ${i.status}`}
+        >
+          <span className={`inline-block h-2 w-2 rounded-full ${dotColor(i.status)} flex-shrink-0`} aria-hidden />
+          <span className="truncate">{i.products?.name}</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64">
+        <div className="space-y-2 text-sm">
+          <div className="font-medium">{i.products?.name}</div>
+          <div className="flex items-center gap-2">
+            <span className={`inline-block h-2 w-2 rounded-full ${dotColor(i.status)}`} />
+            <StatusBadge status={i.status} kind="inspection" />
+          </div>
+          <div className="text-xs text-muted-foreground">Scheduled {i.scheduled_date}</div>
+          <Link to="/inspections/$id" params={{ id: i.id }} className="inline-flex text-xs text-primary hover:underline">Go to detail →</Link>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 
   return (
     <div className="max-w-7xl space-y-6">
@@ -235,14 +267,16 @@ export function InspectionCalendarPage() {
               const items = byDay[key] ?? [];
               return (
                 <div key={key} className="border rounded min-h-20 p-1">
-                  <div className="text-xs text-muted-foreground">{d.getDate()}</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground">{d.getDate()}</div>
+                    <div className="flex gap-0.5">
+                      {items.slice(0, 4).map((i) => (
+                        <span key={i.id} className={`h-1.5 w-1.5 rounded-full ${dotColor(i.status)}`} aria-hidden />
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-0.5 mt-1">
-                    {items.slice(0, 3).map((i) => (
-                      <Link key={i.id} to="/inspections/$id" params={{ id: i.id }}
-                        className={`block truncate rounded px-1 text-[10px] ${chipCls(i.status)}`}>
-                        {i.products?.name}
-                      </Link>
-                    ))}
+                    {items.slice(0, 3).map((i) => <InspItem key={i.id} i={i} compact />)}
                     {items.length > 3 && <div className="text-[10px] text-muted-foreground">+{items.length - 3} more</div>}
                   </div>
                 </div>
@@ -260,12 +294,7 @@ export function InspectionCalendarPage() {
                   <div className="font-medium">{d.toLocaleDateString(undefined, { weekday: "short" })}</div>
                   <div className="text-muted-foreground mb-2">{d.getMonth()+1}/{d.getDate()}</div>
                   <div className="space-y-1">
-                    {items.map((i) => (
-                      <Link key={i.id} to="/inspections/$id" params={{ id: i.id }}
-                        className={`block truncate rounded px-1 py-0.5 text-[11px] ${chipCls(i.status)}`}>
-                        {i.products?.name}
-                      </Link>
-                    ))}
+                    {items.map((i) => <InspItem key={i.id} i={i} />)}
                     {!items.length && <div className="text-muted-foreground text-[11px]">—</div>}
                   </div>
                 </div>
