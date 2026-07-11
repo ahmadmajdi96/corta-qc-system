@@ -275,6 +275,8 @@ export function ReportsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      <NewInspectionDialog open={newInsp} onOpenChange={setNewInsp} />
+      <AddNcDialog open={newNc} onOpenChange={setNewNc} />
     </div>
   );
 }
