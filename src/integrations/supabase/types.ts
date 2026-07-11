@@ -42,7 +42,15 @@ export type Database = {
           id?: number
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       corrective_actions: {
         Row: {
@@ -86,10 +94,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "corrective_actions_assigned_to_profile_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "corrective_actions_non_conformance_id_fkey"
             columns: ["non_conformance_id"]
             isOneToOne: false
             referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corrective_actions_verified_by_profile_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -131,6 +153,13 @@ export type Database = {
             columns: ["inspection_id"]
             isOneToOne: false
             referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_measurements_recorded_by_profile_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -186,6 +215,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inspection_schedules_assigned_to_profile_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspection_schedules_product_id_fkey"
             columns: ["product_id"]
@@ -252,6 +288,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inspections_performed_by_profile_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspections_product_id_fkey"
             columns: ["product_id"]
@@ -361,6 +404,13 @@ export type Database = {
             columns: ["measurement_id"]
             isOneToOne: false
             referencedRelation: "inspection_measurements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "non_conformances_raised_by_profile_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -512,6 +562,13 @@ export type Database = {
           version?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "quality_specifications_created_by_profile_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quality_specifications_product_id_fkey"
             columns: ["product_id"]
