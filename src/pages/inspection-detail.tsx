@@ -422,6 +422,19 @@ export function InspectionExecutePage({ id }: { id: string }) {
                     <Input value={v.notes} onChange={(e) => setValues({ ...values, [it.id]: { ...v, notes: e.target.value } })} placeholder="Optional" />
                   </div>
                 </div>
+                <div>
+                  <Label className="text-xs">Gage / Standard</Label>
+                  <Select value={v.gage_id ?? "none"} onValueChange={(val) => setValues({ ...values, [it.id]: { ...v, gage_id: val === "none" ? null : val } })} disabled={v.na}>
+                    <SelectTrigger><SelectValue placeholder="Select gage used" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">— No gage —</SelectItem>
+                      {gages.data?.map((g: any) => (
+                        <SelectItem key={g.id} value={g.id}>
+                          <span className="font-mono text-xs mr-2">{g.code}</span>{g.name} <span className="text-muted-foreground">· {g.gage_type}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 <div className="flex items-center gap-4 flex-wrap">
                   <label className="flex items-center gap-2 text-xs">
                     <input type="checkbox" checked={v.na}
