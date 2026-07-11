@@ -31,7 +31,8 @@ export function RaiseNcDialog({ open, onOpenChange, inspectionId, measurement, o
         measurement_id: measurement?.id ?? null,
         severity, category: category || null, description,
         raised_by: user!.id,
-      }).select("id").single();
+        number: "", // filled by trigger
+      } as any).select("id").single();
       if (error) throw error;
       await supabase.from("audit_logs").insert({
         user_id: user!.id, action: "nc.raised", entity_type: "non_conformance", entity_id: data.id,
