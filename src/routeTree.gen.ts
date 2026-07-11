@@ -20,6 +20,7 @@ import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
 import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
+import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-plans.index'
 import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
@@ -84,6 +85,11 @@ const InspectionsIndexRoute = InspectionsIndexRouteImport.update({
   path: '/inspections/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InspectionPlansIndexRoute = InspectionPlansIndexRouteImport.update({
+  id: '/inspection-plans/',
+  path: '/inspection-plans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
   id: '/corrective-actions/',
   path: '/corrective-actions/',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
+  '/inspection-plans/': typeof InspectionPlansIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/corrective-actions': typeof CorrectiveActionsIndexRoute
+  '/inspection-plans': typeof InspectionPlansIndexRoute
   '/inspections': typeof InspectionsIndexRoute
   '/non-conformances': typeof NonConformancesIndexRoute
   '/products': typeof ProductsIndexRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
+  '/inspection-plans/': typeof InspectionPlansIndexRoute
   '/inspections/': typeof InspectionsIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/non-conformances/list'
     | '/products/$id'
     | '/corrective-actions/'
+    | '/inspection-plans/'
     | '/inspections/'
     | '/non-conformances/'
     | '/products/'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/non-conformances/list'
     | '/products/$id'
     | '/corrective-actions'
+    | '/inspection-plans'
     | '/inspections'
     | '/non-conformances'
     | '/products'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/non-conformances/list'
     | '/products/$id'
     | '/corrective-actions/'
+    | '/inspection-plans/'
     | '/inspections/'
     | '/non-conformances/'
     | '/products/'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
   CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
+  InspectionPlansIndexRoute: typeof InspectionPlansIndexRoute
   InspectionsIndexRoute: typeof InspectionsIndexRoute
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inspection-plans/': {
+      id: '/inspection-plans/'
+      path: '/inspection-plans'
+      fullPath: '/inspection-plans/'
+      preLoaderRoute: typeof InspectionPlansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/corrective-actions/': {
       id: '/corrective-actions/'
       path: '/corrective-actions'
@@ -429,6 +449,7 @@ const rootRouteChildren: RootRouteChildren = {
   NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
   CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
+  InspectionPlansIndexRoute: InspectionPlansIndexRoute,
   InspectionsIndexRoute: InspectionsIndexRoute,
   NonConformancesIndexRoute: NonConformancesIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
