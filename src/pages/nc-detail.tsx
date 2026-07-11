@@ -61,6 +61,15 @@ export function NcDetailPage({ id }: { id: string }) {
 
   const transition = useMutation({
     mutationFn: async ({ next, reason }: { next: string; reason?: string }) => {
+      if (next === "closed") {
+        // Fetch fresh CAs to enforce "all verified before close"
+        const { data: cas, error: caErr } = await supabase.from("corrective_actions")
+          .select("id, status").eq("non_conformance_id", id);
+        if (caErr) throw caErr;
+        if (!cas || cas.length === 0) throw new Error("Cannot close: at least one corrective action must be verified first");
+        const unverified = cas.filter((c: any) => c.status !== "verified");
+        if (unverified.length) throw new Error(`Cannot close: ${unverified.length} corrective action(s) are not verified yet`);
+      }
       const patch: any = { status: next };
       if (next === "closed") patch.closed_at = new Date().toISOString();
       if (next === "rejected") patch.rejection_reason = reason ?? null;
