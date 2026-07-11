@@ -211,16 +211,24 @@ export function ProfilePage() {
                 : "Email changes require an administrator. Contact your admin to update."}
             </p>
             {emailErr && <p className="mt-1 text-xs text-destructive">{emailErr}</p>}
-            {canEditEmail && (
-              <Button
-                className="mt-2 gap-2"
-                onClick={saveEmail}
-                disabled={emailSaving || email.trim() === (profile.email ?? "").trim()}
-              >
-                {emailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                {emailSaving ? "Sending..." : "Update email"}
-              </Button>
-            )}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {canEditEmail && (
+                <Button
+                  className="gap-2"
+                  onClick={saveEmail}
+                  disabled={emailSaving || email.trim() === (profile.email ?? "").trim()}
+                >
+                  {emailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {emailSaving ? "Sending..." : "Update email"}
+                </Button>
+              )}
+              {!emailVerified && user?.email && (
+                <Button variant="outline" className="gap-2" onClick={resendVerification} disabled={resending}>
+                  {resending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MailCheck className="h-3.5 w-3.5" />}
+                  {resending ? "Sending..." : "Resend verification email"}
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
