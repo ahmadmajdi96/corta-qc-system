@@ -141,8 +141,11 @@ function CapaDetail() {
                 value={draft[s.key] ?? ""}
                 onChange={(e) => setDraft({ ...draft, [s.key]: e.target.value })}
                 onBlur={(e) => {
-                  if (e.target.value !== (c[s.key] ?? "")) save.mutate({ [s.key]: e.target.value });
+                  const before = c[s.key] ?? "";
+                  const after = e.target.value;
+                  if (after !== before) save.mutate({ key: s.key, before, after });
                 }}
+
                 disabled={c.status === "closed"}
                 placeholder="Type your response..."
               />
