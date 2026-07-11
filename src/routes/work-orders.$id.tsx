@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ScrollText, Play, PauseCircle, CheckCircle2, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ScrollText, Play, PauseCircle, CheckCircle2, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, Wifi } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { toast } from "sonner";
@@ -33,6 +33,9 @@ function WoDetail() {
   const navigate = useNavigate();
   const [holdOpen, setHoldOpen] = useState(false);
   const [holdReason, setHoldReason] = useState("");
+  const [regenOpen, setRegenOpen] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+
 
   const PAGE = 10;
   const [inspPage, setInspPage] = useState(0);
@@ -184,6 +187,7 @@ function WoDetail() {
     mutationFn: async () => {
       const w = wo.data!;
       if (!w.product_id) throw new Error("Work order has no product.");
+      // Fetch plans, existing inspections, and active spec together (idempotent basis)
       const [{ data: plans, error: pErr }, { data: existing, error: eErr }, { data: specs, error: sErr }] = await Promise.all([
         supabase.from("inspection_plans").select("id, plan_type").eq("product_id", w.product_id).eq("is_active", true),
         supabase.from("inspections").select("plan_id").eq("work_order_id", id),
@@ -194,26 +198,49 @@ function WoDetail() {
       if (!specId) throw new Error("No active quality spec on product.");
       const existingPlanIds = new Set((existing ?? []).map((r: any) => r.plan_id).filter(Boolean));
       const missing = (plans ?? []).filter((p: any) => !existingPlanIds.has(p.id));
-      if (!missing.length) return { created: 0 };
-      const rows = missing.map((p: any) => ({
-        product_id: w.product_id, spec_id: specId, work_order_id: id, plan_id: p.id, plan_type: p.plan_type,
-        scheduled_date: new Date().toISOString().slice(0, 10),
-        lot_number: w.lot_number ?? null, status: "planned",
-      }));
-      const { error: iErr } = await supabase.from("inspections").insert(rows as any);
-      if (iErr) throw iErr;
+      if (!missing.length) return { created: 0, skipped: (plans ?? []).length };
+
+      // Insert one at a time so a mid-flight duplicate (e.g. two operators clicking
+      // regenerate) is caught per-row without aborting the batch.
+      let created = 0;
+      const skippedIds: string[] = [];
+      for (const p of missing) {
+        // Race-safe re-check right before insert
+        const { data: dupe } = await supabase.from("inspections")
+          .select("id").eq("work_order_id", id).eq("plan_id", p.id).limit(1).maybeSingle();
+        if (dupe) { skippedIds.push(p.id); continue; }
+        const { error: iErr } = await supabase.from("inspections").insert({
+          product_id: w.product_id, spec_id: specId, work_order_id: id, plan_id: p.id, plan_type: p.plan_type,
+          scheduled_date: new Date().toISOString().slice(0, 10),
+          lot_number: w.lot_number ?? null, status: "planned",
+        } as any);
+        if (iErr) {
+          // Treat unique-violation as already-created (idempotent)
+          if ((iErr as any).code === "23505") { skippedIds.push(p.id); continue; }
+          throw iErr;
+        }
+        created++;
+      }
       await supabase.from("audit_logs").insert({
         user_id: user!.id, action: "wo.inspections_regenerated", entity_type: "work_order", entity_id: id,
-        details: { created: rows.length, plan_ids: missing.map((p: any) => p.id) },
+        details: { created, skipped: skippedIds.length, plan_ids: missing.map((p: any) => p.id) },
       });
-      return { created: rows.length };
+      return { created, skipped: skippedIds.length };
     },
     onSuccess: (r) => {
-      toast.success(r.created ? `Created ${r.created} missing inspection(s)` : "All plans already have inspections");
+      setLastSync(new Date());
+      setRegenOpen(false);
+      toast.success(
+        r.created > 0
+          ? `Created ${r.created} inspection(s)${r.skipped ? ` · skipped ${r.skipped} already present` : ""}`
+          : "All plans already have inspections — nothing to create"
+      );
       qc.invalidateQueries({ queryKey: ["wo-inspections", id] });
+      qc.invalidateQueries({ queryKey: ["wo", id] });
     },
     onError: (e) => notifyError(e),
   });
+
 
 
   if (wo.isLoading) return <Skeleton className="h-96 w-full" />;
@@ -221,14 +248,33 @@ function WoDetail() {
   const w = wo.data;
   const status = w.status as string;
 
+  const inspCount = inspections.data?.count ?? 0;
+  const holdCount = holds.data?.count ?? 0;
+  const metOnline = !wo.error && !inspections.error && !holds.error;
+  const metSyncedAt = lastSync ?? (w.updated_at ? new Date(w.updated_at) : null);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Link to="/work-orders" className="text-sm text-muted-foreground hover:underline inline-flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" /> Back to Work Orders
         </Link>
-        <StatusPill tone={tone(status)}>{status}</StatusPill>
+        <div className="flex items-center gap-2">
+          <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
+            metOnline
+              ? "border-success/30 bg-success/10 text-success"
+              : "border-destructive/30 bg-destructive/10 text-destructive"
+          }`} title={metOnline ? "Connected to MES backend" : "MES backend unreachable"}>
+            <Wifi className="h-3 w-3" />
+            <span className="font-medium">MES {metOnline ? "online" : "offline"}</span>
+            {metSyncedAt && (
+              <span className="text-muted-foreground">· synced {metSyncedAt.toLocaleTimeString()}</span>
+            )}
+          </div>
+          <StatusPill tone={tone(status)}>{status}</StatusPill>
+        </div>
       </div>
+
 
       <div className="glass-panel rounded-2xl p-6">
         <div className="mb-1 text-xs uppercase tracking-[0.18em] text-muted-foreground font-mono">{w.number}</div>
@@ -294,11 +340,12 @@ function WoDetail() {
               </Select>
               {canManage && (
                 <Button size="sm" variant="outline" className="h-8 gap-1"
-                  onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
+                  onClick={() => setRegenOpen(true)} disabled={regenerate.isPending}
                   title="Recreate any missing inspections from active plans">
                   <RefreshCw className={`h-3.5 w-3.5 ${regenerate.isPending ? "animate-spin" : ""}`} /> Regenerate
                 </Button>
               )}
+
             </div>
           }
         >
@@ -376,9 +423,37 @@ function WoDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={regenOpen} onOpenChange={(v) => { if (!regenerate.isPending) setRegenOpen(v); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Regenerate inspections?</DialogTitle></DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p>
+              This scans the active inspection plans for <span className="font-mono">{w.products?.name ?? "this product"}</span> and
+              creates any inspection that does not already exist for this work order.
+            </p>
+            <ul className="list-disc pl-5 text-muted-foreground text-xs space-y-1">
+              <li>Existing inspections are never modified or duplicated.</li>
+              <li>Each plan is matched by <code>plan_id</code> — safe to run multiple times.</li>
+              <li>An audit-log entry is written with the exact plan IDs affected.</li>
+            </ul>
+            <div className="rounded-md border border-border/60 bg-card/60 p-2 text-xs">
+              Currently linked: <strong>{inspCount}</strong> inspection(s), <strong>{holdCount}</strong> hold(s).
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRegenOpen(false)} disabled={regenerate.isPending}>Cancel</Button>
+            <Button onClick={() => regenerate.mutate()} disabled={regenerate.isPending} className="gap-2">
+              <RefreshCw className={`h-4 w-4 ${regenerate.isPending ? "animate-spin" : ""}`} />
+              {regenerate.isPending ? "Regenerating..." : "Regenerate now"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
