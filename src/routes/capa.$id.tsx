@@ -48,12 +48,21 @@ function CapaDetail() {
   });
 
   const trail = useQuery({
-    queryKey: ["capa-audit", id],
-    queryFn: async () => (await supabase.from("audit_logs")
-      .select("id, action, details, created_at, profiles:user_id(full_name, email)")
-      .eq("entity_type", "capa").eq("entity_id", id)
-      .order("created_at", { ascending: false }).limit(100)).data ?? [],
+    queryKey: ["capa-audit", id, auditPage, auditStep],
+    queryFn: async () => {
+      let q = supabase.from("audit_logs")
+        .select("id, action, details, created_at, profiles:user_id(full_name, email)", { count: "exact" })
+        .eq("entity_type", "capa").eq("entity_id", id);
+      if (auditStep === "closed") q = q.eq("action", "capa.closed");
+      else if (auditStep !== "all") q = q.eq("action", "capa.step_updated").contains("details", { step: auditStep });
+      const { data, count, error } = await q
+        .order("created_at", { ascending: false })
+        .range(auditPage * AUDIT_PAGE, auditPage * AUDIT_PAGE + AUDIT_PAGE - 1);
+      if (error) throw error;
+      return { rows: data ?? [], count: count ?? 0 };
+    },
   });
+
 
   useEffect(() => {
     if (capa.data) {
