@@ -264,16 +264,18 @@ export function InspectionExecutePage({ id }: { id: string }) {
     queryFn: async () => (await supabase.from("inspection_measurements").select("*").eq("inspection_id", id)).data ?? [],
   });
 
-  const [values, setValues] = useState<Record<string, { value: string; notes: string }>>({});
+  type Row = { value: string; notes: string; na: boolean; attachment_url: string | null };
+  const [values, setValues] = useState<Record<string, Row>>({});
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Init values from existing
   const initedRef = useState({ done: false })[0];
   if (!initedRef.done && existing.data && items.data) {
-    const map: Record<string, { value: string; notes: string }> = {};
+    const map: Record<string, Row> = {};
     items.data.forEach((it: any) => {
       const m = existing.data.find((x: any) => x.spec_item_id === it.id);
-      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "" };
+      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "", na: !!m?.is_na, attachment_url: m?.attachment_url ?? null };
     });
     initedRef.done = true;
     setValues(map);
@@ -288,35 +290,60 @@ export function InspectionExecutePage({ id }: { id: string }) {
       return n >= lo && n <= hi;
     }
     if (it.measurement_type === "boolean") return raw === "true" || raw === "pass";
-    return null; // text / visual: user judges
+    return null;
+  }
+
+  async function uploadPhoto(itemId: string, file: File) {
+    if (!user) return;
+    setUploading(itemId);
+    try {
+      const path = `${user.id}/${id}/${itemId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g,"_")}`;
+      const { error } = await supabase.storage.from("attachments").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("attachments").createSignedUrl ? await supabase.storage.from("attachments").createSignedUrl(path, 60 * 60 * 24 * 365) : { data: { signedUrl: path } } as any;
+      const url = (data as any)?.signedUrl ?? path;
+      setValues(v => ({ ...v, [itemId]: { ...(v[itemId] ?? { value: "", notes: "", na: false, attachment_url: null }), attachment_url: url } }));
+      toast.success("Photo attached");
+    } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
+    finally { setUploading(null); }
   }
 
   async function save(complete: boolean) {
     if (!user || !insp.data || !items.data) return;
+    setErrors({});
     setSaving(true);
     try {
-      // Ensure in_progress
       if (insp.data.status === "planned") {
         await supabase.from("inspections").update({ status: "in_progress", started_at: new Date().toISOString(), performed_by: user.id }).eq("id", id);
       }
+      if (complete) {
+        const errs: Record<string,string> = {};
+        (items.data ?? []).forEach((it: any) => {
+          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
+          if (it.is_required && !v.na && !v.value.trim()) errs[it.id] = "This measurement is required";
+        });
+        if (Object.keys(errs).length) {
+          setErrors(errs);
+          throw new Error(`Please record all required measurements (${Object.keys(errs).length} missing).`);
+        }
+      }
       const rows = items.data.map((it: any) => {
-        const v = values[it.id] ?? { value: "", notes: "" };
+        const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
         return {
           inspection_id: id, spec_item_id: it.id,
-          measured_value: v.value || null,
+          measured_value: v.na ? null : (v.value || null),
           notes: v.notes || null,
-          is_pass: evaluatePass(it, v.value),
+          is_pass: v.na ? null : evaluatePass(it, v.value),
+          is_na: v.na,
+          attachment_url: v.attachment_url,
           recorded_by: user.id, recorded_at: new Date().toISOString(),
         };
-      }).filter((r) => r.measured_value !== null || r.notes !== null);
+      }).filter((r) => r.measured_value !== null || r.notes !== null || r.is_na || r.attachment_url);
       if (rows.length) {
         const { error } = await supabase.from("inspection_measurements").upsert(rows, { onConflict: "inspection_id,spec_item_id" });
         if (error) throw error;
       }
       if (complete) {
-        // require all items recorded
-        const missing = items.data.filter((it: any) => !(values[it.id]?.value));
-        if (missing.length) throw new Error(`Please record all measurements first (${missing.length} missing).`);
         await supabase.from("inspections").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", id);
         await supabase.from("audit_logs").insert({ user_id: user.id, action: "inspection.completed", entity_type: "inspection", entity_id: id });
         toast.success("Inspection completed");
@@ -332,7 +359,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
   if (insp.isLoading || items.isLoading) return <div className="max-w-3xl"><Skeleton className="h-64" /></div>;
   if (!insp.data) return <div>Inspection not found.</div>;
 
-  const recorded = Object.values(values).filter((v) => v.value).length;
+  const recorded = Object.values(values).filter((v) => v.value || v.na).length;
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -346,14 +373,19 @@ export function InspectionExecutePage({ id }: { id: string }) {
 
       <div className="space-y-3">
         {(items.data ?? []).map((it: any) => {
-          const v = values[it.id] ?? { value: "", notes: "" };
-          const pass = evaluatePass(it, v.value);
+          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null };
+          const pass = v.na ? null : evaluatePass(it, v.value);
+          const err = errors[it.id];
           return (
-            <Card key={it.id}>
+            <Card key={it.id} className={err ? "border-destructive" : ""}>
               <CardContent className="pt-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">{it.sequence}. {it.name} {it.is_critical && <Badge variant="destructive" className="ml-1">CCP</Badge>}</div>
+                    <div className="font-medium">
+                      {it.sequence}. {it.name}
+                      {it.is_critical && <Badge variant="destructive" className="ml-1">CCP</Badge>}
+                      {it.is_required && <span className="text-destructive ml-1">*</span>}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {it.measurement_type} · Target {it.target_value ?? "—"}{it.unit ?? ""} · {it.lower_tolerance ?? "—"}—{it.upper_tolerance ?? "—"}
                     </div>
@@ -361,12 +393,13 @@ export function InspectionExecutePage({ id }: { id: string }) {
                   </div>
                   {pass === true && <Check className="h-5 w-5 text-status-completed" />}
                   {pass === false && <X className="h-5 w-5 text-destructive" />}
+                  {v.na && <Badge variant="secondary">N/A</Badge>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs">Measurement</Label>
                     {it.measurement_type === "boolean" ? (
-                      <Select value={v.value} onValueChange={(val) => setValues({ ...values, [it.id]: { ...v, value: val } })}>
+                      <Select value={v.value} onValueChange={(val) => setValues({ ...values, [it.id]: { ...v, value: val, na: false } })} disabled={v.na}>
                         <SelectTrigger><SelectValue placeholder="Choose" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="true">Pass</SelectItem>
@@ -374,7 +407,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input type={it.measurement_type === "numeric" ? "number" : "text"} step="any"
+                      <Input type={it.measurement_type === "numeric" ? "number" : "text"} step="any" disabled={v.na}
                         value={v.value} onChange={(e) => setValues({ ...values, [it.id]: { ...v, value: e.target.value } })} />
                     )}
                   </div>
@@ -383,6 +416,24 @@ export function InspectionExecutePage({ id }: { id: string }) {
                     <Input value={v.notes} onChange={(e) => setValues({ ...values, [it.id]: { ...v, notes: e.target.value } })} placeholder="Optional" />
                   </div>
                 </div>
+                <div className="flex items-center gap-4 flex-wrap">
+                  <label className="flex items-center gap-2 text-xs">
+                    <input type="checkbox" checked={v.na}
+                      onChange={(e) => setValues({ ...values, [it.id]: { ...v, na: e.target.checked, value: e.target.checked ? "" : v.value } })} />
+                    Mark N/A
+                  </label>
+                  <label className="text-xs inline-flex items-center gap-2 cursor-pointer">
+                    <span className="rounded border px-2 py-1 hover:bg-accent">
+                      {uploading === it.id ? "Uploading..." : v.attachment_url ? "Replace photo" : "📷 Add photo"}
+                    </span>
+                    <input type="file" accept="image/*" capture="environment" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(it.id, f); }} />
+                  </label>
+                  {v.attachment_url && (
+                    <a href={v.attachment_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">View photo</a>
+                  )}
+                </div>
+                {err && <div className="text-xs text-destructive">{err}</div>}
               </CardContent>
             </Card>
           );
