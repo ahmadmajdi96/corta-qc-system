@@ -243,7 +243,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return <div className="grid grid-cols-3 gap-4"><div className="text-muted-foreground">{label}</div><div className="col-span-2">{children}</div></div>;
 }
 
-function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; onOpenChange: (v: boolean) => void; ncId: string; onCreated: () => void }) {
+function InlineCaForm({ ncId, onCancel, onCreated }: { ncId: string; onCancel: () => void; onCreated: () => void }) {
   const { user } = useSession();
   const [desc, setDesc] = useState("");
   const [due, setDue] = useState("");
@@ -251,7 +251,6 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
   const [saving, setSaving] = useState(false);
   const users = useQuery({
     queryKey: ["users-all"],
-    enabled: open,
     queryFn: async () => (await supabase.from("profiles").select("id, full_name, email").eq("is_active", true).order("full_name")).data ?? [],
   });
   async function submit() {
@@ -267,17 +266,17 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
         user_id: user!.id, action: "ca.create", entity_type: "non_conformance", entity_id: ncId,
       });
       toast.success("Corrective action added");
-      onCreated(); onOpenChange(false);
-      setDesc(""); setDue(""); setAssignee(null);
+      onCreated();
     } catch (e: any) { notifyError(e.message); } finally { setSaving(false); }
   }
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Add Corrective Action</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <div><Label>Description</Label><Textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} /></div>
-          <div><Label>Assign to</Label>
+    <Card className="border-primary/40">
+      <CardHeader><CardTitle className="text-sm">Define Corrective Action</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <div><Label>Description</Label><Textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Describe the corrective action to be taken..." /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label>Assign to</Label>
             <Select value={assignee ?? "none"} onValueChange={(v) => setAssignee(v === "none" ? null : v)}>
               <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
               <SelectContent>
@@ -288,11 +287,11 @@ function NewCaDialog({ open, onOpenChange, ncId, onCreated }: { open: boolean; o
           </div>
           <div><Label>Due date</Label><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={saving}>{saving ? "Adding..." : "Add"}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button onClick={submit} disabled={saving || !desc.trim()}>{saving ? "Adding..." : "Add corrective action"}</Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
