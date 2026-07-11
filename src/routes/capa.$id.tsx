@@ -60,7 +60,7 @@ function CapaDetail() {
   });
 
   const trail = useQuery({
-    queryKey: ["capa-audit", id, auditPage, auditStep, auditSort],
+    queryKey: ["capa-audit", id, auditPage, auditStep, auditSort, auditSize],
     queryFn: async () => {
       let q = supabase.from("audit_logs")
         .select("id, action, details, created_at, profiles:user_id(full_name, email)", { count: "exact" })
@@ -69,7 +69,7 @@ function CapaDetail() {
       else if (auditStep !== "all") q = q.eq("action", "capa.step_updated").contains("details", { step: auditStep });
       const { data, count, error } = await q
         .order("created_at", { ascending: auditSort === "asc" })
-        .range(auditPage * AUDIT_PAGE, auditPage * AUDIT_PAGE + AUDIT_PAGE - 1);
+        .range(auditPage * auditSize, auditPage * auditSize + auditSize - 1);
       if (error) throw error;
       return { rows: data ?? [], count: count ?? 0 };
     },
