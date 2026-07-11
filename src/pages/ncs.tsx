@@ -261,7 +261,7 @@ export function NcListPage() {
       <div className="rounded-lg border bg-card">
         {list.isError ? <ErrorState onRetry={() => list.refetch()} /> :
          list.isLoading ? <div className="p-6"><Skeleton className="h-32" /></div> :
-         !list.data?.rows.length ? <EmptyState title="No NCs match" /> :
+         !list.data?.rows.length ? <EmptyState title="No NCs match" action={canRaise ? <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-2" />Add NC</Button> : undefined} /> :
          <>
          <Table>
            <TableHeader>
