@@ -195,6 +195,9 @@ export function NcBoardPage() {
 const PAGE_SIZE = 25;
 
 export function NcListPage() {
+  const roles = useMyRoles();
+  const canRaise = hasAnyRole(roles.data, "administrator", "quality_manager", "inspector");
+  const [addOpen, setAddOpen] = useState(false);
   const [status, setStatus] = useState("all");
   const [severity, setSeverity] = useState("all");
   const [search, setSearch] = useState("");
