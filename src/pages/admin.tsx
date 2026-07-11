@@ -261,9 +261,33 @@ function RolesTab() {
     setSelectedPerms((r?.role_permissions ?? []).map((p: any) => p.permission_id));
   }
 
+  const [addRoleOpen, setAddRoleOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleDesc, setNewRoleDesc] = useState("");
+  async function addRole() {
+    if (!newRoleName.trim()) return;
+    const { error } = await supabase.from("roles").insert({ name: newRoleName.trim(), description: newRoleDesc || null });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Role added"); setAddRoleOpen(false); setNewRoleName(""); setNewRoleDesc("");
+    qc.invalidateQueries({ queryKey: ["roles-with-perms"] });
+    qc.invalidateQueries({ queryKey: ["roles"] });
+  }
+
+  // Ensure `list` and `assign` permission actions exist in the catalogue
+  useState(() => {
+    (async () => {
+      const missing = ["users.assign","corrective_actions.assign","products.list","inspections.list","non_conformances.list","corrective_actions.list","roles.list"];
+      for (const key of missing) {
+        const [resource, action] = key.split(".");
+        await supabase.from("permissions").upsert({ resource, action }, { onConflict: "resource,action" });
+      }
+    })();
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="space-y-2">
+        <Button size="sm" variant="outline" onClick={() => setAddRoleOpen(true)}><Plus className="h-4 w-4 mr-2" />Add role</Button>
         {roles.isLoading ? <Skeleton className="h-32" /> :
          (roles.data ?? []).map((r) => (
           <button key={r.id} onClick={() => selectRole(r.id)}
@@ -273,6 +297,19 @@ function RolesTab() {
             <div className="text-xs mt-1">{r.user_roles?.length ?? 0} users · {r.role_permissions?.length ?? 0} permissions</div>
           </button>
          ))}
+        <Dialog open={addRoleOpen} onOpenChange={setAddRoleOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Add role</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div><Label>Name</Label><Input value={newRoleName} onChange={e=>setNewRoleName(e.target.value)} placeholder="e.g. senior_inspector" /></div>
+              <div><Label>Description</Label><Input value={newRoleDesc} onChange={e=>setNewRoleDesc(e.target.value)} /></div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={()=>setAddRoleOpen(false)}>Cancel</Button>
+              <Button onClick={addRole}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="md:col-span-2">
         {!role ? <div className="text-sm text-muted-foreground">Select a role to edit its permissions</div> :
