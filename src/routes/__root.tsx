@@ -19,13 +19,19 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <a href="/" className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-          Go to Dashboard
+        <div className="mx-auto mb-6 flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner">
+          <svg viewBox="0 0 200 200" className="h-32 w-32" aria-hidden="true">
+            <circle cx="100" cy="100" r="72" fill="none" stroke="currentColor" strokeWidth="6" className="text-primary/40" />
+            <text x="100" y="118" textAnchor="middle" className="fill-primary" fontSize="60" fontWeight="700">404</text>
+            <circle cx="70" cy="82" r="6" className="fill-primary" />
+            <circle cx="130" cy="82" r="6" className="fill-primary" />
+            <path d="M70 130 Q100 110 130 130" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" className="text-primary" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold">Page not found</h2>
+        <p className="mt-2 text-sm text-muted-foreground">The page you're looking for doesn't exist or has been moved.</p>
+        <a href="/" className="mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+          <Home className="h-4 w-4" />Go to Dashboard
         </a>
       </div>
     </div>
@@ -96,8 +102,10 @@ function RootComponent() {
   }, [router, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-right" richColors closeButton />
+      <ConfirmProvider>
+        <Outlet />
+      </ConfirmProvider>
+      <Toaster position="top-right" richColors closeButton duration={5000} />
     </QueryClientProvider>
   );
 }
