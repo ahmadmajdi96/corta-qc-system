@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ScrollText, Play, PauseCircle, CheckCircle2, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ScrollText, Play, PauseCircle, CheckCircle2, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, Wifi } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { toast } from "sonner";
