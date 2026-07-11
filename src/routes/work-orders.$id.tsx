@@ -253,6 +253,16 @@ function WoDetail() {
   const metOnline = !wo.error && !inspections.error && !holds.error;
   const metSyncedAt = lastSync ?? (w.updated_at ? new Date(w.updated_at) : null);
 
+  const refreshAll = async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["wo", id] }),
+      qc.invalidateQueries({ queryKey: ["wo-inspections", id] }),
+      qc.invalidateQueries({ queryKey: ["wo-holds", id] }),
+    ]);
+    setLastSync(new Date());
+  };
+  const refreshing = wo.isFetching || inspections.isFetching || holds.isFetching;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -271,9 +281,18 @@ function WoDetail() {
               <span className="text-muted-foreground">· synced {metSyncedAt.toLocaleTimeString()}</span>
             )}
           </div>
+          <Button
+            variant="outline" size="sm" className="h-7 gap-1"
+            onClick={refreshAll} disabled={refreshing}
+            title="Refresh MES data"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </Button>
           <StatusPill tone={tone(status)}>{status}</StatusPill>
         </div>
       </div>
+
 
 
       <div className="glass-panel rounded-2xl p-6">
