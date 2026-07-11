@@ -169,47 +169,72 @@ function CapaDetail() {
       </div>
 
       <div className="glass-panel rounded-2xl p-4">
-        <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-          <History className="h-4 w-4" /> Audit trail
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <History className="h-4 w-4" /> Audit trail
+          </div>
+          <select
+            value={auditStep}
+            onChange={(e) => { setAuditStep(e.target.value); setAuditPage(0); }}
+            className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
+          >
+            <option value="all">All events</option>
+            <option value="closed">CAPA closed</option>
+            {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+          </select>
         </div>
         {trail.isLoading ? (
           <Skeleton className="h-16 w-full" />
-        ) : (trail.data ?? []).length === 0 ? (
-          <div className="text-sm text-muted-foreground">No changes recorded yet.</div>
+        ) : (trail.data?.rows.length ?? 0) === 0 ? (
+          <div className="text-sm text-muted-foreground">No changes match.</div>
         ) : (
-          <ul className="divide-y divide-border/40">
-            {(trail.data as any[]).map((e) => {
-              const who = e.profiles?.full_name || e.profiles?.email || "system";
-              const step = e.details?.step ? D_STEPS.find((s) => s.key === e.details.step)?.label ?? e.details.step : null;
-              return (
-                <li key={e.id} className="py-2 text-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{who}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {e.action === "capa.closed" ? "closed the CAPA" : step ? `updated ${step}` : e.action}
-                      </span>
-                    </div>
-                    <span className="text-xs font-mono text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
-                  </div>
-                  {e.details?.step && (
-                    <div className="mt-1 grid gap-1 md:grid-cols-2 text-xs">
-                      <div className="rounded bg-destructive/5 border border-destructive/20 p-2">
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Before</div>
-                        <div className="whitespace-pre-wrap text-muted-foreground">{e.details.before || <em>empty</em>}</div>
+          <>
+            <ul className="divide-y divide-border/40">
+              {trail.data!.rows.map((e: any) => {
+                const who = e.profiles?.full_name || e.profiles?.email || "system";
+                const step = e.details?.step ? D_STEPS.find((s) => s.key === e.details.step)?.label ?? e.details.step : null;
+                return (
+                  <li key={e.id} className="py-2 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{who}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {e.action === "capa.closed" ? "closed the CAPA" : step ? `updated ${step}` : e.action}
+                        </span>
                       </div>
-                      <div className="rounded bg-primary/5 border border-primary/20 p-2">
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">After</div>
-                        <div className="whitespace-pre-wrap">{e.details.after || <em>empty</em>}</div>
-                      </div>
+                      <span className="text-xs font-mono text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
                     </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                    {e.details?.step && (
+                      <div className="mt-1 grid gap-1 md:grid-cols-2 text-xs">
+                        <div className="rounded bg-destructive/5 border border-destructive/20 p-2">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Before</div>
+                          <div className="whitespace-pre-wrap text-muted-foreground">{e.details.before || <em>empty</em>}</div>
+                        </div>
+                        <div className="rounded bg-primary/5 border border-primary/20 p-2">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">After</div>
+                          <div className="whitespace-pre-wrap">{e.details.after || <em>empty</em>}</div>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            {trail.data!.count > AUDIT_PAGE && (
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / AUDIT_PAGE)}</span>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setAuditPage(auditPage - 1)}>Prev</Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2"
+                    disabled={(auditPage + 1) * AUDIT_PAGE >= trail.data!.count}
+                    onClick={() => setAuditPage(auditPage + 1)}>Next</Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
+
     </div>
   );
 }
