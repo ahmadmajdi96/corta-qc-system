@@ -176,6 +176,17 @@ export function NcDetailPage({ id }: { id: string }) {
               <Button size="sm" onClick={() => { setTab("cas"); setShowInlineCa(true); }}>
                 <Plus className="h-4 w-4 mr-1" />Define Corrective Action
               </Button>
+              {linkedCapa.data ? (
+                <Button size="sm" variant="secondary" asChild>
+                  <Link to="/capa/$id" params={{ id: linkedCapa.data.id }}>
+                    <FileSearch className="h-4 w-4 mr-1" />Open CAPA {linkedCapa.data.capa_number ?? ""}
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" variant="secondary" onClick={() => openCapa.mutate()} disabled={openCapa.isPending}>
+                  <FileSearch className="h-4 w-4 mr-1" />{openCapa.isPending ? "Opening…" : "Open CAPA (8D)"}
+                </Button>
+              )}
             </div>
           )}
         </div>
