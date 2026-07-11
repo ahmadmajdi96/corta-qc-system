@@ -13,6 +13,7 @@ import { CalendarDays, ListIcon, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { NewInspectionDialog } from "@/components/new-inspection-dialog";
 import { useMyRoles, hasAnyRole } from "@/lib/auth";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const PAGE_SIZE = 25;
 
