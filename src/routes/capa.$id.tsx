@@ -31,11 +31,17 @@ const AUDIT_PAGE = 10;
 
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
+  const search = useSearch({ from: "/capa/$id" }) as { auditPage?: number; auditStep?: string; auditSort?: "asc" | "desc" };
+  const navigate = useNavigate({ from: "/capa/$id" });
   const qc = useQueryClient();
   const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
-  const [auditPage, setAuditPage] = useState(0);
-  const [auditStep, setAuditStep] = useState<string>("all");
+
+  const auditPage = search.auditPage ?? 0;
+  const auditStep = search.auditStep ?? "all";
+  const auditSort: "asc" | "desc" = search.auditSort ?? "desc";
+  const setSearch = (patch: Partial<{ auditPage: number; auditStep: string; auditSort: "asc" | "desc" }>) =>
+    navigate({ search: (prev: any) => ({ ...prev, ...patch }), replace: true });
 
   const capa = useQuery({
 
@@ -49,7 +55,7 @@ function CapaDetail() {
   });
 
   const trail = useQuery({
-    queryKey: ["capa-audit", id, auditPage, auditStep],
+    queryKey: ["capa-audit", id, auditPage, auditStep, auditSort],
     queryFn: async () => {
       let q = supabase.from("audit_logs")
         .select("id, action, details, created_at, profiles:user_id(full_name, email)", { count: "exact" })
@@ -57,12 +63,14 @@ function CapaDetail() {
       if (auditStep === "closed") q = q.eq("action", "capa.closed");
       else if (auditStep !== "all") q = q.eq("action", "capa.step_updated").contains("details", { step: auditStep });
       const { data, count, error } = await q
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: auditSort === "asc" })
         .range(auditPage * AUDIT_PAGE, auditPage * AUDIT_PAGE + AUDIT_PAGE - 1);
       if (error) throw error;
       return { rows: data ?? [], count: count ?? 0 };
     },
   });
+
+
 
 
   useEffect(() => {
