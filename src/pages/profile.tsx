@@ -187,6 +187,15 @@ export function ProfilePage() {
             <Label className="flex items-center gap-1.5">
               Email
               {!canEditEmail && <Lock className="h-3 w-3 text-muted-foreground" />}
+              {emailVerified ? (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+                  <MailCheck className="h-3 w-3" /> Verified
+                </span>
+              ) : user?.email ? (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
+                  <MailWarning className="h-3 w-3" /> Unverified
+                </span>
+              ) : null}
             </Label>
             <Input
               type="email"
