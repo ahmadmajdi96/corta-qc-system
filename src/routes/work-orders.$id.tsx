@@ -283,41 +283,88 @@ function WoDetail() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Section title="Inspections" icon={<ScrollText className="h-4 w-4" />}>
-          {inspections.data?.length ? (
-            <ul className="space-y-2">
-              {inspections.data.map((i: any) => (
-                <li key={i.id}>
-                  <Link to="/inspections/$id" params={{ id: i.id }}
-                    className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 p-3 hover:border-primary/40 transition">
-                    <div>
-                      <div className="text-sm">{i.inspection_plans?.name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">{i.scheduled_date}</div>
-                    </div>
-                    <StatusPill tone={i.status === "completed" ? "success" : i.status === "in_progress" ? "info" : "muted"}>{i.status}</StatusPill>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : <div className="text-sm text-muted-foreground">No inspections yet.</div>}
+        <Section
+          title="Inspections"
+          icon={<ScrollText className="h-4 w-4" />}
+          controls={
+            <div className="flex items-center gap-2">
+              <Select value={inspStatus} onValueChange={(v) => { setInspStatus(v); setInspPage(0); }}>
+                <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="in_progress">In progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              {canManage && (
+                <Button size="sm" variant="outline" className="h-8 gap-1"
+                  onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
+                  title="Recreate any missing inspections from active plans">
+                  <RefreshCw className={`h-3.5 w-3.5 ${regenerate.isPending ? "animate-spin" : ""}`} /> Regenerate
+                </Button>
+              )}
+            </div>
+          }
+        >
+          {(inspections.data?.rows.length ?? 0) > 0 ? (
+            <>
+              <ul className="space-y-2">
+                {inspections.data!.rows.map((i: any) => (
+                  <li key={i.id}>
+                    <Link to="/inspections/$id" params={{ id: i.id }}
+                      className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 p-3 hover:border-primary/40 transition">
+                      <div>
+                        <div className="text-sm">{i.inspection_plans?.name ?? "—"}</div>
+                        <div className="text-xs text-muted-foreground">{i.scheduled_date}</div>
+                      </div>
+                      <StatusPill tone={i.status === "completed" ? "success" : i.status === "in_progress" ? "info" : "muted"}>{i.status}</StatusPill>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Pager page={inspPage} total={inspections.data!.count} pageSize={PAGE} onChange={setInspPage} />
+            </>
+          ) : <div className="text-sm text-muted-foreground">No inspections match.</div>}
         </Section>
 
-        <Section title="Quality Holds" icon={<ShieldCheck className="h-4 w-4" />}>
-          {holds.data?.length ? (
-            <ul className="space-y-2">
-              {holds.data.map((h: any) => (
-                <li key={h.id} className="rounded-lg border border-border/60 bg-card/60 p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs">{h.hold_number ?? h.id.slice(0,8)}</span>
-                    <StatusPill tone={h.status === "open" ? "danger" : "muted"}>{h.status}</StatusPill>
-                  </div>
-                  <div className="mt-1 text-sm">{h.reason}</div>
-                </li>
-              ))}
-            </ul>
-          ) : <div className="text-sm text-muted-foreground">No holds.</div>}
+        <Section
+          title="Quality Holds"
+          icon={<ShieldCheck className="h-4 w-4" />}
+          controls={
+            <Select value={holdStatus} onValueChange={(v) => { setHoldStatus(v); setHoldPage(0); }}>
+              <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="under_review">Under review</SelectItem>
+                <SelectItem value="released">Released</SelectItem>
+                <SelectItem value="rework">Rework</SelectItem>
+                <SelectItem value="scrapped">Scrapped</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        >
+          {(holds.data?.rows.length ?? 0) > 0 ? (
+            <>
+              <ul className="space-y-2">
+                {holds.data!.rows.map((h: any) => (
+                  <li key={h.id} className="rounded-lg border border-border/60 bg-card/60 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs">{h.hold_number ?? h.id.slice(0,8)}</span>
+                      <StatusPill tone={h.status === "open" ? "danger" : "muted"}>{h.status}</StatusPill>
+                    </div>
+                    <div className="mt-1 text-sm">{h.reason}</div>
+                  </li>
+                ))}
+              </ul>
+              <Pager page={holdPage} total={holds.data!.count} pageSize={PAGE} onChange={setHoldPage} />
+            </>
+          ) : <div className="text-sm text-muted-foreground">No holds match.</div>}
         </Section>
       </div>
+
 
       <Dialog open={holdOpen} onOpenChange={setHoldOpen}>
         <DialogContent>
