@@ -321,11 +321,12 @@ function WoDetail() {
               </Select>
               {canManage && (
                 <Button size="sm" variant="outline" className="h-8 gap-1"
-                  onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
+                  onClick={() => setRegenOpen(true)} disabled={regenerate.isPending}
                   title="Recreate any missing inspections from active plans">
                   <RefreshCw className={`h-3.5 w-3.5 ${regenerate.isPending ? "animate-spin" : ""}`} /> Regenerate
                 </Button>
               )}
+
             </div>
           }
         >
