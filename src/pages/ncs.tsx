@@ -230,7 +230,10 @@ export function NcListPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Non-Conformances</h1>
           <p className="text-sm text-muted-foreground">Table view</p>
         </div>
-        <Button asChild variant="outline"><Link to="/non-conformances">Board view</Link></Button>
+        <div className="flex gap-2">
+         {canRaise && <Button onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-2" />Add NC</Button>}
+         <Button asChild variant="outline"><Link to="/non-conformances">Board view</Link></Button>
+        </div>
       </div>
 
       <Card><CardContent className="pt-4">
