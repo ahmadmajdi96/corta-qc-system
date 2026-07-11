@@ -19,6 +19,7 @@ import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
 import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
+import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
@@ -72,6 +73,11 @@ const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
   path: '/inspections/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CorrectiveActionsIdRoute = CorrectiveActionsIdRouteImport.update({
+  id: '/corrective-actions/$id',
+  path: '/corrective-actions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InspectionsIdIndexRoute = InspectionsIdIndexRouteImport.update({
   id: '/inspections/$id/',
   path: '/inspections/$id/',
@@ -86,6 +92,7 @@ const InspectionsIdExecuteRoute = InspectionsIdExecuteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/corrective-actions/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectionsCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/corrective-actions/$id': {
+      id: '/corrective-actions/$id'
+      path: '/corrective-actions/$id'
+      fullPath: '/corrective-actions/$id'
+      preLoaderRoute: typeof CorrectiveActionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inspections/$id/': {
       id: '/inspections/$id/'
       path: '/inspections/$id'
@@ -278,6 +298,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,
