@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown } from "lucide-react";
+import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown, X } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { useEffect, useState } from "react";
