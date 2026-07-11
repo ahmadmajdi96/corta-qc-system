@@ -12,13 +12,18 @@ import { EmptyState } from "@/components/empty-state";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 
+export type SelectOption = { value: string; label: string };
+
 export type FieldDef = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "textarea";
+  type?: "text" | "number" | "date" | "textarea" | "select";
   required?: boolean;
   placeholder?: string;
+  options?: SelectOption[];
+  loadOptions?: () => Promise<SelectOption[]>;
 };
+
 
 export type ColumnDef<T> = {
   key: string;
@@ -107,6 +112,8 @@ export function SimpleList<T extends { id: string }>({
                       onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                       placeholder={f.placeholder}
                     />
+                  ) : f.type === "select" ? (
+                    <AsyncSelectField field={f} value={form[f.name] ?? ""} onChange={(v) => setForm({ ...form, [f.name]: v })} />
                   ) : (
                     <Input
                       id={f.name}
@@ -118,6 +125,7 @@ export function SimpleList<T extends { id: string }>({
                   )}
                 </div>
               ))}
+
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -176,3 +184,24 @@ export function SimpleList<T extends { id: string }>({
     </>
   );
 }
+
+function AsyncSelectField({ field, value, onChange }: { field: FieldDef; value: string; onChange: (v: string) => void }) {
+  const opts = useQuery({
+    queryKey: ["field-options", field.name],
+    queryFn: async () => (field.loadOptions ? field.loadOptions() : (field.options ?? [])),
+    staleTime: 60_000,
+  });
+  const list = opts.data ?? field.options ?? [];
+  return (
+    <select
+      id={field.name}
+      className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      <option value="">{opts.isLoading ? "Loading..." : field.placeholder ?? "— Select —"}</option>
+      {list.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+

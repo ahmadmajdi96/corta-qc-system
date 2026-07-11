@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
@@ -9,10 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileSearch, ArrowLeft, CheckCircle2, History } from "lucide-react";
+import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 
 
 const D_STEPS: { key: string; label: string; help: string }[] = [
@@ -30,11 +31,17 @@ const AUDIT_PAGE = 10;
 
 function CapaDetail() {
   const { id } = useParams({ from: "/capa/$id" });
+  const search = useSearch({ from: "/capa/$id" }) as { auditPage?: number; auditStep?: string; auditSort?: "asc" | "desc" };
+  const navigate = useNavigate({ from: "/capa/$id" });
   const qc = useQueryClient();
   const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
-  const [auditPage, setAuditPage] = useState(0);
-  const [auditStep, setAuditStep] = useState<string>("all");
+
+  const auditPage = search.auditPage ?? 0;
+  const auditStep = search.auditStep ?? "all";
+  const auditSort: "asc" | "desc" = search.auditSort ?? "desc";
+  const setSearch = (patch: Partial<{ auditPage: number; auditStep: string; auditSort: "asc" | "desc" }>) =>
+    navigate({ search: (prev: any) => ({ ...prev, ...patch }), replace: true });
 
   const capa = useQuery({
 
@@ -48,7 +55,7 @@ function CapaDetail() {
   });
 
   const trail = useQuery({
-    queryKey: ["capa-audit", id, auditPage, auditStep],
+    queryKey: ["capa-audit", id, auditPage, auditStep, auditSort],
     queryFn: async () => {
       let q = supabase.from("audit_logs")
         .select("id, action, details, created_at, profiles:user_id(full_name, email)", { count: "exact" })
@@ -56,12 +63,14 @@ function CapaDetail() {
       if (auditStep === "closed") q = q.eq("action", "capa.closed");
       else if (auditStep !== "all") q = q.eq("action", "capa.step_updated").contains("details", { step: auditStep });
       const { data, count, error } = await q
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: auditSort === "asc" })
         .range(auditPage * AUDIT_PAGE, auditPage * AUDIT_PAGE + AUDIT_PAGE - 1);
       if (error) throw error;
       return { rows: data ?? [], count: count ?? 0 };
     },
   });
+
+
 
 
   useEffect(() => {
@@ -169,19 +178,28 @@ function CapaDetail() {
       </div>
 
       <div className="glass-panel rounded-2xl p-4">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <History className="h-4 w-4" /> Audit trail
           </div>
-          <select
-            value={auditStep}
-            onChange={(e) => { setAuditStep(e.target.value); setAuditPage(0); }}
-            className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
-          >
-            <option value="all">All events</option>
-            <option value="closed">CAPA closed</option>
-            {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={auditStep}
+              onChange={(e) => setSearch({ auditStep: e.target.value, auditPage: 0 })}
+              className="h-8 rounded-md border border-border/60 bg-card/60 px-2 text-xs"
+            >
+              <option value="all">All events</option>
+              <option value="closed">CAPA closed</option>
+              {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+            <Button
+              variant="outline" size="sm" className="h-8 gap-1"
+              onClick={() => setSearch({ auditSort: auditSort === "asc" ? "desc" : "asc", auditPage: 0 })}
+              title={`Sort by date: ${auditSort === "asc" ? "oldest first" : "newest first"}`}
+            >
+              Date {auditSort === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+            </Button>
+          </div>
         </div>
         {trail.isLoading ? (
           <Skeleton className="h-16 w-full" />
@@ -224,16 +242,17 @@ function CapaDetail() {
               <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                 <span>{trail.data!.count} events · page {auditPage + 1} of {Math.ceil(trail.data!.count / AUDIT_PAGE)}</span>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setAuditPage(auditPage - 1)}>Prev</Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2" disabled={auditPage === 0} onClick={() => setSearch({ auditPage: auditPage - 1 })}>Prev</Button>
                   <Button variant="ghost" size="sm" className="h-7 px-2"
                     disabled={(auditPage + 1) * AUDIT_PAGE >= trail.data!.count}
-                    onClick={() => setAuditPage(auditPage + 1)}>Next</Button>
+                    onClick={() => setSearch({ auditPage: auditPage + 1 })}>Next</Button>
                 </div>
               </div>
             )}
           </>
         )}
       </div>
+
 
     </div>
   );
@@ -242,7 +261,13 @@ function CapaDetail() {
 
 export const Route = createFileRoute("/capa/$id")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    auditPage: Number(s.auditPage) || 0,
+    auditStep: typeof s.auditStep === "string" ? s.auditStep : "all",
+    auditSort: s.auditSort === "asc" ? "asc" as const : "desc" as const,
+  }),
   head: () => ({ meta: [{ title: "CAPA — CORTA QC" }, { name: "robots", content: "noindex" }] }),
+
   component: () => (
     <AuthGate>
       <AppShell>
