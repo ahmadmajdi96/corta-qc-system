@@ -109,12 +109,38 @@ function UsersTab() {
                <TableRow key={u.id}>
                  <TableCell>{u.full_name}</TableCell>
                  <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                 <TableCell><div className="flex flex-wrap gap-1">
-                   {(u.user_roles ?? []).map((r: any) => <span key={r.role_id} className="text-xs bg-muted px-2 py-0.5 rounded">{r.roles?.name}</span>)}
-                 </div></TableCell>
+                 <TableCell>
+                   <div className="flex flex-wrap gap-1">
+                     {(u.user_roles ?? []).length === 0 && <span className="text-xs text-muted-foreground">— none —</span>}
+                     {(u.user_roles ?? []).map((r: any) => (
+                       <Badge key={r.role_id} variant="secondary" className="text-xs">{r.roles?.name}</Badge>
+                     ))}
+                   </div>
+                 </TableCell>
                  <TableCell><Switch checked={u.is_active} onCheckedChange={(v) => setActive.mutate({ id: u.id, is_active: v })} /></TableCell>
                  <TableCell className="text-xs">{u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : "—"}</TableCell>
-                 <TableCell><Button size="sm" variant="ghost" onClick={() => { setEditing(u); setDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button></TableCell>
+                 <TableCell>
+                   <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                       <Button size="icon" variant="ghost" aria-label="Actions"><MoreHorizontal className="h-4 w-4" /></Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end">
+                       <DropdownMenuItem onClick={() => { setEditing(u); setDialogOpen(true); }}>
+                         <Pencil className="h-4 w-4 mr-2" />Edit user & roles
+                       </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                       {u.is_active ? (
+                         <DropdownMenuItem onClick={() => setActive.mutate({ id: u.id, is_active: false })}>
+                           <UserX className="h-4 w-4 mr-2" />Deactivate
+                         </DropdownMenuItem>
+                       ) : (
+                         <DropdownMenuItem onClick={() => setActive.mutate({ id: u.id, is_active: true })}>
+                           <UserCheck className="h-4 w-4 mr-2" />Reactivate
+                         </DropdownMenuItem>
+                       )}
+                     </DropdownMenuContent>
+                   </DropdownMenu>
+                 </TableCell>
                </TableRow>
              ))}
            </TableBody>
