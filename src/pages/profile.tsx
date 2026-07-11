@@ -102,6 +102,21 @@ export function ProfilePage() {
     } finally { setEmailSaving(false); }
   }
 
+  async function resendVerification() {
+    if (!user?.email) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
+      if (error) throw error;
+      toast.success(`Verification email sent to ${user.email}`);
+    } catch (e: any) {
+      const msg = /rate limit/i.test(e?.message ?? "")
+        ? "Too many attempts — please wait a moment and try again."
+        : e?.message ?? "Failed to send verification email.";
+      toast.error(msg);
+    } finally { setResending(false); }
+  }
+
   async function changePassword() {
     setPwErr(null);
     const parsed = passwordSchema.safeParse(pwNew);
