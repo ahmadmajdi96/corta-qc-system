@@ -81,7 +81,7 @@ export function InspectionDetailPage({ id }: { id: string }) {
 
   if (insp.isLoading) return <div className="max-w-5xl space-y-3"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>;
   if (insp.error) return <div className="text-destructive">Failed to load.</div>;
-  const i = insp.data!;
+  const i = insp.data! as any;
 
   const measByItem: Record<string, any> = {};
   (i.inspection_measurements ?? []).forEach((m: any) => measByItem[m.spec_item_id] = m);
