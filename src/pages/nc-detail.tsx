@@ -105,7 +105,7 @@ export function NcDetailPage({ id }: { id: string }) {
     queryKey: ["nc-capa", id],
     queryFn: async () => {
       const { data } = await supabase.from("capa_records").select("id, capa_number, status")
-        .eq("non_conformance_id", id).maybeSingle();
+        .eq("nc_id", id).maybeSingle();
       return data;
     },
   });
