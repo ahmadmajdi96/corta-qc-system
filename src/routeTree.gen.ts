@@ -9,38 +9,265 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProductsIndexRouteImport } from './routes/products.index'
+import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
+import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
+import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
+import { Route as ProductsIdRouteImport } from './routes/products.$id'
+import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
+import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
+import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
+import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
+import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
+import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductsIndexRoute = ProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NonConformancesIndexRoute = NonConformancesIndexRouteImport.update({
+  id: '/non-conformances/',
+  path: '/non-conformances/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsIndexRoute = InspectionsIndexRouteImport.update({
+  id: '/inspections/',
+  path: '/inspections/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
+  id: '/corrective-actions/',
+  path: '/corrective-actions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsIdRoute = ProductsIdRouteImport.update({
+  id: '/products/$id',
+  path: '/products/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NonConformancesListRoute = NonConformancesListRouteImport.update({
+  id: '/non-conformances/list',
+  path: '/non-conformances/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NonConformancesIdRoute = NonConformancesIdRouteImport.update({
+  id: '/non-conformances/$id',
+  path: '/non-conformances/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
+  id: '/inspections/calendar',
+  path: '/inspections/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectiveActionsIdRoute = CorrectiveActionsIdRouteImport.update({
+  id: '/corrective-actions/$id',
+  path: '/corrective-actions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsIdIndexRoute = InspectionsIdIndexRouteImport.update({
+  id: '/inspections/$id/',
+  path: '/inspections/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsIdExecuteRoute = InspectionsIdExecuteRouteImport.update({
+  id: '/inspections/$id/execute',
+  path: '/inspections/$id/execute',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/reports': typeof ReportsRoute
+  '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
+  '/inspections/calendar': typeof InspectionsCalendarRoute
+  '/non-conformances/$id': typeof NonConformancesIdRoute
+  '/non-conformances/list': typeof NonConformancesListRoute
+  '/products/$id': typeof ProductsIdRoute
+  '/corrective-actions/': typeof CorrectiveActionsIndexRoute
+  '/inspections/': typeof InspectionsIndexRoute
+  '/non-conformances/': typeof NonConformancesIndexRoute
+  '/products/': typeof ProductsIndexRoute
+  '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
+  '/inspections/$id/': typeof InspectionsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/reports': typeof ReportsRoute
+  '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
+  '/inspections/calendar': typeof InspectionsCalendarRoute
+  '/non-conformances/$id': typeof NonConformancesIdRoute
+  '/non-conformances/list': typeof NonConformancesListRoute
+  '/products/$id': typeof ProductsIdRoute
+  '/corrective-actions': typeof CorrectiveActionsIndexRoute
+  '/inspections': typeof InspectionsIndexRoute
+  '/non-conformances': typeof NonConformancesIndexRoute
+  '/products': typeof ProductsIndexRoute
+  '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
+  '/inspections/$id': typeof InspectionsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/reports': typeof ReportsRoute
+  '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
+  '/inspections/calendar': typeof InspectionsCalendarRoute
+  '/non-conformances/$id': typeof NonConformancesIdRoute
+  '/non-conformances/list': typeof NonConformancesListRoute
+  '/products/$id': typeof ProductsIdRoute
+  '/corrective-actions/': typeof CorrectiveActionsIndexRoute
+  '/inspections/': typeof InspectionsIndexRoute
+  '/non-conformances/': typeof NonConformancesIndexRoute
+  '/products/': typeof ProductsIndexRoute
+  '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
+  '/inspections/$id/': typeof InspectionsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/profile'
+    | '/reports'
+    | '/corrective-actions/$id'
+    | '/inspections/calendar'
+    | '/non-conformances/$id'
+    | '/non-conformances/list'
+    | '/products/$id'
+    | '/corrective-actions/'
+    | '/inspections/'
+    | '/non-conformances/'
+    | '/products/'
+    | '/inspections/$id/execute'
+    | '/inspections/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/profile'
+    | '/reports'
+    | '/corrective-actions/$id'
+    | '/inspections/calendar'
+    | '/non-conformances/$id'
+    | '/non-conformances/list'
+    | '/products/$id'
+    | '/corrective-actions'
+    | '/inspections'
+    | '/non-conformances'
+    | '/products'
+    | '/inspections/$id/execute'
+    | '/inspections/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/profile'
+    | '/reports'
+    | '/corrective-actions/$id'
+    | '/inspections/calendar'
+    | '/non-conformances/$id'
+    | '/non-conformances/list'
+    | '/products/$id'
+    | '/corrective-actions/'
+    | '/inspections/'
+    | '/non-conformances/'
+    | '/products/'
+    | '/inspections/$id/execute'
+    | '/inspections/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
+  ProfileRoute: typeof ProfileRoute
+  ReportsRoute: typeof ReportsRoute
+  CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
+  InspectionsCalendarRoute: typeof InspectionsCalendarRoute
+  NonConformancesIdRoute: typeof NonConformancesIdRoute
+  NonConformancesListRoute: typeof NonConformancesListRoute
+  ProductsIdRoute: typeof ProductsIdRoute
+  CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
+  InspectionsIndexRoute: typeof InspectionsIndexRoute
+  NonConformancesIndexRoute: typeof NonConformancesIndexRoute
+  ProductsIndexRoute: typeof ProductsIndexRoute
+  InspectionsIdExecuteRoute: typeof InspectionsIdExecuteRoute
+  InspectionsIdIndexRoute: typeof InspectionsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +275,104 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/products/': {
+      id: '/products/'
+      path: '/products'
+      fullPath: '/products/'
+      preLoaderRoute: typeof ProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/non-conformances/': {
+      id: '/non-conformances/'
+      path: '/non-conformances'
+      fullPath: '/non-conformances/'
+      preLoaderRoute: typeof NonConformancesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections/': {
+      id: '/inspections/'
+      path: '/inspections'
+      fullPath: '/inspections/'
+      preLoaderRoute: typeof InspectionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/corrective-actions/': {
+      id: '/corrective-actions/'
+      path: '/corrective-actions'
+      fullPath: '/corrective-actions/'
+      preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/$id': {
+      id: '/products/$id'
+      path: '/products/$id'
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof ProductsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/non-conformances/list': {
+      id: '/non-conformances/list'
+      path: '/non-conformances/list'
+      fullPath: '/non-conformances/list'
+      preLoaderRoute: typeof NonConformancesListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/non-conformances/$id': {
+      id: '/non-conformances/$id'
+      path: '/non-conformances/$id'
+      fullPath: '/non-conformances/$id'
+      preLoaderRoute: typeof NonConformancesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections/calendar': {
+      id: '/inspections/calendar'
+      path: '/inspections/calendar'
+      fullPath: '/inspections/calendar'
+      preLoaderRoute: typeof InspectionsCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/corrective-actions/$id': {
+      id: '/corrective-actions/$id'
+      path: '/corrective-actions/$id'
+      fullPath: '/corrective-actions/$id'
+      preLoaderRoute: typeof CorrectiveActionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections/$id/': {
+      id: '/inspections/$id/'
+      path: '/inspections/$id'
+      fullPath: '/inspections/$id/'
+      preLoaderRoute: typeof InspectionsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections/$id/execute': {
+      id: '/inspections/$id/execute'
+      path: '/inspections/$id/execute'
+      fullPath: '/inspections/$id/execute'
+      preLoaderRoute: typeof InspectionsIdExecuteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
+  ProfileRoute: ProfileRoute,
+  ReportsRoute: ReportsRoute,
+  CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
+  InspectionsCalendarRoute: InspectionsCalendarRoute,
+  NonConformancesIdRoute: NonConformancesIdRoute,
+  NonConformancesListRoute: NonConformancesListRoute,
+  ProductsIdRoute: ProductsIdRoute,
+  CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
+  InspectionsIndexRoute: InspectionsIndexRoute,
+  NonConformancesIndexRoute: NonConformancesIndexRoute,
+  ProductsIndexRoute: ProductsIndexRoute,
+  InspectionsIdExecuteRoute: InspectionsIdExecuteRoute,
+  InspectionsIdIndexRoute: InspectionsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
