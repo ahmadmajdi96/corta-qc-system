@@ -10,7 +10,7 @@ import { useSession, useMyRoles, hasAnyRole } from "@/lib/auth";
 import { AlertOctagon, ClipboardCheck, Wrench, TrendingUp, Plus } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { NewInspectionDialog } from "@/components/new-inspection-dialog";
-import { RaiseNcDialog } from "@/components/raise-nc-dialog";
+import { AddNcDialog } from "@/components/add-nc-dialog";
 
 export function DashboardPage() {
   const today = new Date().toISOString().slice(0, 10);
@@ -203,7 +203,7 @@ export function DashboardPage() {
       )}
 
       <NewInspectionDialog open={newInsp} onOpenChange={setNewInsp} />
-      <RaiseNcDialog open={raiseNc} onOpenChange={setRaiseNc} />
+      <AddNcDialog open={raiseNc} onOpenChange={setRaiseNc} />
     </div>
   );
 }
