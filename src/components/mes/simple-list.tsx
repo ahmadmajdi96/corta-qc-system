@@ -238,23 +238,43 @@ export function SimpleList<T extends { id: string }>({
   );
 }
 
-function AsyncSelectField({ field, value, onChange }: { field: FieldDef; value: string; onChange: (v: string) => void }) {
+function AsyncSelectField({ field, value, onChange, invalid }: { field: FieldDef; value: string; onChange: (v: string) => void; invalid?: boolean }) {
   const opts = useQuery({
     queryKey: ["field-options", field.name],
     queryFn: async () => (field.loadOptions ? field.loadOptions() : (field.options ?? [])),
     staleTime: 60_000,
+    retry: 1,
   });
   const list = opts.data ?? field.options ?? [];
+  if (opts.isError) {
+    return (
+      <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+        <span className="flex-1">Failed to load options.</span>
+        <Button type="button" variant="ghost" size="sm" className="h-6 gap-1 px-2 text-destructive hover:text-destructive"
+          onClick={() => opts.refetch()} disabled={opts.isFetching}>
+          <RefreshCw className={`h-3 w-3 ${opts.isFetching ? "animate-spin" : ""}`} /> Retry
+        </Button>
+      </div>
+    );
+  }
   return (
-    <select
-      id={field.name}
-      className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">{opts.isLoading ? "Loading..." : field.placeholder ?? "— Select —"}</option>
-      {list.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
+    <div className="relative">
+      <select
+        id={field.name}
+        className={`h-9 w-full rounded-md border ${invalid ? "border-destructive" : "border-input"} bg-background px-3 pr-8 text-sm`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={opts.isLoading}
+        aria-invalid={invalid || undefined}
+      >
+        <option value="">{opts.isLoading ? "Loading options..." : field.placeholder ?? "— Select —"}</option>
+        {list.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      {opts.isLoading && (
+        <Loader2 className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
+      )}
+    </div>
   );
 }
 
