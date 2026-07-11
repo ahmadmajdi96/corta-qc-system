@@ -16,7 +16,7 @@ function SpcChart() {
       const { data, error } = await supabase
         .from("spc_samples")
         .select("*")
-        .order("recorded_at", { ascending: true })
+        .order("sample_time", { ascending: true })
         .limit(50);
       if (error) throw error;
       return data ?? [];
@@ -29,39 +29,56 @@ function SpcChart() {
       <EmptyState
         icon={<Activity className="h-6 w-6" />}
         title="No SPC samples yet"
-        description="Samples recorded through inspections will chart X-bar with UCL/LCL bands here."
+        description="Samples recorded through inspections will chart X̄ with UCL/LCL bands here."
       />
     );
   }
 
   const chartData = data.map((s: any, i) => ({
     idx: i + 1,
-    mean: s.mean != null ? Number(s.mean) : null,
-    ucl: s.ucl != null ? Number(s.ucl) : null,
-    lcl: s.lcl != null ? Number(s.lcl) : null,
-    cl: s.cl != null ? Number(s.cl) : null,
+    mean: s.x_bar != null ? Number(s.x_bar) : null,
   }));
 
   const first = data[0] as any;
   const ucl = first.ucl != null ? Number(first.ucl) : undefined;
   const lcl = first.lcl != null ? Number(first.lcl) : undefined;
-  const cl = first.cl != null ? Number(first.cl) : undefined;
+  const cp = first.cp != null ? Number(first.cp).toFixed(2) : "—";
+  const cpk = first.cpk != null ? Number(first.cpk).toFixed(2) : "—";
 
   return (
-    <div className="h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="idx" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-          <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-          <Legend />
-          {ucl !== undefined && <ReferenceLine y={ucl} stroke="hsl(var(--destructive))" strokeDasharray="4 4" label="UCL" />}
-          {cl !== undefined && <ReferenceLine y={cl} stroke="hsl(var(--info))" strokeDasharray="2 2" label="CL" />}
-          {lcl !== undefined && <ReferenceLine y={lcl} stroke="hsl(var(--destructive))" strokeDasharray="4 4" label="LCL" />}
-          <Line type="monotone" dataKey="mean" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} name="X̄" />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="glass-panel rounded-xl p-3">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">UCL</div>
+          <div className="font-mono text-lg">{ucl ?? "—"}</div>
+        </div>
+        <div className="glass-panel rounded-xl p-3">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">LCL</div>
+          <div className="font-mono text-lg">{lcl ?? "—"}</div>
+        </div>
+        <div className="glass-panel rounded-xl p-3">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Cp</div>
+          <div className="font-mono text-lg text-info">{cp}</div>
+        </div>
+        <div className="glass-panel rounded-xl p-3">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Cpk</div>
+          <div className="font-mono text-lg text-success">{cpk}</div>
+        </div>
+      </div>
+      <div className="h-80 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="idx" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+            <Legend />
+            {ucl !== undefined && <ReferenceLine y={ucl} stroke="hsl(var(--destructive))" strokeDasharray="4 4" label="UCL" />}
+            {lcl !== undefined && <ReferenceLine y={lcl} stroke="hsl(var(--destructive))" strokeDasharray="4 4" label="LCL" />}
+            <Line type="monotone" dataKey="mean" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} name="X̄" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
