@@ -423,9 +423,37 @@ function WoDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={regenOpen} onOpenChange={(v) => { if (!regenerate.isPending) setRegenOpen(v); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Regenerate inspections?</DialogTitle></DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p>
+              This scans the active inspection plans for <span className="font-mono">{w.products?.name ?? "this product"}</span> and
+              creates any inspection that does not already exist for this work order.
+            </p>
+            <ul className="list-disc pl-5 text-muted-foreground text-xs space-y-1">
+              <li>Existing inspections are never modified or duplicated.</li>
+              <li>Each plan is matched by <code>plan_id</code> — safe to run multiple times.</li>
+              <li>An audit-log entry is written with the exact plan IDs affected.</li>
+            </ul>
+            <div className="rounded-md border border-border/60 bg-card/60 p-2 text-xs">
+              Currently linked: <strong>{inspCount}</strong> inspection(s), <strong>{holdCount}</strong> hold(s).
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRegenOpen(false)} disabled={regenerate.isPending}>Cancel</Button>
+            <Button onClick={() => regenerate.mutate()} disabled={regenerate.isPending} className="gap-2">
+              <RefreshCw className={`h-4 w-4 ${regenerate.isPending ? "animate-spin" : ""}`} />
+              {regenerate.isPending ? "Regenerating..." : "Regenerate now"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
