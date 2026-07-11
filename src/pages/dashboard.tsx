@@ -141,7 +141,7 @@ export function DashboardPage() {
         supabase.from("non_conformances").select("id", { count: "exact", head: true }).eq("status", "open"),
         supabase.from("corrective_actions").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]).lt("due_date", today),
         supabase.from("inspection_measurements").select("is_pass, recorded_at").gte("recorded_at", sevenAgo),
-        supabase.from("quality_holds").select("id", { count: "exact", head: true }).eq("status", "on_hold"),
+        supabase.from("quality_holds").select("id", { count: "exact", head: true }).eq("status", "open"),
         supabase.from("work_orders").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
       ]);
       const err = insToday.error || openNC.error || overdueCA.error || recentMeas.error || openHolds.error || runningWO.error;
