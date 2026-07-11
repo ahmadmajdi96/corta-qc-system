@@ -57,6 +57,7 @@ export function ProfilePage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Account</CardTitle></CardHeader>
         <CardContent className="space-y-3">
+          <AvatarUpload profile={profile} refetch={refetch} />
           <div><Label>Email</Label><Input value={profile.email} disabled /></div>
           <div><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
           <Button onClick={saveName} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
