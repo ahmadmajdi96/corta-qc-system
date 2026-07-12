@@ -16,6 +16,8 @@ const schema = z.object({
   severity: z.enum(["critical","major","minor"]),
   product_id: z.string().uuid().optional(),
   category: z.string().optional(),
+  disposition: z.enum(["scrap","rework","repair","return_to_vendor","use_as_is"]).optional(),
+  root_cause_category: z.enum(["human","equipment","material","process"]).optional(),
 });
 
 /** Standalone NC dialog for the board's manual "+ Add NC". */
