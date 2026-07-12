@@ -21,6 +21,8 @@ const inspectionSchema = z.object({
   work_order_id: z.string().uuid().optional(),
   station_id: z.string().uuid().optional(),
   plan_id: z.string().uuid().optional(),
+  inspection_stage: z.enum(["iqc", "dupro", "final"]).optional(),
+  inspection_method: z.enum(["dimensional", "visual", "ndt", "functional"]).optional(),
 });
 
 export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
@@ -38,12 +40,15 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
   const [workOrderId, setWorkOrderId] = useState<string | undefined>();
   const [stationId, setStationId] = useState<string | undefined>();
   const [planId, setPlanId] = useState<string | undefined>();
+  const [stage, setStage] = useState<"iqc" | "dupro" | "final" | undefined>();
+  const [method, setMethod] = useState<"dimensional" | "visual" | "ndt" | "functional" | undefined>();
   const [errs, setErrs] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open) {
       setProductId(defaultProductId);
       setWorkOrderId(undefined); setStationId(undefined); setPlanId(undefined);
+      setStage(undefined); setMethod(undefined);
       setErrs({});
     }
   }, [open, defaultProductId]);
@@ -105,6 +110,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
         product_id: productId, scheduled_date: scheduledDate,
         lot_number: lot || undefined, notes: notes || undefined,
         work_order_id: workOrderId, station_id: stationId, plan_id: planId,
+        inspection_stage: stage, inspection_method: method,
       });
       if (!parsed.success) {
         const fe: Record<string, string> = {};
@@ -119,6 +125,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
       if (specErr) throw specErr;
       if (!spec) throw new Error("This product has no active specification. Create one first.");
       const chosenPlan = plans?.find((p) => p.id === planId);
+      const derivedStage = stage ?? (chosenPlan?.plan_type === "incoming" ? "iqc" : chosenPlan?.plan_type === "in_process" ? "dupro" : chosenPlan?.plan_type === "final" ? "final" : null);
       const { data, error } = await supabase.from("inspections").insert({
         product_id: productId!, spec_id: spec.id, scheduled_date: scheduledDate,
         lot_number: lot || null, notes: notes || null, status: "planned",
@@ -127,6 +134,8 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
         station_id: stationId ?? null,
         plan_id: planId ?? null,
         plan_type: chosenPlan?.plan_type ?? null,
+        inspection_stage: derivedStage,
+        inspection_method: method ?? null,
       } as any).select("id").single();
       if (error) {
         const serverFe = parseServerFieldErrors(error);
@@ -214,6 +223,33 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
               </SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground">Choose a product first to filter WOs & plans.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Inspection stage</Label>
+              <Select value={stage ?? "__auto"} onValueChange={(v) => setStage(v === "__auto" ? undefined : (v as any))}>
+                <SelectTrigger><SelectValue placeholder="Auto from plan" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__auto">Auto from plan</SelectItem>
+                  <SelectItem value="iqc">Incoming (IQC)</SelectItem>
+                  <SelectItem value="dupro">During Production (DUPRO)</SelectItem>
+                  <SelectItem value="final">Final</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Inspection method</Label>
+              <Select value={method ?? "__none"} onValueChange={(v) => setMethod(v === "__none" ? undefined : (v as any))}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  <SelectItem value="dimensional">Dimensional</SelectItem>
+                  <SelectItem value="visual">Visual</SelectItem>
+                  <SelectItem value="ndt">Non-Destructive Test</SelectItem>
+                  <SelectItem value="functional">Functional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>

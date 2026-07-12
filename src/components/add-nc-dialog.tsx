@@ -16,6 +16,8 @@ const schema = z.object({
   severity: z.enum(["critical","major","minor"]),
   product_id: z.string().uuid().optional(),
   category: z.string().optional(),
+  disposition: z.enum(["scrap","rework","repair","return_to_vendor","use_as_is"]).optional(),
+  root_cause_category: z.enum(["human","equipment","material","process"]).optional(),
 });
 
 /** Standalone NC dialog for the board's manual "+ Add NC". */
@@ -25,6 +27,8 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const [severity, setSeverity] = useState<"critical"|"major"|"minor">("minor");
   const [productId, setProductId] = useState<string>("");
   const [category, setCategory] = useState("");
+  const [disposition, setDisposition] = useState<string>("");
+  const [rootCause, setRootCause] = useState<string>("");
   const [errs, setErrs] = useState<Record<string,string>>({});
 
   const products = useQuery({ queryKey: ["nc-products"], queryFn: async () =>
@@ -33,7 +37,13 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
   const mut = useMutation({
     mutationFn: async () => {
-      const parsed = schema.safeParse({ description, severity, product_id: productId || undefined, category: category || undefined });
+      const parsed = schema.safeParse({
+        description, severity,
+        product_id: productId || undefined,
+        category: category || undefined,
+        disposition: (disposition || undefined) as any,
+        root_cause_category: (rootCause || undefined) as any,
+      });
       if (!parsed.success) {
         const fe: Record<string,string> = {};
         parsed.error.issues.forEach(i => { fe[String(i.path[0])] = i.message; });
@@ -43,6 +53,8 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       const { data: user } = await supabase.auth.getUser();
       const { error } = await supabase.from("non_conformances").insert({
         description, severity, category: category || null,
+        disposition: disposition || null,
+        root_cause_category: rootCause || null,
         raised_by: user.user!.id, status: "open",
       } as any);
       if (error) {
@@ -56,6 +68,7 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       qc.invalidateQueries({ queryKey: ["nc-board"] });
       qc.invalidateQueries({ queryKey: ["ncs"] });
       setDescription(""); setSeverity("minor"); setProductId(""); setCategory("");
+      setDisposition(""); setRootCause("");
       onOpenChange(false);
     },
     onError: (e: Error) => notifyError(e.message, { retry: () => mut.mutate() }),
@@ -86,6 +99,35 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
             <div>
               <Label>Category</Label>
               <Input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Contamination" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Root cause category</Label>
+              <Select value={rootCause || "__none"} onValueChange={v => setRootCause(v === "__none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  <SelectItem value="human">Human error</SelectItem>
+                  <SelectItem value="equipment">Equipment malfunction</SelectItem>
+                  <SelectItem value="material">Material defect</SelectItem>
+                  <SelectItem value="process">Process variation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Disposition</Label>
+              <Select value={disposition || "__none"} onValueChange={v => setDisposition(v === "__none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  <SelectItem value="scrap">Scrap</SelectItem>
+                  <SelectItem value="rework">Rework</SelectItem>
+                  <SelectItem value="repair">Repair</SelectItem>
+                  <SelectItem value="return_to_vendor">Return to vendor</SelectItem>
+                  <SelectItem value="use_as_is">Use as-is</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div>
