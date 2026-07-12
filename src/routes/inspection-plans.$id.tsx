@@ -1,0 +1,371 @@
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AuthGate } from "@/components/auth-gate";
+import { AppShell } from "@/components/app-shell";
+import { MesPage, StatusPill } from "@/components/mes/mes-page";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, ListChecks, Plus, Trash2, Pencil } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { notifyError } from "@/lib/toast";
+import { EmptyState } from "@/components/empty-state";
+
+const POINT_TYPES = [
+  { value: "hold", label: "Hold (H)", tone: "danger" as const },
+  { value: "witness", label: "Witness (W)", tone: "warning" as const },
+  { value: "review", label: "Review (R)", tone: "info" as const },
+];
+const METHODS = [
+  { value: "dimensional", label: "Dimensional" },
+  { value: "visual", label: "Visual" },
+  { value: "ndt", label: "Non-Destructive Test" },
+  { value: "functional", label: "Functional" },
+];
+
+type ItpRow = {
+  id: string;
+  plan_id: string;
+  sequence: number;
+  activity: string | null;
+  procedure: string | null;
+  check_points: string | null;
+  acceptance_criteria: string | null;
+  verifying_doc: string | null;
+  inspected_by: string | null;
+  comments: string | null;
+  point_type: string | null;
+  inspection_method: string | null;
+  is_critical: boolean;
+};
+
+const emptyRow = {
+  activity: "",
+  procedure: "",
+  check_points: "",
+  acceptance_criteria: "",
+  verifying_doc: "",
+  inspected_by: "",
+  comments: "",
+  point_type: "",
+  inspection_method: "",
+};
+
+function PlanDetail() {
+  const { id } = useParams({ from: "/inspection-plans/$id" });
+  const qc = useQueryClient();
+  const [rowOpen, setRowOpen] = useState(false);
+  const [editing, setEditing] = useState<ItpRow | null>(null);
+  const [form, setForm] = useState({ ...emptyRow });
+
+  const plan = useQuery({
+    queryKey: ["inspection-plan", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("inspection_plans")
+        .select("*, products(sku, name)")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Plan not found");
+      return data as any;
+    },
+  });
+
+  const rows = useQuery({
+    queryKey: ["itp-rows", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("plan_characteristics")
+        .select("*")
+        .eq("plan_id", id)
+        .order("sequence", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as ItpRow[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        plan_id: id,
+        activity: form.activity || null,
+        procedure: form.procedure || null,
+        check_points: form.check_points || null,
+        acceptance_criteria: form.acceptance_criteria || null,
+        verifying_doc: form.verifying_doc || null,
+        inspected_by: form.inspected_by || null,
+        comments: form.comments || null,
+        point_type: form.point_type || null,
+        inspection_method: form.inspection_method || null,
+      };
+      if (editing) {
+        const { error } = await supabase
+          .from("plan_characteristics")
+          .update(payload)
+          .eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const nextSeq = (rows.data ?? []).reduce((m, r) => Math.max(m, r.sequence), 0) + 1;
+        const { error } = await supabase
+          .from("plan_characteristics")
+          .insert({ ...payload, sequence: nextSeq, is_critical: false });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(editing ? "Row updated" : "Row added");
+      qc.invalidateQueries({ queryKey: ["itp-rows", id] });
+      setRowOpen(false);
+      setEditing(null);
+      setForm({ ...emptyRow });
+    },
+    onError: (e: Error) => notifyError(e.message, { retry: () => save.mutate() }),
+  });
+
+  const del = useMutation({
+    mutationFn: async (rowId: string) => {
+      const { error } = await supabase.from("plan_characteristics").delete().eq("id", rowId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Row deleted");
+      qc.invalidateQueries({ queryKey: ["itp-rows", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+  function openNew() {
+    setEditing(null);
+    setForm({ ...emptyRow });
+    setRowOpen(true);
+  }
+  function openEdit(row: ItpRow) {
+    setEditing(row);
+    setForm({
+      activity: row.activity ?? "",
+      procedure: row.procedure ?? "",
+      check_points: row.check_points ?? "",
+      acceptance_criteria: row.acceptance_criteria ?? "",
+      verifying_doc: row.verifying_doc ?? "",
+      inspected_by: row.inspected_by ?? "",
+      comments: row.comments ?? "",
+      point_type: row.point_type ?? "",
+      inspection_method: row.inspection_method ?? "",
+    });
+    setRowOpen(true);
+  }
+
+  return (
+    <MesPage
+      icon={<ListChecks className="h-5 w-5" />}
+      title={plan.data?.name ?? "Inspection Plan"}
+      description="Inspection & Test Plan (ITP) — activities, checkpoints, acceptance criteria and sign-off."
+      actions={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/inspection-plans">
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </Link>
+        </Button>
+      }
+    >
+      {plan.isLoading ? (
+        <Skeleton className="h-24 w-full" />
+      ) : plan.data ? (
+        <div className="rounded-lg border bg-card p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+          <div>
+            <div className="text-xs text-muted-foreground">Type</div>
+            <StatusPill tone="info">{plan.data.plan_type}</StatusPill>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">AQL level</div>
+            <div>{plan.data.aql_level ?? "—"}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Sampling rule</div>
+            <div>{plan.data.sample_size_rule ?? "—"}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Status</div>
+            <StatusPill tone={plan.data.is_active ? "success" : "muted"}>
+              {plan.data.is_active ? "Active" : "Inactive"}
+            </StatusPill>
+          </div>
+          {plan.data.standard_reference && (
+            <div className="sm:col-span-2">
+              <div className="text-xs text-muted-foreground">Standard reference</div>
+              <div>{plan.data.standard_reference}</div>
+            </div>
+          )}
+          {plan.data.description && (
+            <div className="sm:col-span-2 lg:col-span-4">
+              <div className="text-xs text-muted-foreground">Description</div>
+              <div className="whitespace-pre-wrap">{plan.data.description}</div>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      <div className="mt-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Inspection & Test Plan rows</h2>
+          <p className="text-xs text-muted-foreground">
+            Add one row per activity — Hold / Witness / Review points guide inspector sign-off.
+          </p>
+        </div>
+        <Button onClick={openNew} size="sm">
+          <Plus className="h-4 w-4 mr-1" /> Add row
+        </Button>
+      </div>
+
+      <div className="mt-3 rounded-lg border bg-card overflow-x-auto">
+        {rows.isLoading ? (
+          <div className="p-4"><Skeleton className="h-24 w-full" /></div>
+        ) : (rows.data?.length ?? 0) === 0 ? (
+          <div className="p-6">
+            <EmptyState
+              icon={<ListChecks className="h-6 w-6" />}
+              title="No ITP rows yet"
+              description="Add the first activity — e.g. 'Incoming raw material check'."
+              action={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />Add row</Button>}
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10">#</TableHead>
+                <TableHead>Activity</TableHead>
+                <TableHead>Procedure</TableHead>
+                <TableHead>Check points</TableHead>
+                <TableHead>Acceptance</TableHead>
+                <TableHead>Verifying doc</TableHead>
+                <TableHead>Inspected by</TableHead>
+                <TableHead>Point</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead className="w-24 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.data!.map((r) => {
+                const pt = POINT_TYPES.find((p) => p.value === r.point_type);
+                const m = METHODS.find((x) => x.value === r.inspection_method);
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell>{r.sequence}</TableCell>
+                    <TableCell className="max-w-[180px] truncate">{r.activity ?? "—"}</TableCell>
+                    <TableCell className="max-w-[220px] truncate">{r.procedure ?? "—"}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{r.check_points ?? "—"}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{r.acceptance_criteria ?? "—"}</TableCell>
+                    <TableCell className="max-w-[160px] truncate">{r.verifying_doc ?? "—"}</TableCell>
+                    <TableCell>{r.inspected_by ?? "—"}</TableCell>
+                    <TableCell>{pt ? <StatusPill tone={pt.tone}>{pt.label}</StatusPill> : "—"}</TableCell>
+                    <TableCell>{m?.label ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          if (confirm("Delete this ITP row?")) del.mutate(r.id);
+                        }}
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+
+      <Dialog open={rowOpen} onOpenChange={setRowOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editing ? "Edit ITP row" : "Add ITP row"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Activity</Label>
+              <Input value={form.activity} onChange={(e) => setForm({ ...form, activity: e.target.value })} placeholder="e.g. Concrete pouring" />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Procedure</Label>
+              <Textarea rows={2} value={form.procedure} onChange={(e) => setForm({ ...form, procedure: e.target.value })} placeholder="Construction procedure to describe this activity" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Check points</Label>
+              <Textarea rows={2} value={form.check_points} onChange={(e) => setForm({ ...form, check_points: e.target.value })} placeholder="Inspection check points" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Level of acceptance</Label>
+              <Textarea rows={2} value={form.acceptance_criteria} onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })} placeholder="e.g. Contract Spec / Drawings / Client Procedures" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Verifying document</Label>
+              <Input value={form.verifying_doc} onChange={(e) => setForm({ ...form, verifying_doc: e.target.value })} placeholder="e.g. Checklist #, Test report" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Inspected by</Label>
+              <Input value={form.inspected_by} onChange={(e) => setForm({ ...form, inspected_by: e.target.value })} placeholder="Who inspects and when" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Point type</Label>
+              <Select value={form.point_type || "__none"} onValueChange={(v) => setForm({ ...form, point_type: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  {POINT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Inspection method</Label>
+              <Select value={form.inspection_method || "__none"} onValueChange={(v) => setForm({ ...form, inspection_method: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  {METHODS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Comments</Label>
+              <Textarea rows={2} value={form.comments} onChange={(e) => setForm({ ...form, comments: e.target.value })} placeholder="Other requirements that need to be stated" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRowOpen(false)}>Cancel</Button>
+            <Button onClick={() => save.mutate()} disabled={save.isPending}>
+              {save.isPending ? "Saving..." : editing ? "Save" : "Add row"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </MesPage>
+  );
+}
+
+export const Route = createFileRoute("/inspection-plans/$id")({
+  ssr: false,
+  head: () => ({ meta: [{ title: "Inspection Plan — CORTA QC" }, { name: "robots", content: "noindex" }] }),
+  component: () => (
+    <AuthGate>
+      <AppShell>
+        <PlanDetail />
+      </AppShell>
+    </AuthGate>
+  ),
+});
