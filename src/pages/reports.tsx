@@ -613,13 +613,13 @@ function AcceptanceReport({ filters }: { filters: Filters }) {
 
     // ---- CAPA (AC 76-90) ----
     add("CAPA", "At least one CAPA exists", d.capas.length ? "pass" : "na");
-    for (const step of ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"]) {
-      const list = d.capas.filter(c => c.current_step === step);
-      add("CAPA", `CAPAs at step ${step}`, "na", `${list.length}`);
+    for (const st of ["draft", "in_progress", "verification", "closed", "cancelled"]) {
+      const list = d.capas.filter(c => c.status === st);
+      add("CAPA", `CAPAs with status ${st}`, "na", `${list.length}`);
     }
     add("CAPA", "No CAPA is orphaned (has nc_id)", d.capas.every(c => c.nc_id) ? "pass" : "fail");
-    add("CAPA", "Closed NCs have completed CAPA (D7/D8)", d.ncs.filter(n => n.status === "closed" && n.capa_id).every(n => { const c = d.capas.find(x => x.id === n.capa_id); return c && ["D7", "D8"].includes(c.current_step); }) ? "pass" : "na");
-    add("CAPA", "CAPAs have status", d.capas.every(c => c.status) ? "pass" : "fail");
+    add("CAPA", "Closed NCs have closed/verified CAPA", d.ncs.filter(n => n.status === "closed" && n.capa_id).every(n => { const c = d.capas.find(x => x.id === n.capa_id); return c && ["closed", "verification"].includes(c.status); }) ? "pass" : "na");
+    add("CAPA", "Closed CAPAs have D7 prevent recorded", d.capas.filter(c => c.status === "closed").every(c => c.d7_prevent) ? "pass" : "na");
 
     // ---- Traceability (AC 91-107) ----
     add("Trace", "NCs link to an inspection", d.ncs.filter(n => n.inspection_id).length ? "pass" : "na");
