@@ -471,36 +471,42 @@ export type Database = {
           aql_level: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           id: string
           is_active: boolean
           name: string
           plan_type: Database["public"]["Enums"]["plan_type"]
           product_id: string | null
           sample_size_rule: string | null
+          standard_reference: string | null
           updated_at: string
         }
         Insert: {
           aql_level?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           is_active?: boolean
           name: string
           plan_type: Database["public"]["Enums"]["plan_type"]
           product_id?: string | null
           sample_size_rule?: string | null
+          standard_reference?: string | null
           updated_at?: string
         }
         Update: {
           aql_level?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           is_active?: boolean
           name?: string
           plan_type?: Database["public"]["Enums"]["plan_type"]
           product_id?: string | null
           sample_size_rule?: string | null
+          standard_reference?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -588,6 +594,8 @@ export type Database = {
           hold_id: string | null
           id: string
           incoming_lot_id: string | null
+          inspection_method: string | null
+          inspection_stage: string | null
           line_id: string | null
           lot_number: string | null
           notes: string | null
@@ -612,6 +620,8 @@ export type Database = {
           hold_id?: string | null
           id?: string
           incoming_lot_id?: string | null
+          inspection_method?: string | null
+          inspection_stage?: string | null
           line_id?: string | null
           lot_number?: string | null
           notes?: string | null
@@ -636,6 +646,8 @@ export type Database = {
           hold_id?: string | null
           id?: string
           incoming_lot_id?: string | null
+          inspection_method?: string | null
+          inspection_stage?: string | null
           line_id?: string | null
           lot_number?: string | null
           notes?: string | null
@@ -798,6 +810,7 @@ export type Database = {
           closed_at: string | null
           containment: string | null
           description: string
+          disposition: string | null
           hold_id: string | null
           id: string
           inspection_id: string | null
@@ -807,6 +820,7 @@ export type Database = {
           raised_by: string
           rejection_reason: string | null
           root_cause: string | null
+          root_cause_category: string | null
           severity: string
           status: string
           updated_at: string
@@ -818,6 +832,7 @@ export type Database = {
           closed_at?: string | null
           containment?: string | null
           description: string
+          disposition?: string | null
           hold_id?: string | null
           id?: string
           inspection_id?: string | null
@@ -827,6 +842,7 @@ export type Database = {
           raised_by: string
           rejection_reason?: string | null
           root_cause?: string | null
+          root_cause_category?: string | null
           severity: string
           status?: string
           updated_at?: string
@@ -838,6 +854,7 @@ export type Database = {
           closed_at?: string | null
           containment?: string | null
           description?: string
+          disposition?: string | null
           hold_id?: string | null
           id?: string
           inspection_id?: string | null
@@ -847,6 +864,7 @@ export type Database = {
           raised_by?: string
           rejection_reason?: string | null
           root_cause?: string | null
+          root_cause_category?: string | null
           severity?: string
           status?: string
           updated_at?: string
@@ -917,34 +935,61 @@ export type Database = {
       }
       plan_characteristics: {
         Row: {
+          acceptance_criteria: string | null
+          activity: string | null
+          check_points: string | null
+          comments: string | null
           created_at: string
           id: string
+          inspected_by: string | null
+          inspection_method: string | null
           is_critical: boolean
           plan_id: string
+          point_type: string | null
+          procedure: string | null
           sample_frequency: string | null
           sequence: number
           spec_item_id: string | null
           updated_at: string
+          verifying_doc: string | null
         }
         Insert: {
+          acceptance_criteria?: string | null
+          activity?: string | null
+          check_points?: string | null
+          comments?: string | null
           created_at?: string
           id?: string
+          inspected_by?: string | null
+          inspection_method?: string | null
           is_critical?: boolean
           plan_id: string
+          point_type?: string | null
+          procedure?: string | null
           sample_frequency?: string | null
           sequence?: number
           spec_item_id?: string | null
           updated_at?: string
+          verifying_doc?: string | null
         }
         Update: {
+          acceptance_criteria?: string | null
+          activity?: string | null
+          check_points?: string | null
+          comments?: string | null
           created_at?: string
           id?: string
+          inspected_by?: string | null
+          inspection_method?: string | null
           is_critical?: boolean
           plan_id?: string
+          point_type?: string | null
+          procedure?: string | null
           sample_frequency?: string | null
           sequence?: number
           spec_item_id?: string | null
           updated_at?: string
+          verifying_doc?: string | null
         }
         Relationships: [
           {
