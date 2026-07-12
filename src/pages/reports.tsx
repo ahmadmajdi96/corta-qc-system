@@ -594,8 +594,8 @@ function AcceptanceReport({ filters }: { filters: Filters }) {
     add("NCs", "All NCs with disposition are linked to a CAPA", d.ncs.filter(n => n.disposition).every(n => n.capa_id) ? "pass" : "fail");
     add("NCs", "All linked CAPAs exist", d.ncs.filter(n => n.capa_id).every(n => d.capas.some(c => c.id === n.capa_id)) ? "pass" : "fail");
     add("NCs", "CAPA back-links to NC (round-trip)", d.ncs.filter(n => n.capa_id).every(n => { const c = d.capas.find(x => x.id === n.capa_id); return c && c.nc_id === n.id; }) ? "pass" : "fail");
-    add("NCs", "All CAPAs have a number", d.capas.every(c => c.number) ? "pass" : "fail");
-    add("NCs", "All CAPAs have current_step", d.capas.every(c => c.current_step) ? "pass" : "fail");
+    add("NCs", "All CAPAs have a number", d.capas.every(c => c.capa_number) ? "pass" : "fail");
+    add("NCs", "All CAPAs have a status", d.capas.every(c => c.status) ? "pass" : "fail");
     // Per-disposition audits
     for (const disp of ["scrap", "rework", "repair", "return_to_vendor", "use_as_is"]) {
       const list = d.ncs.filter(n => n.disposition === disp);
