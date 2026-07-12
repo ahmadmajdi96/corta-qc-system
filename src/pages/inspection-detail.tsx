@@ -494,20 +494,45 @@ export function InspectionExecutePage({ id }: { id: string }) {
   if (insp.isLoading || items.isLoading) return <div className="max-w-3xl"><Skeleton className="h-64" /></div>;
   if (!insp.data) return <div>Inspection not found.</div>;
 
-  const recorded = Object.values(values).filter((v) => v.value || v.na).length;
+  const recorded = Object.values(values).filter((v) => v.value || v.na || Object.keys(v.result_details ?? {}).length > 1).length;
 
+  // Per-method + overall breakdown (spec items + H/W/R sign-off characteristics)
+  const breakdown: Record<string, { pass: number; fail: number; na: number; pending: number }> = {};
+  const bumpB = (m: string, k: "pass" | "fail" | "na" | "pending") => {
+    breakdown[m] = breakdown[m] ?? { pass: 0, fail: 0, na: 0, pending: 0 };
+    breakdown[m][k] += 1;
+  };
   let passCount = 0, failCount = 0, naCount = 0, pendingCount = 0;
   (items.data ?? []).forEach((it: any) => {
-    const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
-    if (v.na) { naCount++; return; }
-    if (!v.value?.toString().trim()) { pendingCount++; return; }
-    const p = evaluatePass(it, v.value);
-    if (p === true) passCount++;
-    else if (p === false) failCount++;
-    else pendingCount++;
+    const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null, method: inferMethod(it), result_details: {} as MethodResult };
+    if (v.na) { naCount++; bumpB(v.method, "na"); return; }
+    const p = evaluatePass(it, v.value, v.method, v.result_details);
+    if (p === true) { passCount++; bumpB(v.method, "pass"); }
+    else if (p === false) { failCount++; bumpB(v.method, "fail"); }
+    else { pendingCount++; bumpB(v.method, "pending"); }
   });
+  (signoffPoints.data ?? []).forEach((p: any) => {
+    const sv = signValues[p.id] ?? { method: p.inspection_method ?? "visual", result_details: {} as MethodResult, notes: "" };
+    const so = (signoffs.data ?? []).find((s: any) => s.characteristic_id === p.id);
+    let verdict = evaluateFromMethod(sv.method, sv.result_details);
+    if (verdict === null && so?.is_pass != null) verdict = so.is_pass;
+    if (verdict === true) { passCount++; bumpB(sv.method, "pass"); }
+    else if (verdict === false) { failCount++; bumpB(sv.method, "fail"); }
+    else { pendingCount++; bumpB(sv.method, "pending"); }
+  });
+  const totalCount = passCount + failCount + naCount + pendingCount || 1;
   const overallVerdict: "pass" | "fail" | "pending" =
     pendingCount > 0 ? "pending" : failCount > 0 ? "fail" : "pass";
+
+  const methodsInPlay = Object.keys(breakdown);
+  const filteredItems = (items.data ?? []).filter((it: any) => {
+    if (methodFilter === "all") return true;
+    const v = values[it.id]; const m = v?.method ?? inferMethod(it);
+    return m === methodFilter;
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE));
+  const pageSafe = Math.min(page, totalPages - 1);
+  const pageItems = filteredItems.slice(pageSafe * PAGE, pageSafe * PAGE + PAGE);
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -520,7 +545,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
       </div>
 
       <Card>
-        <CardContent className="pt-4">
+        <CardContent className="pt-4 space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="text-sm font-medium mr-2">Overall verdict</div>
             {overallVerdict === "pass" && <Badge className="bg-status-completed text-white">PASS</Badge>}
@@ -530,13 +555,34 @@ export function InspectionExecutePage({ id }: { id: string }) {
               {passCount} pass · {failCount} fail · {naCount} N/A · {pendingCount} pending
             </span>
           </div>
-          <div className="mt-2 h-2 rounded bg-muted overflow-hidden flex">
-            {passCount > 0 && <div className="bg-status-completed" style={{ width: `${(passCount / (items.data?.length || 1)) * 100}%` }} />}
-            {failCount > 0 && <div className="bg-destructive" style={{ width: `${(failCount / (items.data?.length || 1)) * 100}%` }} />}
-            {naCount > 0 && <div className="bg-muted-foreground/40" style={{ width: `${(naCount / (items.data?.length || 1)) * 100}%` }} />}
+          <div className="h-2 rounded bg-muted overflow-hidden flex">
+            {passCount > 0 && <div className="bg-status-completed" style={{ width: `${(passCount / totalCount) * 100}%` }} />}
+            {failCount > 0 && <div className="bg-destructive" style={{ width: `${(failCount / totalCount) * 100}%` }} />}
+            {naCount > 0 && <div className="bg-muted-foreground/40" style={{ width: `${(naCount / totalCount) * 100}%` }} />}
           </div>
+          {methodsInPlay.length > 0 && (
+            <div className="pt-2 border-t">
+              <div className="text-xs font-medium mb-1.5">Breakdown by method</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {methodsInPlay.map((m) => {
+                  const b = breakdown[m];
+                  return (
+                    <div key={m} className="rounded border p-2 text-xs">
+                      <div className="font-medium capitalize">{m}</div>
+                      <div className="mt-1 text-muted-foreground">
+                        <span className="text-status-completed">{b.pass} pass</span> ·{" "}
+                        <span className="text-destructive">{b.fail} fail</span> ·{" "}
+                        {b.na} N/A · {b.pending} pending
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
 
 
       {(signoffPoints.data ?? []).length > 0 && (
