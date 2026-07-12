@@ -510,15 +510,15 @@ function AcceptanceReport({ filters }: { filters: Filters }) {
     queryKey: ["ac-verify", filters],
     queryFn: async () => {
       const [plans, planChars, insp, meas, signoffs, ncs, capas] = await Promise.all([
-        supabase.from("inspection_plans").select("id, is_active, revision, product_id").limit(2000),
-        supabase.from("plan_characteristics").select("id, plan_id, activity_description, acceptance_criteria, tools, responsibility_role, required_documents, is_critical, point_type, method").limit(5000),
+        supabase.from("inspection_plans").select("id, is_active, product_id").limit(2000),
+        supabase.from("plan_characteristics").select("id, plan_id, activity, acceptance_criteria, tools, responsibility_role, required_documents, is_critical, point_type, inspection_method").limit(5000),
         supabase.from("inspections").select("id, status, scheduled_date, inspection_stage, inspection_method, plan_id, completed_at")
           .gte("scheduled_date", filters.from).lte("scheduled_date", filters.to).limit(5000),
         supabase.from("inspection_measurements").select("id, inspection_id, is_pass, result_details").limit(20000),
         supabase.from("inspection_signoffs").select("id, inspection_id, characteristic_id, status, signed_by, is_pass, result_details").limit(20000),
         supabase.from("non_conformances").select("id, severity, status, disposition, root_cause, root_cause_category, capa_id, quarantine_tag, quarantine_location, quarantine_qty, closed_at, raised_at, inspection_id")
           .gte("raised_at", filters.from).lte("raised_at", filters.to + "T23:59:59").limit(5000),
-        supabase.from("capa_records").select("id, nc_id, number, current_step, status").limit(5000),
+        supabase.from("capa_records").select("id, nc_id, capa_number, status, d7_prevent, d8_recognition").limit(5000),
       ]);
       return {
         plans: plans.data ?? [], planChars: planChars.data ?? [], insp: insp.data ?? [],
