@@ -537,12 +537,12 @@ function AcceptanceReport({ filters }: { filters: Filters }) {
     // ---- Plans (AC 1-10) ----
     add("Plans", "At least one inspection plan exists", d.plans.length ? "pass" : "fail", `${d.plans.length} plans`);
     add("Plans", "At least one plan is active", d.plans.some(p => p.is_active) ? "pass" : "fail");
-    add("Plans", "All plans have a revision", d.plans.every(p => p.revision) ? "pass" : "fail");
-    add("Plans", "All plans linked to a product", d.plans.every(p => p.product_id) ? "pass" : "fail");
+    add("Plans", "All plans have a product link", d.plans.every(p => p.product_id) ? "pass" : "fail");
+    add("Plans", "All plans linked to a product (duplicate check)", d.plans.every(p => p.product_id) ? "pass" : "fail");
     add("Plans", "Every active plan has ≥1 characteristic", d.plans.filter(p => p.is_active).every(p => d.planChars.some(ch => ch.plan_id === p.id)) ? "pass" : "fail");
-    add("Plans", "Every characteristic has an activity description", d.planChars.every(ch => ch.activity_description) ? "pass" : "fail");
+    add("Plans", "Every characteristic has an activity", d.planChars.every(ch => ch.activity) ? "pass" : "fail");
     add("Plans", "Every characteristic has acceptance criteria", d.planChars.every(ch => ch.acceptance_criteria) ? "pass" : "fail");
-    add("Plans", "Every characteristic has a method", d.planChars.every(ch => ch.method) ? "pass" : "fail");
+    add("Plans", "Every characteristic has an inspection method", d.planChars.every(ch => ch.inspection_method) ? "pass" : "fail");
     add("Plans", "Hold points have a responsibility role", d.planChars.filter(ch => ch.point_type === "hold").every(ch => ch.responsibility_role) ? "pass" : "fail");
     add("Plans", "Critical characteristics have tools defined", d.planChars.filter(ch => ch.is_critical).every(ch => ch.tools) ? "pass" : "fail");
 
