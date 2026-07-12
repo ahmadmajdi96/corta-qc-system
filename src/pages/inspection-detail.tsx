@@ -393,6 +393,12 @@ export function InspectionExecutePage({ id }: { id: string }) {
           setErrors(errs);
           throw new Error(`Please record all required measurements (${Object.keys(errs).length} missing).`);
         }
+        const holdRows = (signoffPoints.data ?? []).filter((p: any) => p.point_type === "hold");
+        const signedIds = new Set((signoffs.data ?? []).filter((s: any) => s.status === "signed").map((s: any) => s.characteristic_id));
+        const unsignedHolds = holdRows.filter((p: any) => !signedIds.has(p.id));
+        if (unsignedHolds.length) {
+          throw new Error(`${unsignedHolds.length} Hold point${unsignedHolds.length > 1 ? "s" : ""} not signed off. Sign off all Hold points before completing.`);
+        }
       }
       const rows = items.data.map((it: any) => {
         const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
