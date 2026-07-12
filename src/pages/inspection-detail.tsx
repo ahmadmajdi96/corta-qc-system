@@ -253,7 +253,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
 
   const insp = useQuery({
     queryKey: ["inspection", id],
-    queryFn: async () => (await supabase.from("inspections").select("*, products(name)").eq("id", id).maybeSingle()).data,
+    queryFn: async () => (await supabase.from("inspections").select("*, products(name), inspection_plans(id, name)").eq("id", id).maybeSingle()).data,
   });
   const items = useQuery({
     queryKey: ["spec-items", insp.data?.spec_id],
@@ -268,6 +268,68 @@ export function InspectionExecutePage({ id }: { id: string }) {
     queryKey: ["gages", "active"],
     queryFn: async () => (await supabase.from("gages").select("id, code, name, gage_type, status").eq("status", "active").order("code")).data ?? [],
   });
+  const planId = (insp.data as any)?.plan_id as string | null | undefined;
+  const signoffPoints = useQuery({
+    queryKey: ["signoff-points", planId],
+    enabled: !!planId,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("plan_characteristics")
+        .select("id, sequence, activity, point_type, responsibility_role, required_documents, acceptance_criteria")
+        .eq("plan_id", planId)
+        .in("point_type", ["hold", "witness", "review"])
+        .order("sequence", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const signoffs = useQuery({
+    queryKey: ["signoffs", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("inspection_signoffs")
+        .select("*")
+        .eq("inspection_id", id);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const signMut = useMutation({
+    mutationFn: async (args: { characteristic_id: string; point_type: string; notes?: string; unsign?: boolean }) => {
+      if (!user) throw new Error("Not authenticated");
+      const existingRow = (signoffs.data ?? []).find((s: any) => s.characteristic_id === args.characteristic_id);
+      if (args.unsign) {
+        if (!existingRow) return;
+        const { error } = await (supabase as any)
+          .from("inspection_signoffs")
+          .update({ status: "pending", signed_by: null, signed_at: null })
+          .eq("id", existingRow.id);
+        if (error) throw error;
+        return;
+      }
+      const payload = {
+        inspection_id: id,
+        characteristic_id: args.characteristic_id,
+        point_type: args.point_type,
+        status: "signed",
+        signed_by: user.id,
+        signed_at: new Date().toISOString(),
+        notes: args.notes ?? null,
+      };
+      if (existingRow) {
+        const { error } = await (supabase as any).from("inspection_signoffs").update(payload).eq("id", existingRow.id);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from("inspection_signoffs").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["signoffs", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
 
   type Row = { value: string; notes: string; na: boolean; attachment_url: string | null; gage_id: string | null };
   const [values, setValues] = useState<Record<string, Row>>({});
