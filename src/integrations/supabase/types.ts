@@ -407,6 +407,7 @@ export type Database = {
           notes: string | null
           recorded_at: string
           recorded_by: string
+          result_details: Json | null
           spec_item_id: string
         }
         Insert: {
@@ -420,6 +421,7 @@ export type Database = {
           notes?: string | null
           recorded_at?: string
           recorded_by: string
+          result_details?: Json | null
           spec_item_id: string
         }
         Update: {
@@ -433,6 +435,7 @@ export type Database = {
           notes?: string | null
           recorded_at?: string
           recorded_by?: string
+          result_details?: Json | null
           spec_item_id?: string
         }
         Relationships: [
@@ -592,8 +595,10 @@ export type Database = {
           created_at: string
           id: string
           inspection_id: string
+          is_pass: boolean | null
           notes: string | null
           point_type: string
+          result_details: Json | null
           signed_at: string | null
           signed_by: string | null
           status: string
@@ -604,8 +609,10 @@ export type Database = {
           created_at?: string
           id?: string
           inspection_id: string
+          is_pass?: boolean | null
           notes?: string | null
           point_type: string
+          result_details?: Json | null
           signed_at?: string | null
           signed_by?: string | null
           status?: string
@@ -616,8 +623,10 @@ export type Database = {
           created_at?: string
           id?: string
           inspection_id?: string
+          is_pass?: boolean | null
           notes?: string | null
           point_type?: string
+          result_details?: Json | null
           signed_at?: string | null
           signed_by?: string | null
           status?: string
@@ -870,11 +879,15 @@ export type Database = {
           inspection_id: string | null
           measurement_id: string | null
           number: string
+          quarantine_location: string | null
+          quarantine_qty: number | null
+          quarantine_tag: string | null
           raised_at: string
           raised_by: string
           rejection_reason: string | null
           root_cause: string | null
           root_cause_category: string | null
+          segregation_status: string | null
           severity: string
           status: string
           updated_at: string
@@ -892,11 +905,15 @@ export type Database = {
           inspection_id?: string | null
           measurement_id?: string | null
           number: string
+          quarantine_location?: string | null
+          quarantine_qty?: number | null
+          quarantine_tag?: string | null
           raised_at?: string
           raised_by: string
           rejection_reason?: string | null
           root_cause?: string | null
           root_cause_category?: string | null
+          segregation_status?: string | null
           severity: string
           status?: string
           updated_at?: string
@@ -914,11 +931,15 @@ export type Database = {
           inspection_id?: string | null
           measurement_id?: string | null
           number?: string
+          quarantine_location?: string | null
+          quarantine_qty?: number | null
+          quarantine_tag?: string | null
           raised_at?: string
           raised_by?: string
           rejection_reason?: string | null
           root_cause?: string | null
           root_cause_category?: string | null
+          segregation_status?: string | null
           severity?: string
           status?: string
           updated_at?: string
