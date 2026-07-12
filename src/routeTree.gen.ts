@@ -37,6 +37,7 @@ import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
 import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
+import { Route as InspectionPlansIdRouteImport } from './routes/inspection-plans.$id'
 import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
 import { Route as CapaIdRouteImport } from './routes/capa.$id'
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
@@ -182,6 +183,11 @@ const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
   path: '/inspections/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InspectionPlansIdRoute = InspectionPlansIdRouteImport.update({
+  id: '/inspection-plans/$id',
+  path: '/inspection-plans/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CorrectiveActionsIdRoute = CorrectiveActionsIdRouteImport.update({
   id: '/corrective-actions/$id',
   path: '/corrective-actions/$id',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/spc': typeof SpcRoute
   '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
+  '/inspection-plans/$id': typeof InspectionPlansIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/spc': typeof SpcRoute
   '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
+  '/inspection-plans/$id': typeof InspectionPlansIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/spc': typeof SpcRoute
   '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
+  '/inspection-plans/$id': typeof InspectionPlansIdRoute
   '/inspections/calendar': typeof InspectionsCalendarRoute
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/spc'
     | '/capa/$id'
     | '/corrective-actions/$id'
+    | '/inspection-plans/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/spc'
     | '/capa/$id'
     | '/corrective-actions/$id'
+    | '/inspection-plans/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/spc'
     | '/capa/$id'
     | '/corrective-actions/$id'
+    | '/inspection-plans/$id'
     | '/inspections/calendar'
     | '/non-conformances/$id'
     | '/non-conformances/list'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   SpcRoute: typeof SpcRoute
   CapaIdRoute: typeof CapaIdRoute
   CorrectiveActionsIdRoute: typeof CorrectiveActionsIdRoute
+  InspectionPlansIdRoute: typeof InspectionPlansIdRoute
   InspectionsCalendarRoute: typeof InspectionsCalendarRoute
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
@@ -644,6 +657,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectionsCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inspection-plans/$id': {
+      id: '/inspection-plans/$id'
+      path: '/inspection-plans/$id'
+      fullPath: '/inspection-plans/$id'
+      preLoaderRoute: typeof InspectionPlansIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/corrective-actions/$id': {
       id: '/corrective-actions/$id'
       path: '/corrective-actions/$id'
@@ -686,6 +706,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpcRoute: SpcRoute,
   CapaIdRoute: CapaIdRoute,
   CorrectiveActionsIdRoute: CorrectiveActionsIdRoute,
+  InspectionPlansIdRoute: InspectionPlansIdRoute,
   InspectionsCalendarRoute: InspectionsCalendarRoute,
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,

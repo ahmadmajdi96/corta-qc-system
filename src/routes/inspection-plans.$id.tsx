@@ -168,7 +168,7 @@ function PlanDetail() {
       icon={<ListChecks className="h-5 w-5" />}
       title={plan.data?.name ?? "Inspection Plan"}
       description="Inspection & Test Plan (ITP) — activities, checkpoints, acceptance criteria and sign-off."
-      actions={
+      action={
         <Button variant="outline" size="sm" asChild>
           <Link to="/inspection-plans">
             <ArrowLeft className="h-4 w-4 mr-1" /> Back
