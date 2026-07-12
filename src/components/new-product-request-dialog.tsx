@@ -113,7 +113,7 @@ export function NewProductRequestDialog({
           requester_id: user.id,
           assignee_id: assigneeId || null,
           payload,
-        })
+        } as any)
         .select("id")
         .single();
       if (error) throw error;

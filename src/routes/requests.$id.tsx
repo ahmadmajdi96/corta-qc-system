@@ -99,7 +99,7 @@ function RequestDetail({ id }: { id: string }) {
       const { error } = await supabase
         .from("requests")
         .update({
-          status: to,
+          status: to as any,
           decision_notes: notes.trim() || r.decision_notes,
           decided_by: (to === "approved" || to === "rejected") ? user!.id : r.decided_by,
           decided_at: (to === "approved" || to === "rejected") ? new Date().toISOString() : r.decided_at,
