@@ -435,6 +435,19 @@ export function InspectionExecutePage({ id }: { id: string }) {
 
   const recorded = Object.values(values).filter((v) => v.value || v.na).length;
 
+  let passCount = 0, failCount = 0, naCount = 0, pendingCount = 0;
+  (items.data ?? []).forEach((it: any) => {
+    const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
+    if (v.na) { naCount++; return; }
+    if (!v.value?.toString().trim()) { pendingCount++; return; }
+    const p = evaluatePass(it, v.value);
+    if (p === true) passCount++;
+    else if (p === false) failCount++;
+    else pendingCount++;
+  });
+  const overallVerdict: "pass" | "fail" | "pending" =
+    pendingCount > 0 ? "pending" : failCount > 0 ? "fail" : "pass";
+
   return (
     <div className="max-w-3xl space-y-6">
       <div>
@@ -444,6 +457,26 @@ export function InspectionExecutePage({ id }: { id: string }) {
           {recorded} of {items.data?.length ?? 0} recorded {insp.data.lot_number ? `· Lot ${insp.data.lot_number}` : ""}
         </div>
       </div>
+
+      <Card>
+        <CardContent className="pt-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-sm font-medium mr-2">Overall verdict</div>
+            {overallVerdict === "pass" && <Badge className="bg-status-completed text-white">PASS</Badge>}
+            {overallVerdict === "fail" && <Badge variant="destructive">FAIL</Badge>}
+            {overallVerdict === "pending" && <Badge variant="secondary">Pending</Badge>}
+            <span className="text-xs text-muted-foreground">
+              {passCount} pass · {failCount} fail · {naCount} N/A · {pendingCount} pending
+            </span>
+          </div>
+          <div className="mt-2 h-2 rounded bg-muted overflow-hidden flex">
+            {passCount > 0 && <div className="bg-status-completed" style={{ width: `${(passCount / (items.data?.length || 1)) * 100}%` }} />}
+            {failCount > 0 && <div className="bg-destructive" style={{ width: `${(failCount / (items.data?.length || 1)) * 100}%` }} />}
+            {naCount > 0 && <div className="bg-muted-foreground/40" style={{ width: `${(naCount / (items.data?.length || 1)) * 100}%` }} />}
+          </div>
+        </CardContent>
+      </Card>
+
 
       {(signoffPoints.data ?? []).length > 0 && (
         <Card>

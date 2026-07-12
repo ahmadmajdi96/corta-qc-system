@@ -215,6 +215,36 @@ export function NcDetailPage({ id }: { id: string }) {
           <Card>
             <CardHeader><CardTitle className="text-base">Investigation</CardTitle></CardHeader>
             <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Root cause category</Label>
+                  <Select
+                    value={(n.root_cause_category as string | null) ?? "__none"}
+                    onValueChange={(v) => updateFields.mutate({ root_cause_category: v === "__none" ? null : v })}
+                    disabled={!canManage}
+                  >
+                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">—</SelectItem>
+                      <SelectItem value="human">Human</SelectItem>
+                      <SelectItem value="equipment">Equipment / Machine</SelectItem>
+                      <SelectItem value="material">Material</SelectItem>
+                      <SelectItem value="method">Method / Process</SelectItem>
+                      <SelectItem value="measurement">Measurement</SelectItem>
+                      <SelectItem value="environment">Environment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Input
+                    defaultValue={n.category ?? ""}
+                    onBlur={(e) => e.target.value !== (n.category ?? "") && updateFields.mutate({ category: e.target.value || null })}
+                    disabled={!canManage}
+                    placeholder="e.g. dimensional, cosmetic"
+                  />
+                </div>
+              </div>
               <div>
                 <Label>Root cause</Label>
                 <Textarea defaultValue={n.root_cause ?? ""} rows={3}
@@ -222,11 +252,62 @@ export function NcDetailPage({ id }: { id: string }) {
                   disabled={!canManage} />
               </div>
               <div>
-                <Label>Containment actions</Label>
+                <Label>Containment / quarantine actions</Label>
                 <Textarea defaultValue={n.containment ?? ""} rows={3}
                   onBlur={(e) => e.target.value !== (n.containment ?? "") && updateFields.mutate({ containment: e.target.value })}
-                  disabled={!canManage} />
+                  disabled={!canManage}
+                  placeholder="Where the material is segregated, quantity, tag numbers…" />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Disposition</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Selecting a disposition automatically opens a linked CAPA (8D) so corrective and preventive actions can be tracked.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Label>Decision</Label>
+                <Select
+                  value={(n.disposition as string | null) ?? "__none"}
+                  onValueChange={async (v) => {
+                    const value = v === "__none" ? null : v;
+                    await updateFields.mutateAsync({ disposition: value });
+                    if (value && !linkedCapa.data) openCapa.mutate();
+                  }}
+                  disabled={!canManage}
+                >
+                  <SelectTrigger><SelectValue placeholder="Choose disposition…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">—</SelectItem>
+                    <SelectItem value="scrap">Scrap</SelectItem>
+                    <SelectItem value="rework">Rework</SelectItem>
+                    <SelectItem value="repair">Repair</SelectItem>
+                    <SelectItem value="return_to_vendor">Return to vendor</SelectItem>
+                    <SelectItem value="use_as_is">Use as-is (concession)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {n.disposition && (
+                <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-1">
+                  <div>
+                    Disposition: <span className="font-medium capitalize">{String(n.disposition).replace(/_/g, " ")}</span>
+                  </div>
+                  {linkedCapa.data ? (
+                    <div className="text-xs text-muted-foreground">
+                      Linked CAPA:{" "}
+                      <Link to="/capa/$id" params={{ id: linkedCapa.data.id }} className="underline">
+                        {linkedCapa.data.capa_number ?? linkedCapa.data.id.slice(0, 8)}
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">Opening CAPA…</div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
