@@ -353,40 +353,28 @@ function PlanDetail() {
           <DialogHeader>
             <DialogTitle>{editing ? "Edit ITP row" : "Add ITP row"}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 max-h-[65vh] overflow-y-auto pr-1">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>Activity</Label>
+              <Label>Activity <span className="text-destructive">*</span></Label>
               <Input value={form.activity} onChange={(e) => setForm({ ...form, activity: e.target.value })} placeholder="e.g. Concrete pouring" />
+              {formErr.activity && <p className="text-xs text-destructive">{formErr.activity}</p>}
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Procedure</Label>
               <Textarea rows={2} value={form.procedure} onChange={(e) => setForm({ ...form, procedure: e.target.value })} placeholder="Construction procedure to describe this activity" />
             </div>
             <div className="space-y-1.5">
-              <Label>Check points</Label>
-              <Textarea rows={2} value={form.check_points} onChange={(e) => setForm({ ...form, check_points: e.target.value })} placeholder="Inspection check points" />
+              <Label>Inspection scope / Check points</Label>
+              <Textarea rows={2} value={form.check_points} onChange={(e) => setForm({ ...form, check_points: e.target.value })} placeholder="What to inspect (features, dimensions, characteristics)" />
             </div>
             <div className="space-y-1.5">
-              <Label>Level of acceptance</Label>
-              <Textarea rows={2} value={form.acceptance_criteria} onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })} placeholder="e.g. Contract Spec / Drawings / Client Procedures" />
+              <Label>Acceptance criteria / tolerance <span className="text-destructive">*</span></Label>
+              <Textarea rows={2} value={form.acceptance_criteria} onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })} placeholder="e.g. ±0.1 mm, or Contract Spec section 4.2" />
+              {formErr.acceptance_criteria && <p className="text-xs text-destructive">{formErr.acceptance_criteria}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label>Verifying document</Label>
-              <Input value={form.verifying_doc} onChange={(e) => setForm({ ...form, verifying_doc: e.target.value })} placeholder="e.g. Checklist #, Test report" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Inspected by</Label>
-              <Input value={form.inspected_by} onChange={(e) => setForm({ ...form, inspected_by: e.target.value })} placeholder="Who inspects and when" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Point type</Label>
-              <Select value={form.point_type || "__none"} onValueChange={(v) => setForm({ ...form, point_type: v === "__none" ? "" : v })}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none">—</SelectItem>
-                  {POINT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Tools / equipment</Label>
+              <Input value={form.tools} onChange={(e) => setForm({ ...form, tools: e.target.value })} placeholder="e.g. Caliper, CMM, UT probe" />
             </div>
             <div className="space-y-1.5">
               <Label>Inspection method</Label>
@@ -398,6 +386,63 @@ function PlanDetail() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-1.5">
+              <Label>Point type</Label>
+              <Select value={form.point_type || "__none"} onValueChange={(v) => setForm({ ...form, point_type: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  {POINT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Hold blocks progression. Witness needs a witness present. Review is documentary.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Responsible role {form.point_type === "hold" && <span className="text-destructive">*</span>}</Label>
+              <Input value={form.responsibility_role} onChange={(e) => setForm({ ...form, responsibility_role: e.target.value })} placeholder="e.g. quality_manager, client_representative" />
+              {formErr.responsibility_role && <p className="text-xs text-destructive">{formErr.responsibility_role}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label>Inspected by (free text)</Label>
+              <Input value={form.inspected_by} onChange={(e) => setForm({ ...form, inspected_by: e.target.value })} placeholder="Who inspects and when" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Verifying document</Label>
+              <Input value={form.verifying_doc} onChange={(e) => setForm({ ...form, verifying_doc: e.target.value })} placeholder="e.g. Checklist #, Test report" />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Required documents</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={docInput}
+                  onChange={(e) => setDocInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDoc(); } }}
+                  placeholder="Add a document name and press Enter (e.g. MTR, ITP, Calibration cert)"
+                />
+                <Button type="button" variant="outline" onClick={addDoc}>Add</Button>
+              </div>
+              {form.required_documents.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {form.required_documents.map((d) => (
+                    <span key={d} className="inline-flex items-center gap-1 rounded-full border bg-muted px-2 py-0.5 text-xs">
+                      {d}
+                      <button type="button" onClick={() => removeDoc(d)} className="text-muted-foreground hover:text-destructive">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="space-y-1.5 sm:col-span-2 flex items-center gap-2">
+              <input
+                id="row-critical"
+                type="checkbox"
+                checked={form.is_critical}
+                onChange={(e) => setForm({ ...form, is_critical: e.target.checked })}
+              />
+              <Label htmlFor="row-critical" className="cursor-pointer">Critical characteristic (CCP)</Label>
+            </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Comments</Label>
               <Textarea rows={2} value={form.comments} onChange={(e) => setForm({ ...form, comments: e.target.value })} placeholder="Other requirements that need to be stated" />
@@ -405,7 +450,7 @@ function PlanDetail() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRowOpen(false)}>Cancel</Button>
-            <Button onClick={() => save.mutate()} disabled={save.isPending}>
+            <Button onClick={onSaveClick} disabled={save.isPending}>
               {save.isPending ? "Saving..." : editing ? "Save" : "Add row"}
             </Button>
           </DialogFooter>
