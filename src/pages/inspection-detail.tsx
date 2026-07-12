@@ -35,7 +35,7 @@ export function InspectionDetailPage({ id }: { id: string }) {
     queryKey: ["inspection", id],
     queryFn: async () => {
       const { data, error } = await supabase.from("inspections")
-        .select(`*, products(id, name, sku), quality_specifications(version), profiles!inspections_performed_by_fkey(full_name),
+        .select(`*, products(id, name, sku), quality_specifications(version), profiles!inspections_performed_by_profile_fkey(full_name),
                  inspection_measurements(*, specification_items(*)),
                  non_conformances(id, number, severity, status, description)`)
         .eq("id", id).maybeSingle();

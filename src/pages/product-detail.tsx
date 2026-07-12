@@ -88,7 +88,7 @@ export function ProductDetailPage({ id }: { id: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("inspections")
-        .select("id, status, scheduled_date, lot_number, performed_by, profiles!inspections_performed_by_fkey(full_name), inspection_measurements(is_pass)")
+        .select("id, status, scheduled_date, lot_number, performed_by, profiles!inspections_performed_by_profile_fkey(full_name), inspection_measurements(is_pass)")
         .eq("product_id", id)
         .order("scheduled_date", { ascending: false })
         .limit(50);

@@ -40,7 +40,7 @@ export function InspectionsListPage() {
     queryKey: ["inspections", status, productId, debouncedLot, dateFrom, dateTo, page],
     queryFn: async () => {
       let q = supabase.from("inspections")
-        .select("*, products(name, sku), profiles!inspections_performed_by_fkey(full_name), inspection_measurements(is_pass)", { count: "exact" })
+        .select("*, products(name, sku), profiles!inspections_performed_by_profile_fkey(full_name), inspection_measurements(is_pass)", { count: "exact" })
         .order("scheduled_date", { ascending: false });
       if (status !== "all") q = q.eq("status", status);
       if (productId !== "all") q = q.eq("product_id", productId);
