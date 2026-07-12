@@ -120,25 +120,35 @@ export function NcDetailPage({ id }: { id: string }) {
         n?.severity ? `Severity: ${n.severity}` : null,
         n?.number ? `Source NC: ${n.number}` : null,
       ].filter(Boolean).join("\n");
+      const containment = [
+        n?.containment,
+        n?.quarantine_location && `Location: ${n.quarantine_location}`,
+        n?.quarantine_qty != null && `Qty: ${n.quarantine_qty}`,
+        n?.quarantine_tag && `Tag: ${n.quarantine_tag}`,
+        n?.segregation_status && `Segregation: ${n.segregation_status}`,
+      ].filter(Boolean).join("\n") || null;
       const { data, error } = await supabase.from("capa_records").insert({
         nc_id: id,
         methodology: "8d",
         status: "open",
         d2_problem: problem,
-        d3_containment: n?.containment ?? null,
+        d3_containment: containment,
         d4_root_cause: n?.root_cause ?? null,
         created_by: user!.id,
         owner_id: user!.id,
-      } as any).select("id").single();
+      } as any).select("id, capa_number").single();
       if (error) throw error;
+      // Persist the reverse link on the NC so the relationship is reliable.
+      await (supabase.from("non_conformances") as any).update({ capa_id: data.id }).eq("id", id);
       await supabase.from("audit_logs").insert({
         user_id: user!.id, action: "capa.opened_from_nc", entity_type: "non_conformance", entity_id: id,
-        details: { capa_id: data.id },
+        details: { capa_id: data.id, capa_number: data.capa_number },
       });
       return data;
     },
     onSuccess: (c) => {
       qc.invalidateQueries({ queryKey: ["nc-capa", id] });
+      qc.invalidateQueries({ queryKey: ["nc", id] });
       if (c?.id) navigate({ to: "/capa/$id", params: { id: c.id } });
     },
     onError: (e: Error) => notifyError(e.message),
