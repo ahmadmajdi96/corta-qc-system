@@ -101,6 +101,35 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               <Input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Contamination" />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Root cause category</Label>
+              <Select value={rootCause || "__none"} onValueChange={v => setRootCause(v === "__none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  <SelectItem value="human">Human error</SelectItem>
+                  <SelectItem value="equipment">Equipment malfunction</SelectItem>
+                  <SelectItem value="material">Material defect</SelectItem>
+                  <SelectItem value="process">Process variation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Disposition</Label>
+              <Select value={disposition || "__none"} onValueChange={v => setDisposition(v === "__none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  <SelectItem value="scrap">Scrap</SelectItem>
+                  <SelectItem value="rework">Rework</SelectItem>
+                  <SelectItem value="repair">Repair</SelectItem>
+                  <SelectItem value="return_to_vendor">Return to vendor</SelectItem>
+                  <SelectItem value="use_as_is">Use as-is</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div>
             <Label>Product (optional)</Label>
             <Select value={productId} onValueChange={setProductId}>
