@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
 import { Route as StationsIndexRouteImport } from './routes/stations.index'
+import { Route as RequestsIndexRouteImport } from './routes/requests.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
 import { Route as LinesIndexRouteImport } from './routes/lines.index'
@@ -31,6 +32,7 @@ import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-
 import { Route as CapaIndexRouteImport } from './routes/capa.index'
 import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
 import { Route as WorkOrdersIdRouteImport } from './routes/work-orders.$id'
+import { Route as RequestsIdRouteImport } from './routes/requests.$id'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
 import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
@@ -95,6 +97,11 @@ const StationsIndexRoute = StationsIndexRouteImport.update({
   path: '/stations/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RequestsIndexRoute = RequestsIndexRouteImport.update({
+  id: '/requests/',
+  path: '/requests/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
@@ -148,6 +155,11 @@ const CalibrationIndexRoute = CalibrationIndexRouteImport.update({
 const WorkOrdersIdRoute = WorkOrdersIdRouteImport.update({
   id: '/work-orders/$id',
   path: '/work-orders/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestsIdRoute = RequestsIdRouteImport.update({
+  id: '/requests/$id',
+  path: '/requests/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
@@ -206,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/requests/$id': typeof RequestsIdRoute
   '/work-orders/$id': typeof WorkOrdersIdRoute
   '/calibration/': typeof CalibrationIndexRoute
   '/capa/': typeof CapaIndexRoute
@@ -217,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/lines/': typeof LinesIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/requests/': typeof RequestsIndexRoute
   '/stations/': typeof StationsIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
@@ -238,6 +252,7 @@ export interface FileRoutesByTo {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/requests/$id': typeof RequestsIdRoute
   '/work-orders/$id': typeof WorkOrdersIdRoute
   '/calibration': typeof CalibrationIndexRoute
   '/capa': typeof CapaIndexRoute
@@ -249,6 +264,7 @@ export interface FileRoutesByTo {
   '/lines': typeof LinesIndexRoute
   '/non-conformances': typeof NonConformancesIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/requests': typeof RequestsIndexRoute
   '/stations': typeof StationsIndexRoute
   '/suppliers': typeof SuppliersIndexRoute
   '/work-orders': typeof WorkOrdersIndexRoute
@@ -271,6 +287,7 @@ export interface FileRoutesById {
   '/non-conformances/$id': typeof NonConformancesIdRoute
   '/non-conformances/list': typeof NonConformancesListRoute
   '/products/$id': typeof ProductsIdRoute
+  '/requests/$id': typeof RequestsIdRoute
   '/work-orders/$id': typeof WorkOrdersIdRoute
   '/calibration/': typeof CalibrationIndexRoute
   '/capa/': typeof CapaIndexRoute
@@ -282,6 +299,7 @@ export interface FileRoutesById {
   '/lines/': typeof LinesIndexRoute
   '/non-conformances/': typeof NonConformancesIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/requests/': typeof RequestsIndexRoute
   '/stations/': typeof StationsIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
@@ -305,6 +323,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/requests/$id'
     | '/work-orders/$id'
     | '/calibration/'
     | '/capa/'
@@ -316,6 +335,7 @@ export interface FileRouteTypes {
     | '/lines/'
     | '/non-conformances/'
     | '/products/'
+    | '/requests/'
     | '/stations/'
     | '/suppliers/'
     | '/work-orders/'
@@ -337,6 +357,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/requests/$id'
     | '/work-orders/$id'
     | '/calibration'
     | '/capa'
@@ -348,6 +369,7 @@ export interface FileRouteTypes {
     | '/lines'
     | '/non-conformances'
     | '/products'
+    | '/requests'
     | '/stations'
     | '/suppliers'
     | '/work-orders'
@@ -369,6 +391,7 @@ export interface FileRouteTypes {
     | '/non-conformances/$id'
     | '/non-conformances/list'
     | '/products/$id'
+    | '/requests/$id'
     | '/work-orders/$id'
     | '/calibration/'
     | '/capa/'
@@ -380,6 +403,7 @@ export interface FileRouteTypes {
     | '/lines/'
     | '/non-conformances/'
     | '/products/'
+    | '/requests/'
     | '/stations/'
     | '/suppliers/'
     | '/work-orders/'
@@ -402,6 +426,7 @@ export interface RootRouteChildren {
   NonConformancesIdRoute: typeof NonConformancesIdRoute
   NonConformancesListRoute: typeof NonConformancesListRoute
   ProductsIdRoute: typeof ProductsIdRoute
+  RequestsIdRoute: typeof RequestsIdRoute
   WorkOrdersIdRoute: typeof WorkOrdersIdRoute
   CalibrationIndexRoute: typeof CalibrationIndexRoute
   CapaIndexRoute: typeof CapaIndexRoute
@@ -413,6 +438,7 @@ export interface RootRouteChildren {
   LinesIndexRoute: typeof LinesIndexRoute
   NonConformancesIndexRoute: typeof NonConformancesIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  RequestsIndexRoute: typeof RequestsIndexRoute
   StationsIndexRoute: typeof StationsIndexRoute
   SuppliersIndexRoute: typeof SuppliersIndexRoute
   WorkOrdersIndexRoute: typeof WorkOrdersIndexRoute
@@ -499,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requests/': {
+      id: '/requests/'
+      path: '/requests'
+      fullPath: '/requests/'
+      preLoaderRoute: typeof RequestsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/': {
       id: '/products/'
       path: '/products'
@@ -576,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkOrdersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requests/$id': {
+      id: '/requests/$id'
+      path: '/requests/$id'
+      fullPath: '/requests/$id'
+      preLoaderRoute: typeof RequestsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/$id': {
       id: '/products/$id'
       path: '/products/$id'
@@ -650,6 +690,7 @@ const rootRouteChildren: RootRouteChildren = {
   NonConformancesIdRoute: NonConformancesIdRoute,
   NonConformancesListRoute: NonConformancesListRoute,
   ProductsIdRoute: ProductsIdRoute,
+  RequestsIdRoute: RequestsIdRoute,
   WorkOrdersIdRoute: WorkOrdersIdRoute,
   CalibrationIndexRoute: CalibrationIndexRoute,
   CapaIndexRoute: CapaIndexRoute,
@@ -661,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   LinesIndexRoute: LinesIndexRoute,
   NonConformancesIndexRoute: NonConformancesIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  RequestsIndexRoute: RequestsIndexRoute,
   StationsIndexRoute: StationsIndexRoute,
   SuppliersIndexRoute: SuppliersIndexRoute,
   WorkOrdersIndexRoute: WorkOrdersIndexRoute,

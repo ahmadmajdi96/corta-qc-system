@@ -24,6 +24,7 @@ import {
   Search,
   ChevronRight,
   FileSearch,
+  Inbox,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyProfile, useMyRoles, hasAnyRole } from "@/lib/auth";
@@ -61,6 +62,7 @@ const operations: NavItem[] = [
   { title: "Control Center", url: "/", icon: LayoutDashboard },
   { title: "Live Floor", url: "/live", icon: Radio },
   { title: "Work Orders", url: "/work-orders", icon: ScrollText },
+  { title: "Requests", url: "/requests", icon: Inbox },
 ];
 
 const quality: NavItem[] = [
