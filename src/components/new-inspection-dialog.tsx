@@ -40,6 +40,8 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
   const [workOrderId, setWorkOrderId] = useState<string | undefined>();
   const [stationId, setStationId] = useState<string | undefined>();
   const [planId, setPlanId] = useState<string | undefined>();
+  const [stage, setStage] = useState<"iqc" | "dupro" | "final" | undefined>();
+  const [method, setMethod] = useState<"dimensional" | "visual" | "ndt" | "functional" | undefined>();
   const [errs, setErrs] = useState<Record<string, string>>({});
 
   useEffect(() => {
