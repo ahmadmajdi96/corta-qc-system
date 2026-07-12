@@ -48,6 +48,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
     if (open) {
       setProductId(defaultProductId);
       setWorkOrderId(undefined); setStationId(undefined); setPlanId(undefined);
+      setStage(undefined); setMethod(undefined);
       setErrs({});
     }
   }, [open, defaultProductId]);
