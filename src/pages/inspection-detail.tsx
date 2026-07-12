@@ -295,7 +295,11 @@ export function InspectionExecutePage({ id }: { id: string }) {
     },
   });
   const signMut = useMutation({
-    mutationFn: async (args: { characteristic_id: string; point_type: string; notes?: string; unsign?: boolean }) => {
+    mutationFn: async (args: {
+      characteristic_id: string; point_type: string;
+      notes?: string; unsign?: boolean;
+      result_details?: any; is_pass?: boolean | null;
+    }) => {
       if (!user) throw new Error("Not authenticated");
       const existingRow = (signoffs.data ?? []).find((s: any) => s.characteristic_id === args.characteristic_id);
       if (args.unsign) {
@@ -307,7 +311,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
         if (error) throw error;
         return;
       }
-      const payload = {
+      const payload: any = {
         inspection_id: id,
         characteristic_id: args.characteristic_id,
         point_type: args.point_type,
@@ -315,6 +319,8 @@ export function InspectionExecutePage({ id }: { id: string }) {
         signed_by: user.id,
         signed_at: new Date().toISOString(),
         notes: args.notes ?? null,
+        result_details: args.result_details ?? null,
+        is_pass: args.is_pass ?? null,
       };
       if (existingRow) {
         const { error } = await (supabase as any).from("inspection_signoffs").update(payload).eq("id", existingRow.id);
@@ -324,9 +330,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["signoffs", id] });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["signoffs", id] }); },
     onError: (e: Error) => notifyError(e.message),
   });
 
