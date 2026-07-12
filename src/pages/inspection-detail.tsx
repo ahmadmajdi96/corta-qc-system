@@ -331,24 +331,79 @@ export function InspectionExecutePage({ id }: { id: string }) {
   });
 
 
-  type Row = { value: string; notes: string; na: boolean; attachment_url: string | null; gage_id: string | null };
+  type MethodResult = {
+    visual_findings?: string; visual_result?: "pass" | "fail" | "";
+    ndt_method?: string; ndt_reference?: string; ndt_indications?: string; ndt_result?: "pass" | "fail" | "";
+    func_expected?: string; func_observed?: string; func_result?: "pass" | "fail" | "";
+  };
+  type Row = {
+    value: string; notes: string; na: boolean;
+    attachment_url: string | null; gage_id: string | null;
+    method: string; result_details: MethodResult;
+  };
   const [values, setValues] = useState<Record<string, Row>>({});
+  const [signValues, setSignValues] = useState<Record<string, { method: string; result_details: MethodResult; notes: string }>>({});
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(0);
+  const [methodFilter, setMethodFilter] = useState<string>("all");
+  const PAGE = 8;
+
+  function inferMethod(it: any): string {
+    if (it.measurement_type === "numeric") return "dimensional";
+    if (it.measurement_type === "boolean") return "visual";
+    return "visual";
+  }
 
   const initedRef = useState({ done: false })[0];
   if (!initedRef.done && existing.data && items.data) {
     const map: Record<string, Row> = {};
     items.data.forEach((it: any) => {
       const m = existing.data.find((x: any) => x.spec_item_id === it.id);
-      map[it.id] = { value: m?.measured_value ?? "", notes: m?.notes ?? "", na: !!m?.is_na, attachment_url: m?.attachment_url ?? null, gage_id: m?.gage_id ?? null };
+      const rd = (m?.result_details ?? {}) as any;
+      map[it.id] = {
+        value: m?.measured_value ?? "",
+        notes: m?.notes ?? "",
+        na: !!m?.is_na,
+        attachment_url: m?.attachment_url ?? null,
+        gage_id: m?.gage_id ?? null,
+        method: rd.method ?? inferMethod(it),
+        result_details: rd,
+      };
     });
     initedRef.done = true;
     setValues(map);
   }
 
-  function evaluatePass(it: any, raw: string): boolean | null {
+  const signInitedRef = useState({ done: false })[0];
+  if (!signInitedRef.done && signoffPoints.data && signoffs.data) {
+    const map: Record<string, { method: string; result_details: MethodResult; notes: string }> = {};
+    (signoffPoints.data ?? []).forEach((p: any) => {
+      const so = (signoffs.data ?? []).find((s: any) => s.characteristic_id === p.id);
+      const rd = (so?.result_details ?? {}) as any;
+      map[p.id] = {
+        method: rd.method ?? p.inspection_method ?? "visual",
+        result_details: rd,
+        notes: so?.notes ?? "",
+      };
+    });
+    signInitedRef.done = true;
+    setSignValues(map);
+  }
+
+  function evaluateFromMethod(method: string, rd: MethodResult): boolean | null {
+    if (method === "visual") return rd.visual_result ? rd.visual_result === "pass" : null;
+    if (method === "ndt") return rd.ndt_result ? rd.ndt_result === "pass" : null;
+    if (method === "functional") return rd.func_result ? rd.func_result === "pass" : null;
+    return null;
+  }
+
+  function evaluatePass(it: any, raw: string, method?: string, rd?: MethodResult): boolean | null {
+    if (method && method !== "dimensional") {
+      const p = evaluateFromMethod(method, rd ?? {});
+      if (p !== null) return p;
+    }
     if (raw === "" || raw == null) return null;
     if (it.measurement_type === "numeric") {
       const n = Number(raw); if (isNaN(n)) return null;
