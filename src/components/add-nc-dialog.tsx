@@ -27,6 +27,8 @@ export function AddNcDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const [severity, setSeverity] = useState<"critical"|"major"|"minor">("minor");
   const [productId, setProductId] = useState<string>("");
   const [category, setCategory] = useState("");
+  const [disposition, setDisposition] = useState<string>("");
+  const [rootCause, setRootCause] = useState<string>("");
   const [errs, setErrs] = useState<Record<string,string>>({});
 
   const products = useQuery({ queryKey: ["nc-products"], queryFn: async () =>
