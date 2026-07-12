@@ -590,13 +590,18 @@ export function InspectionExecutePage({ id }: { id: string }) {
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Hold / Witness / Review sign-offs</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Hold points must be signed off before the inspection can be completed.
+              Record method results here. Hold points must be signed off before completion.
             </p>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             {(signoffPoints.data ?? []).map((p: any) => {
               const so = (signoffs.data ?? []).find((s: any) => s.characteristic_id === p.id);
               const isSigned = so?.status === "signed";
+              const sv = signValues[p.id] ?? { method: p.inspection_method ?? "visual", result_details: {} as MethodResult, notes: "" };
+              const setSv = (patch: Partial<typeof sv>) =>
+                setSignValues({ ...signValues, [p.id]: { ...sv, ...patch } });
+              const setRd = (patch: Partial<MethodResult>) =>
+                setSv({ result_details: { ...sv.result_details, ...patch } });
               const tone =
                 p.point_type === "hold"
                   ? "bg-destructive/10 text-destructive border-destructive/40"
@@ -604,57 +609,67 @@ export function InspectionExecutePage({ id }: { id: string }) {
                   ? "bg-amber-500/10 text-amber-700 border-amber-500/40 dark:text-amber-400"
                   : "bg-sky-500/10 text-sky-700 border-sky-500/40 dark:text-sky-400";
               const docs = Array.isArray(p.required_documents) ? p.required_documents : [];
+              const verdict = evaluateFromMethod(sv.method, sv.result_details);
               return (
-                <div key={p.id} className="rounded-md border p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10px] uppercase px-1.5 py-0.5 rounded border ${tone}`}>
-                        {p.point_type}
-                      </span>
-                      <span className="font-medium truncate">
-                        {p.sequence}. {p.activity ?? "—"}
-                      </span>
-                      {p.responsibility_role && (
-                        <span className="text-xs text-muted-foreground">· {p.responsibility_role}</span>
-                      )}
-                    </div>
-                    {p.acceptance_criteria && (
-                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                        {p.acceptance_criteria}
-                      </div>
-                    )}
-                    {docs.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {docs.map((d: string) => (
-                          <span key={d} className="text-[10px] rounded border bg-muted px-1.5 py-0.5">{d}</span>
-                        ))}
-                      </div>
-                    )}
-                    {isSigned && so?.signed_at && (
-                      <div className="text-[11px] text-muted-foreground mt-1">
-                        Signed {new Date(so.signed_at).toLocaleString()}
-                      </div>
-                    )}
+                <div key={p.id} className="rounded-md border p-3 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`text-[10px] uppercase px-1.5 py-0.5 rounded border ${tone}`}>{p.point_type}</span>
+                    <span className="font-medium">{p.sequence}. {p.activity ?? "—"}</span>
+                    {p.responsibility_role && <span className="text-xs text-muted-foreground">· {p.responsibility_role}</span>}
+                    {verdict === true && <Badge className="bg-status-completed text-white ml-auto">Pass</Badge>}
+                    {verdict === false && <Badge variant="destructive" className="ml-auto">Fail</Badge>}
+                    {verdict == null && <Badge variant="secondary" className="ml-auto">Pending</Badge>}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  {p.acceptance_criteria && (
+                    <div className="text-xs text-muted-foreground">Acceptance: {p.acceptance_criteria}</div>
+                  )}
+                  {docs.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {docs.map((d: string) => (
+                        <span key={d} className="text-[10px] rounded border bg-muted px-1.5 py-0.5">{d}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Method</Label>
+                      <Select value={sv.method} onValueChange={(v) => setSv({ method: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="visual">Visual</SelectItem>
+                          <SelectItem value="dimensional">Dimensional</SelectItem>
+                          <SelectItem value="ndt">NDT</SelectItem>
+                          <SelectItem value="functional">Functional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Notes</Label>
+                      <Input value={sv.notes} onChange={(e) => setSv({ notes: e.target.value })} placeholder="Optional" />
+                    </div>
+                  </div>
+                  <MethodFields method={sv.method} rd={sv.result_details} onChange={setRd} />
+                  <div className="flex items-center justify-end gap-2">
+                    {isSigned && so?.signed_at && (
+                      <span className="text-[11px] text-muted-foreground mr-auto">Signed {new Date(so.signed_at).toLocaleString()}</span>
+                    )}
                     {isSigned ? (
                       <>
                         <Badge className="bg-status-completed text-white">Signed</Badge>
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        <Button size="sm" variant="outline"
                           onClick={() => signMut.mutate({ characteristic_id: p.id, point_type: p.point_type, unsign: true })}
-                          disabled={signMut.isPending}
-                        >
-                          Unsign
-                        </Button>
+                          disabled={signMut.isPending}>Unsign</Button>
                       </>
                     ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => signMut.mutate({ characteristic_id: p.id, point_type: p.point_type })}
-                        disabled={signMut.isPending}
-                      >
+                      <Button size="sm"
+                        onClick={() => signMut.mutate({
+                          characteristic_id: p.id,
+                          point_type: p.point_type,
+                          notes: sv.notes || undefined,
+                          result_details: { ...sv.result_details, method: sv.method },
+                          is_pass: verdict,
+                        })}
+                        disabled={signMut.isPending}>
                         Sign off
                       </Button>
                     )}
@@ -666,11 +681,30 @@ export function InspectionExecutePage({ id }: { id: string }) {
         </Card>
       )}
 
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium">ITP characteristics · Measurements</div>
+        <div className="flex items-center gap-2">
+          <Select value={methodFilter} onValueChange={(v) => { setMethodFilter(v); setPage(0); }}>
+            <SelectTrigger className="h-8 w-40 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All methods</SelectItem>
+              <SelectItem value="visual">Visual</SelectItem>
+              <SelectItem value="dimensional">Dimensional</SelectItem>
+              <SelectItem value="ndt">NDT</SelectItem>
+              <SelectItem value="functional">Functional</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground">
+            {filteredItems.length ? `${pageSafe * PAGE + 1}–${Math.min(filteredItems.length, (pageSafe + 1) * PAGE)} of ${filteredItems.length}` : "0 items"}
+          </span>
+        </div>
+      </div>
 
       <div className="space-y-3">
-        {(items.data ?? []).map((it: any) => {
-          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
-          const pass = v.na ? null : evaluatePass(it, v.value);
+        {pageItems.map((it: any) => {
+          const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null, method: inferMethod(it), result_details: {} as MethodResult };
+          const setV = (patch: Partial<Row>) => setValues({ ...values, [it.id]: { ...v, ...patch } });
+          const pass = v.na ? null : evaluatePass(it, v.value, v.method, v.result_details);
           const err = errors[it.id];
           return (
             <Card key={it.id} className={err ? "border-destructive" : ""}>
@@ -693,9 +727,21 @@ export function InspectionExecutePage({ id }: { id: string }) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
+                    <Label className="text-xs">Method</Label>
+                    <Select value={v.method} onValueChange={(m) => setV({ method: m })} disabled={v.na}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="visual">Visual</SelectItem>
+                        <SelectItem value="dimensional">Dimensional</SelectItem>
+                        <SelectItem value="ndt">NDT</SelectItem>
+                        <SelectItem value="functional">Functional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <Label className="text-xs">Measurement</Label>
                     {it.measurement_type === "boolean" ? (
-                      <Select value={v.value} onValueChange={(val) => setValues({ ...values, [it.id]: { ...v, value: val, na: false } })} disabled={v.na}>
+                      <Select value={v.value} onValueChange={(val) => setV({ value: val, na: false })} disabled={v.na}>
                         <SelectTrigger><SelectValue placeholder="Choose" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="true">Pass</SelectItem>
@@ -704,32 +750,35 @@ export function InspectionExecutePage({ id }: { id: string }) {
                       </Select>
                     ) : (
                       <Input type={it.measurement_type === "numeric" ? "number" : "text"} step="any" disabled={v.na}
-                        value={v.value} onChange={(e) => setValues({ ...values, [it.id]: { ...v, value: e.target.value } })} />
+                        value={v.value} onChange={(e) => setV({ value: e.target.value })} />
                     )}
                   </div>
+                </div>
+                <MethodFields method={v.method} rd={v.result_details} onChange={(rd) => setV({ result_details: { ...v.result_details, ...rd } })} />
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs">Notes</Label>
-                    <Input value={v.notes} onChange={(e) => setValues({ ...values, [it.id]: { ...v, notes: e.target.value } })} placeholder="Optional" />
+                    <Input value={v.notes} onChange={(e) => setV({ notes: e.target.value })} placeholder="Optional" />
                   </div>
-                </div>
-                <div>
-                  <Label className="text-xs">Gage / Standard</Label>
-                  <Select value={v.gage_id ?? "none"} onValueChange={(val) => setValues({ ...values, [it.id]: { ...v, gage_id: val === "none" ? null : val } })} disabled={v.na}>
-                    <SelectTrigger><SelectValue placeholder="Select gage used" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">— No gage —</SelectItem>
-                      {gages.data?.map((g: any) => (
-                        <SelectItem key={g.id} value={g.id}>
-                          <span className="font-mono text-xs mr-2">{g.code}</span>{g.name} <span className="text-muted-foreground">· {g.gage_type}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <Label className="text-xs">Gage / Standard</Label>
+                    <Select value={v.gage_id ?? "none"} onValueChange={(val) => setV({ gage_id: val === "none" ? null : val })} disabled={v.na}>
+                      <SelectTrigger><SelectValue placeholder="Select gage used" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">— No gage —</SelectItem>
+                        {gages.data?.map((g: any) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            <span className="font-mono text-xs mr-2">{g.code}</span>{g.name} <span className="text-muted-foreground">· {g.gage_type}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                   <label className="flex items-center gap-2 text-xs">
                     <input type="checkbox" checked={v.na}
-                      onChange={(e) => setValues({ ...values, [it.id]: { ...v, na: e.target.checked, value: e.target.checked ? "" : v.value } })} />
+                      onChange={(e) => setV({ na: e.target.checked, value: e.target.checked ? "" : v.value })} />
                     Mark N/A
                   </label>
                   <label className="text-xs inline-flex items-center gap-2 cursor-pointer">
@@ -748,7 +797,18 @@ export function InspectionExecutePage({ id }: { id: string }) {
             </Card>
           );
         })}
+        {filteredItems.length === 0 && (
+          <EmptyState title="No characteristics match this filter" />
+        )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={pageSafe === 0}>Prev</Button>
+          <span className="text-xs text-muted-foreground">Page {pageSafe + 1} / {totalPages}</span>
+          <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={pageSafe >= totalPages - 1}>Next</Button>
+        </div>
+      )}
 
       <div className="sticky bottom-4 flex gap-2 justify-end bg-background/80 backdrop-blur p-3 rounded-lg border">
         <Button variant="outline" onClick={() => save(false)} disabled={saving}>Save Draft</Button>
@@ -756,4 +816,97 @@ export function InspectionExecutePage({ id }: { id: string }) {
       </div>
     </div>
   );
+}
+
+function MethodFields({ method, rd, onChange }: { method: string; rd: any; onChange: (patch: any) => void }) {
+  if (method === "visual") {
+    return (
+      <div className="rounded border bg-muted/30 p-3 space-y-2">
+        <div className="text-xs font-medium">Visual inspection</div>
+        <div>
+          <Label className="text-xs">Findings</Label>
+          <Textarea rows={2} value={rd.visual_findings ?? ""} onChange={(e) => onChange({ visual_findings: e.target.value })} placeholder="e.g. no visible cracks or discoloration" />
+        </div>
+        <div>
+          <Label className="text-xs">Result</Label>
+          <Select value={rd.visual_result || ""} onValueChange={(v) => onChange({ visual_result: v as any })}>
+            <SelectTrigger><SelectValue placeholder="Select verdict" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pass">Pass</SelectItem>
+              <SelectItem value="fail">Fail</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  }
+  if (method === "ndt") {
+    return (
+      <div className="rounded border bg-muted/30 p-3 space-y-2">
+        <div className="text-xs font-medium">Non-Destructive Test</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">NDT method</Label>
+            <Select value={rd.ndt_method || ""} onValueChange={(v) => onChange({ ndt_method: v })}>
+              <SelectTrigger><SelectValue placeholder="Select NDT method" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UT">Ultrasonic (UT)</SelectItem>
+                <SelectItem value="RT">Radiographic (RT)</SelectItem>
+                <SelectItem value="MT">Magnetic Particle (MT)</SelectItem>
+                <SelectItem value="PT">Liquid Penetrant (PT)</SelectItem>
+                <SelectItem value="VT">Visual (VT)</SelectItem>
+                <SelectItem value="ET">Eddy Current (ET)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Reference standard</Label>
+            <Input value={rd.ndt_reference ?? ""} onChange={(e) => onChange({ ndt_reference: e.target.value })} placeholder="e.g. ASME V, Art. 4" />
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">Indications / findings</Label>
+          <Textarea rows={2} value={rd.ndt_indications ?? ""} onChange={(e) => onChange({ ndt_indications: e.target.value })} placeholder="Describe indications found (or none)" />
+        </div>
+        <div>
+          <Label className="text-xs">Result</Label>
+          <Select value={rd.ndt_result || ""} onValueChange={(v) => onChange({ ndt_result: v as any })}>
+            <SelectTrigger><SelectValue placeholder="Select verdict" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pass">Pass (no rejectable indications)</SelectItem>
+              <SelectItem value="fail">Fail (rejectable indications)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  }
+  if (method === "functional") {
+    return (
+      <div className="rounded border bg-muted/30 p-3 space-y-2">
+        <div className="text-xs font-medium">Functional test</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">Expected behaviour</Label>
+            <Textarea rows={2} value={rd.func_expected ?? ""} onChange={(e) => onChange({ func_expected: e.target.value })} />
+          </div>
+          <div>
+            <Label className="text-xs">Observed behaviour</Label>
+            <Textarea rows={2} value={rd.func_observed ?? ""} onChange={(e) => onChange({ func_observed: e.target.value })} />
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">Result</Label>
+          <Select value={rd.func_result || ""} onValueChange={(v) => onChange({ func_result: v as any })}>
+            <SelectTrigger><SelectValue placeholder="Select verdict" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pass">Pass</SelectItem>
+              <SelectItem value="fail">Fail</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  }
+  return null;
 }
