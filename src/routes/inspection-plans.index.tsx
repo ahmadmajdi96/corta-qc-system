@@ -65,7 +65,25 @@ export const Route = createFileRoute("/inspection-plans/")({
                   { value: "ANSI Z1.4 Special Level S-4", label: "Special Level S-4" },
                 ],
               },
+              {
+                name: "standard_reference",
+                label: "Standard reference",
+                type: "select",
+                options: [
+                  { value: "ISO 9001", label: "ISO 9001" },
+                  { value: "ASTM", label: "ASTM" },
+                  { value: "ASME", label: "ASME" },
+                  { value: "ANSI/ASQ Z1.4", label: "ANSI/ASQ Z1.4" },
+                  { value: "Client procedure", label: "Client procedure" },
+                ],
+              },
+              { name: "description", label: "Description", type: "textarea" },
             ]}
+            extraActions={(row: any) => (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/inspection-plans/$id" params={{ id: row.id }}>Open</Link>
+              </Button>
+            )}
           />
         </MesPage>
       </AppShell>
