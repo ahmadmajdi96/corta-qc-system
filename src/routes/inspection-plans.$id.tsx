@@ -43,6 +43,9 @@ type ItpRow = {
   comments: string | null;
   point_type: string | null;
   inspection_method: string | null;
+  tools: string | null;
+  responsibility_role: string | null;
+  required_documents: string[] | null;
   is_critical: boolean;
 };
 
@@ -56,6 +59,10 @@ const emptyRow = {
   comments: "",
   point_type: "",
   inspection_method: "",
+  tools: "",
+  responsibility_role: "",
+  required_documents: [] as string[],
+  is_critical: false,
 };
 
 function PlanDetail() {
@@ -64,6 +71,8 @@ function PlanDetail() {
   const [rowOpen, setRowOpen] = useState(false);
   const [editing, setEditing] = useState<ItpRow | null>(null);
   const [form, setForm] = useState({ ...emptyRow });
+  const [docInput, setDocInput] = useState("");
+  const [formErr, setFormErr] = useState<Record<string, string>>({});
 
   const plan = useQuery({
     queryKey: ["inspection-plan", id],
@@ -92,19 +101,35 @@ function PlanDetail() {
     },
   });
 
+  function validate(): boolean {
+    const errs: Record<string, string> = {};
+    if (!form.activity.trim()) errs.activity = "Activity is required";
+    if (!form.acceptance_criteria.trim())
+      errs.acceptance_criteria = "Acceptance criteria / tolerance is required";
+    if (form.point_type === "hold" && !form.responsibility_role.trim())
+      errs.responsibility_role = "Hold points must specify a responsible role";
+    if (form.activity.length > 200) errs.activity = "Max 200 characters";
+    setFormErr(errs);
+    return Object.keys(errs).length === 0;
+  }
+
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
         plan_id: id,
-        activity: form.activity || null,
-        procedure: form.procedure || null,
-        check_points: form.check_points || null,
-        acceptance_criteria: form.acceptance_criteria || null,
-        verifying_doc: form.verifying_doc || null,
-        inspected_by: form.inspected_by || null,
-        comments: form.comments || null,
+        activity: form.activity.trim(),
+        procedure: form.procedure.trim() || null,
+        check_points: form.check_points.trim() || null,
+        acceptance_criteria: form.acceptance_criteria.trim(),
+        verifying_doc: form.verifying_doc.trim() || null,
+        inspected_by: form.inspected_by.trim() || null,
+        comments: form.comments.trim() || null,
         point_type: form.point_type || null,
         inspection_method: form.inspection_method || null,
+        tools: form.tools.trim() || null,
+        responsibility_role: form.responsibility_role.trim() || null,
+        required_documents: form.required_documents,
+        is_critical: form.is_critical,
       };
       if (editing) {
         const { error } = await supabase
@@ -116,7 +141,7 @@ function PlanDetail() {
         const nextSeq = (rows.data ?? []).reduce((m, r) => Math.max(m, r.sequence), 0) + 1;
         const { error } = await supabase
           .from("plan_characteristics")
-          .insert({ ...payload, sequence: nextSeq, is_critical: false } as any);
+          .insert({ ...payload, sequence: nextSeq } as any);
         if (error) throw error;
       }
     },
@@ -126,6 +151,8 @@ function PlanDetail() {
       setRowOpen(false);
       setEditing(null);
       setForm({ ...emptyRow });
+      setFormErr({});
+      setDocInput("");
     },
     onError: (e: Error) => notifyError(e.message, { retry: () => save.mutate() }),
   });
@@ -145,6 +172,8 @@ function PlanDetail() {
   function openNew() {
     setEditing(null);
     setForm({ ...emptyRow });
+    setFormErr({});
+    setDocInput("");
     setRowOpen(true);
   }
   function openEdit(row: ItpRow) {
@@ -159,9 +188,37 @@ function PlanDetail() {
       comments: row.comments ?? "",
       point_type: row.point_type ?? "",
       inspection_method: row.inspection_method ?? "",
+      tools: (row as any).tools ?? "",
+      responsibility_role: (row as any).responsibility_role ?? "",
+      required_documents: Array.isArray((row as any).required_documents)
+        ? ((row as any).required_documents as string[])
+        : [],
+      is_critical: !!row.is_critical,
     });
+    setFormErr({});
+    setDocInput("");
     setRowOpen(true);
   }
+
+  function addDoc() {
+    const v = docInput.trim();
+    if (!v) return;
+    if (form.required_documents.includes(v)) {
+      setDocInput("");
+      return;
+    }
+    setForm({ ...form, required_documents: [...form.required_documents, v] });
+    setDocInput("");
+  }
+  function removeDoc(d: string) {
+    setForm({ ...form, required_documents: form.required_documents.filter((x) => x !== d) });
+  }
+
+  function onSaveClick() {
+    if (!validate()) return;
+    save.mutate();
+  }
+
 
   return (
     <MesPage
