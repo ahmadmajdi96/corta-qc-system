@@ -21,6 +21,8 @@ const inspectionSchema = z.object({
   work_order_id: z.string().uuid().optional(),
   station_id: z.string().uuid().optional(),
   plan_id: z.string().uuid().optional(),
+  inspection_stage: z.enum(["iqc", "dupro", "final"]).optional(),
+  inspection_method: z.enum(["dimensional", "visual", "ndt", "functional"]).optional(),
 });
 
 export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
