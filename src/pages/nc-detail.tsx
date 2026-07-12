@@ -262,11 +262,58 @@ export function NcDetailPage({ id }: { id: string }) {
                   disabled={!canManage} />
               </div>
               <div>
-                <Label>Containment / quarantine actions</Label>
-                <Textarea defaultValue={n.containment ?? ""} rows={3}
+                <Label>Containment / narrative</Label>
+                <Textarea defaultValue={n.containment ?? ""} rows={2}
                   onBlur={(e) => e.target.value !== (n.containment ?? "") && updateFields.mutate({ containment: e.target.value })}
                   disabled={!canManage}
-                  placeholder="Where the material is segregated, quantity, tag numbers…" />
+                  placeholder="Immediate action taken to contain the issue…" />
+              </div>
+              <div className="rounded-md border bg-muted/20 p-3 space-y-3">
+                <div className="text-sm font-medium">Segregation & Quarantine</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs">Quarantine location</Label>
+                    <Input defaultValue={n.quarantine_location ?? ""} disabled={!canManage}
+                      placeholder="e.g. QC Cage A / Bin 12"
+                      onBlur={(e) => e.target.value !== (n.quarantine_location ?? "") &&
+                        updateFields.mutate({ quarantine_location: e.target.value || null })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Quantity</Label>
+                    <Input type="number" step="any" defaultValue={n.quarantine_qty ?? ""} disabled={!canManage}
+                      placeholder="e.g. 24"
+                      onBlur={(e) => {
+                        const raw = e.target.value;
+                        const val = raw === "" ? null : Number(raw);
+                        if (val !== (n.quarantine_qty ?? null))
+                          updateFields.mutate({ quarantine_qty: val });
+                      }} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Quarantine tag #</Label>
+                    <Input defaultValue={n.quarantine_tag ?? ""} disabled={!canManage}
+                      placeholder="e.g. QT-2026-0123"
+                      onBlur={(e) => e.target.value !== (n.quarantine_tag ?? "") &&
+                        updateFields.mutate({ quarantine_tag: e.target.value || null })} />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Segregation status</Label>
+                  <Select
+                    value={(n.segregation_status as string | null) ?? "__none"}
+                    onValueChange={(v) => updateFields.mutate({ segregation_status: v === "__none" ? null : v })}
+                    disabled={!canManage}
+                  >
+                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">—</SelectItem>
+                      <SelectItem value="pending">Pending segregation</SelectItem>
+                      <SelectItem value="segregated">Segregated / tagged</SelectItem>
+                      <SelectItem value="quarantined">Quarantined (locked)</SelectItem>
+                      <SelectItem value="released">Released</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -275,7 +322,7 @@ export function NcDetailPage({ id }: { id: string }) {
             <CardHeader>
               <CardTitle className="text-base">Disposition</CardTitle>
               <p className="text-xs text-muted-foreground">
-                Selecting a disposition automatically opens a linked CAPA (8D) so corrective and preventive actions can be tracked.
+                Saving a disposition automatically opens or updates a linked 8D CAPA and stores the linkage on this NC.
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -286,7 +333,29 @@ export function NcDetailPage({ id }: { id: string }) {
                   onValueChange={async (v) => {
                     const value = v === "__none" ? null : v;
                     await updateFields.mutateAsync({ disposition: value });
-                    if (value && !linkedCapa.data) openCapa.mutate();
+                    if (!value) return;
+                    if (!linkedCapa.data) {
+                      openCapa.mutate();
+                    } else {
+                      // Update existing CAPA's D3 containment with latest structured data.
+                      const containment = [
+                        n.containment,
+                        n.quarantine_location && `Location: ${n.quarantine_location}`,
+                        n.quarantine_qty != null && `Qty: ${n.quarantine_qty}`,
+                        n.quarantine_tag && `Tag: ${n.quarantine_tag}`,
+                        n.segregation_status && `Segregation: ${n.segregation_status}`,
+                        `Disposition: ${value}`,
+                      ].filter(Boolean).join("\n");
+                      await supabase.from("capa_records").update({
+                        d3_containment: containment,
+                        d4_root_cause: n.root_cause ?? null,
+                      } as any).eq("id", linkedCapa.data.id);
+                      // Ensure NC.capa_id link is set (older records may lack it).
+                      if (!n.capa_id) await (supabase.from("non_conformances") as any)
+                        .update({ capa_id: linkedCapa.data.id }).eq("id", id);
+                      qc.invalidateQueries({ queryKey: ["nc-capa", id] });
+                      toast.success("Linked CAPA updated");
+                    }
                   }}
                   disabled={!canManage}
                 >
