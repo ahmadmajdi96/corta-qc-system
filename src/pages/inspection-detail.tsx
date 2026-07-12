@@ -445,6 +445,88 @@ export function InspectionExecutePage({ id }: { id: string }) {
         </div>
       </div>
 
+      {(signoffPoints.data ?? []).length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Hold / Witness / Review sign-offs</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Hold points must be signed off before the inspection can be completed.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(signoffPoints.data ?? []).map((p: any) => {
+              const so = (signoffs.data ?? []).find((s: any) => s.characteristic_id === p.id);
+              const isSigned = so?.status === "signed";
+              const tone =
+                p.point_type === "hold"
+                  ? "bg-destructive/10 text-destructive border-destructive/40"
+                  : p.point_type === "witness"
+                  ? "bg-amber-500/10 text-amber-700 border-amber-500/40 dark:text-amber-400"
+                  : "bg-sky-500/10 text-sky-700 border-sky-500/40 dark:text-sky-400";
+              const docs = Array.isArray(p.required_documents) ? p.required_documents : [];
+              return (
+                <div key={p.id} className="rounded-md border p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] uppercase px-1.5 py-0.5 rounded border ${tone}`}>
+                        {p.point_type}
+                      </span>
+                      <span className="font-medium truncate">
+                        {p.sequence}. {p.activity ?? "—"}
+                      </span>
+                      {p.responsibility_role && (
+                        <span className="text-xs text-muted-foreground">· {p.responsibility_role}</span>
+                      )}
+                    </div>
+                    {p.acceptance_criteria && (
+                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {p.acceptance_criteria}
+                      </div>
+                    )}
+                    {docs.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {docs.map((d: string) => (
+                          <span key={d} className="text-[10px] rounded border bg-muted px-1.5 py-0.5">{d}</span>
+                        ))}
+                      </div>
+                    )}
+                    {isSigned && so?.signed_at && (
+                      <div className="text-[11px] text-muted-foreground mt-1">
+                        Signed {new Date(so.signed_at).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isSigned ? (
+                      <>
+                        <Badge className="bg-status-completed text-white">Signed</Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => signMut.mutate({ characteristic_id: p.id, point_type: p.point_type, unsign: true })}
+                          disabled={signMut.isPending}
+                        >
+                          Unsign
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => signMut.mutate({ characteristic_id: p.id, point_type: p.point_type })}
+                        disabled={signMut.isPending}
+                      >
+                        Sign off
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
+
       <div className="space-y-3">
         {(items.data ?? []).map((it: any) => {
           const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
