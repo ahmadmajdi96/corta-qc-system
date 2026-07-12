@@ -109,14 +109,14 @@ function PlanDetail() {
       if (editing) {
         const { error } = await supabase
           .from("plan_characteristics")
-          .update(payload)
+          .update(payload as any)
           .eq("id", editing.id);
         if (error) throw error;
       } else {
         const nextSeq = (rows.data ?? []).reduce((m, r) => Math.max(m, r.sequence), 0) + 1;
         const { error } = await supabase
           .from("plan_characteristics")
-          .insert({ ...payload, sequence: nextSeq, is_critical: false });
+          .insert({ ...payload, sequence: nextSeq, is_critical: false } as any);
         if (error) throw error;
       }
     },
