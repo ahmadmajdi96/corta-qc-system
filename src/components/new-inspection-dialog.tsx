@@ -224,6 +224,33 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
             </Select>
             <p className="text-[11px] text-muted-foreground">Choose a product first to filter WOs & plans.</p>
           </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Inspection stage</Label>
+              <Select value={stage ?? "__auto"} onValueChange={(v) => setStage(v === "__auto" ? undefined : (v as any))}>
+                <SelectTrigger><SelectValue placeholder="Auto from plan" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__auto">Auto from plan</SelectItem>
+                  <SelectItem value="iqc">Incoming (IQC)</SelectItem>
+                  <SelectItem value="dupro">During Production (DUPRO)</SelectItem>
+                  <SelectItem value="final">Final</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Inspection method</Label>
+              <Select value={method ?? "__none"} onValueChange={(v) => setMethod(v === "__none" ? undefined : (v as any))}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  <SelectItem value="dimensional">Dimensional</SelectItem>
+                  <SelectItem value="visual">Visual</SelectItem>
+                  <SelectItem value="ndt">Non-Destructive Test</SelectItem>
+                  <SelectItem value="functional">Functional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Optional" />
