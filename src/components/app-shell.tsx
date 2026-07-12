@@ -61,6 +61,7 @@ const operations: NavItem[] = [
   { title: "Control Center", url: "/", icon: LayoutDashboard },
   { title: "Live Floor", url: "/live", icon: Radio },
   { title: "Work Orders", url: "/work-orders", icon: ScrollText },
+  { title: "Requests", url: "/requests", icon: Inbox },
 ];
 
 const quality: NavItem[] = [
