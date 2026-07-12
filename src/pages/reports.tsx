@@ -105,7 +105,7 @@ export function ReportsPage() {
     queryKey: ["report-ncs", filters, ncPage],
     queryFn: async () => {
       let q = supabase.from("non_conformances")
-        .select("id, number, severity, status, raised_at, closed_at, disposition, root_cause_category, quarantine_location, quarantine_qty, quarantine_tag, segregation_status, capa_id, capa_records(number, current_step, status), inspections!inner(id, inspection_stage, inspection_method, products(name))")
+        .select("id, number, severity, status, raised_at, closed_at, disposition, root_cause_category, quarantine_location, quarantine_qty, quarantine_tag, segregation_status, capa_id, capa_records(capa_number, status), inspections!inner(id, inspection_stage, inspection_method, products(name))")
         .gte("raised_at", filters.from).lte("raised_at", filters.to + "T23:59:59")
         .order("raised_at", { ascending: false })
         .range(ncPage * PAGE_SIZE, ncPage * PAGE_SIZE + PAGE_SIZE - 1);
@@ -184,7 +184,7 @@ export function ReportsPage() {
   }
   async function fetchAllNcsForExport() {
     let q = supabase.from("non_conformances")
-      .select("number, severity, status, raised_at, closed_at, disposition, root_cause_category, quarantine_location, quarantine_qty, quarantine_tag, segregation_status, capa_id, capa_records(number, current_step, status), inspections(inspection_stage, inspection_method, products(name))")
+      .select("number, severity, status, raised_at, closed_at, disposition, root_cause_category, quarantine_location, quarantine_qty, quarantine_tag, segregation_status, capa_id, capa_records(capa_number, status), inspections(inspection_stage, inspection_method, products(name))")
       .gte("raised_at", filters.from).lte("raised_at", filters.to + "T23:59:59")
       .order("raised_at", { ascending: false }).limit(5000);
     if (filters.severity !== "all") q = q.eq("severity", filters.severity);
@@ -219,7 +219,7 @@ export function ReportsPage() {
           n.inspections?.inspection_stage ?? "", n.inspections?.inspection_method ?? "",
           n.inspections?.products?.name ?? "", n.disposition ?? "", n.root_cause_category ?? "",
           n.quarantine_location ?? "", n.quarantine_qty ?? "", n.quarantine_tag ?? "", n.segregation_status ?? "",
-          n.capa_records?.number ?? "", n.capa_records?.current_step ?? "",
+          n.capa_records?.capa_number ?? "", n.capa_records?.status ?? "",
         ]),
       ];
       downloadCsv(rows, `ncs-${filters.from}-${filters.to}.csv`);
@@ -254,7 +254,7 @@ export function ReportsPage() {
       doc.setFontSize(9);
       doc.text("Number         Raised       Sev      Status                     Disposition    Root Cause   Q.Tag       CAPA", 14, y); y += 6;
       data.forEach((n: any) => {
-        doc.text(`${(n.number ?? "-").padEnd(14)} ${n.raised_at.slice(0, 10)}  ${n.severity.padEnd(8)} ${n.status.padEnd(26)} ${(n.disposition ?? "-").padEnd(14)} ${(n.root_cause_category ?? "-").padEnd(12)} ${(n.quarantine_tag ?? "-").padEnd(11)} ${n.capa_records?.number ?? "-"}`, 14, y);
+        doc.text(`${(n.number ?? "-").padEnd(14)} ${n.raised_at.slice(0, 10)}  ${n.severity.padEnd(8)} ${n.status.padEnd(26)} ${(n.disposition ?? "-").padEnd(14)} ${(n.root_cause_category ?? "-").padEnd(12)} ${(n.quarantine_tag ?? "-").padEnd(11)} ${n.capa_records?.capa_number ?? "-"}`, 14, y);
         y += 5; count++;
         if (y > 195) { doc.addPage(); y = 20; }
       });
@@ -423,7 +423,7 @@ export function ReportsPage() {
                           <td className="text-xs">{n.disposition ?? "—"}</td>
                           <td className="text-xs">{n.root_cause_category ?? "—"}</td>
                           <td className="text-xs">{n.quarantine_tag ? `${n.quarantine_tag} @ ${n.quarantine_location ?? "?"} (${n.quarantine_qty ?? "?"})` : "—"}</td>
-                          <td className="text-xs">{n.capa_records ? `${n.capa_records.number} · ${n.capa_records.current_step}` : "—"}</td>
+                          <td className="text-xs">{n.capa_records ? `${n.capa_records.capa_number} · ${n.capa_records.status}` : "—"}</td>
                         </tr>
                       ))}
                     </tbody>
