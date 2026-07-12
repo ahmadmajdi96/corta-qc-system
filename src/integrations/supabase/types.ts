@@ -586,6 +586,60 @@ export type Database = {
           },
         ]
       }
+      inspection_signoffs: {
+        Row: {
+          characteristic_id: string
+          created_at: string
+          id: string
+          inspection_id: string
+          notes: string | null
+          point_type: string
+          signed_at: string | null
+          signed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          characteristic_id: string
+          created_at?: string
+          id?: string
+          inspection_id: string
+          notes?: string | null
+          point_type: string
+          signed_at?: string | null
+          signed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          characteristic_id?: string
+          created_at?: string
+          id?: string
+          inspection_id?: string
+          notes?: string | null
+          point_type?: string
+          signed_at?: string | null
+          signed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_signoffs_characteristic_id_fkey"
+            columns: ["characteristic_id"]
+            isOneToOne: false
+            referencedRelation: "plan_characteristics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_signoffs_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           cancel_reason: string | null
@@ -947,9 +1001,12 @@ export type Database = {
           plan_id: string
           point_type: string | null
           procedure: string | null
+          required_documents: Json
+          responsibility_role: string | null
           sample_frequency: string | null
           sequence: number
           spec_item_id: string | null
+          tools: string | null
           updated_at: string
           verifying_doc: string | null
         }
@@ -966,9 +1023,12 @@ export type Database = {
           plan_id: string
           point_type?: string | null
           procedure?: string | null
+          required_documents?: Json
+          responsibility_role?: string | null
           sample_frequency?: string | null
           sequence?: number
           spec_item_id?: string | null
+          tools?: string | null
           updated_at?: string
           verifying_doc?: string | null
         }
@@ -985,9 +1045,12 @@ export type Database = {
           plan_id?: string
           point_type?: string | null
           procedure?: string | null
+          required_documents?: Json
+          responsibility_role?: string | null
           sample_frequency?: string | null
           sequence?: number
           spec_item_id?: string | null
+          tools?: string | null
           updated_at?: string
           verifying_doc?: string | null
         }

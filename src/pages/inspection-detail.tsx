@@ -253,7 +253,7 @@ export function InspectionExecutePage({ id }: { id: string }) {
 
   const insp = useQuery({
     queryKey: ["inspection", id],
-    queryFn: async () => (await supabase.from("inspections").select("*, products(name)").eq("id", id).maybeSingle()).data,
+    queryFn: async () => (await supabase.from("inspections").select("*, products(name), inspection_plans(id, name)").eq("id", id).maybeSingle()).data,
   });
   const items = useQuery({
     queryKey: ["spec-items", insp.data?.spec_id],
@@ -268,6 +268,68 @@ export function InspectionExecutePage({ id }: { id: string }) {
     queryKey: ["gages", "active"],
     queryFn: async () => (await supabase.from("gages").select("id, code, name, gage_type, status").eq("status", "active").order("code")).data ?? [],
   });
+  const planId = (insp.data as any)?.plan_id as string | null | undefined;
+  const signoffPoints = useQuery({
+    queryKey: ["signoff-points", planId],
+    enabled: !!planId,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("plan_characteristics")
+        .select("id, sequence, activity, point_type, responsibility_role, required_documents, acceptance_criteria")
+        .eq("plan_id", planId)
+        .in("point_type", ["hold", "witness", "review"])
+        .order("sequence", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const signoffs = useQuery({
+    queryKey: ["signoffs", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("inspection_signoffs")
+        .select("*")
+        .eq("inspection_id", id);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const signMut = useMutation({
+    mutationFn: async (args: { characteristic_id: string; point_type: string; notes?: string; unsign?: boolean }) => {
+      if (!user) throw new Error("Not authenticated");
+      const existingRow = (signoffs.data ?? []).find((s: any) => s.characteristic_id === args.characteristic_id);
+      if (args.unsign) {
+        if (!existingRow) return;
+        const { error } = await (supabase as any)
+          .from("inspection_signoffs")
+          .update({ status: "pending", signed_by: null, signed_at: null })
+          .eq("id", existingRow.id);
+        if (error) throw error;
+        return;
+      }
+      const payload = {
+        inspection_id: id,
+        characteristic_id: args.characteristic_id,
+        point_type: args.point_type,
+        status: "signed",
+        signed_by: user.id,
+        signed_at: new Date().toISOString(),
+        notes: args.notes ?? null,
+      };
+      if (existingRow) {
+        const { error } = await (supabase as any).from("inspection_signoffs").update(payload).eq("id", existingRow.id);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from("inspection_signoffs").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["signoffs", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
 
   type Row = { value: string; notes: string; na: boolean; attachment_url: string | null; gage_id: string | null };
   const [values, setValues] = useState<Record<string, Row>>({});
@@ -331,6 +393,12 @@ export function InspectionExecutePage({ id }: { id: string }) {
           setErrors(errs);
           throw new Error(`Please record all required measurements (${Object.keys(errs).length} missing).`);
         }
+        const holdRows = (signoffPoints.data ?? []).filter((p: any) => p.point_type === "hold");
+        const signedIds = new Set((signoffs.data ?? []).filter((s: any) => s.status === "signed").map((s: any) => s.characteristic_id));
+        const unsignedHolds = holdRows.filter((p: any) => !signedIds.has(p.id));
+        if (unsignedHolds.length) {
+          throw new Error(`${unsignedHolds.length} Hold point${unsignedHolds.length > 1 ? "s" : ""} not signed off. Sign off all Hold points before completing.`);
+        }
       }
       const rows = items.data.map((it: any) => {
         const v = values[it.id] ?? { value: "", notes: "", na: false, attachment_url: null, gage_id: null };
@@ -376,6 +444,88 @@ export function InspectionExecutePage({ id }: { id: string }) {
           {recorded} of {items.data?.length ?? 0} recorded {insp.data.lot_number ? `· Lot ${insp.data.lot_number}` : ""}
         </div>
       </div>
+
+      {(signoffPoints.data ?? []).length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Hold / Witness / Review sign-offs</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Hold points must be signed off before the inspection can be completed.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(signoffPoints.data ?? []).map((p: any) => {
+              const so = (signoffs.data ?? []).find((s: any) => s.characteristic_id === p.id);
+              const isSigned = so?.status === "signed";
+              const tone =
+                p.point_type === "hold"
+                  ? "bg-destructive/10 text-destructive border-destructive/40"
+                  : p.point_type === "witness"
+                  ? "bg-amber-500/10 text-amber-700 border-amber-500/40 dark:text-amber-400"
+                  : "bg-sky-500/10 text-sky-700 border-sky-500/40 dark:text-sky-400";
+              const docs = Array.isArray(p.required_documents) ? p.required_documents : [];
+              return (
+                <div key={p.id} className="rounded-md border p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] uppercase px-1.5 py-0.5 rounded border ${tone}`}>
+                        {p.point_type}
+                      </span>
+                      <span className="font-medium truncate">
+                        {p.sequence}. {p.activity ?? "—"}
+                      </span>
+                      {p.responsibility_role && (
+                        <span className="text-xs text-muted-foreground">· {p.responsibility_role}</span>
+                      )}
+                    </div>
+                    {p.acceptance_criteria && (
+                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {p.acceptance_criteria}
+                      </div>
+                    )}
+                    {docs.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {docs.map((d: string) => (
+                          <span key={d} className="text-[10px] rounded border bg-muted px-1.5 py-0.5">{d}</span>
+                        ))}
+                      </div>
+                    )}
+                    {isSigned && so?.signed_at && (
+                      <div className="text-[11px] text-muted-foreground mt-1">
+                        Signed {new Date(so.signed_at).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isSigned ? (
+                      <>
+                        <Badge className="bg-status-completed text-white">Signed</Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => signMut.mutate({ characteristic_id: p.id, point_type: p.point_type, unsign: true })}
+                          disabled={signMut.isPending}
+                        >
+                          Unsign
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => signMut.mutate({ characteristic_id: p.id, point_type: p.point_type })}
+                        disabled={signMut.isPending}
+                      >
+                        Sign off
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
 
       <div className="space-y-3">
         {(items.data ?? []).map((it: any) => {

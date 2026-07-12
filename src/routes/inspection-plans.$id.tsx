@@ -43,6 +43,9 @@ type ItpRow = {
   comments: string | null;
   point_type: string | null;
   inspection_method: string | null;
+  tools: string | null;
+  responsibility_role: string | null;
+  required_documents: string[] | null;
   is_critical: boolean;
 };
 
@@ -56,6 +59,10 @@ const emptyRow = {
   comments: "",
   point_type: "",
   inspection_method: "",
+  tools: "",
+  responsibility_role: "",
+  required_documents: [] as string[],
+  is_critical: false,
 };
 
 function PlanDetail() {
@@ -64,6 +71,8 @@ function PlanDetail() {
   const [rowOpen, setRowOpen] = useState(false);
   const [editing, setEditing] = useState<ItpRow | null>(null);
   const [form, setForm] = useState({ ...emptyRow });
+  const [docInput, setDocInput] = useState("");
+  const [formErr, setFormErr] = useState<Record<string, string>>({});
 
   const plan = useQuery({
     queryKey: ["inspection-plan", id],
@@ -92,19 +101,35 @@ function PlanDetail() {
     },
   });
 
+  function validate(): boolean {
+    const errs: Record<string, string> = {};
+    if (!form.activity.trim()) errs.activity = "Activity is required";
+    if (!form.acceptance_criteria.trim())
+      errs.acceptance_criteria = "Acceptance criteria / tolerance is required";
+    if (form.point_type === "hold" && !form.responsibility_role.trim())
+      errs.responsibility_role = "Hold points must specify a responsible role";
+    if (form.activity.length > 200) errs.activity = "Max 200 characters";
+    setFormErr(errs);
+    return Object.keys(errs).length === 0;
+  }
+
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
         plan_id: id,
-        activity: form.activity || null,
-        procedure: form.procedure || null,
-        check_points: form.check_points || null,
-        acceptance_criteria: form.acceptance_criteria || null,
-        verifying_doc: form.verifying_doc || null,
-        inspected_by: form.inspected_by || null,
-        comments: form.comments || null,
+        activity: form.activity.trim(),
+        procedure: form.procedure.trim() || null,
+        check_points: form.check_points.trim() || null,
+        acceptance_criteria: form.acceptance_criteria.trim(),
+        verifying_doc: form.verifying_doc.trim() || null,
+        inspected_by: form.inspected_by.trim() || null,
+        comments: form.comments.trim() || null,
         point_type: form.point_type || null,
         inspection_method: form.inspection_method || null,
+        tools: form.tools.trim() || null,
+        responsibility_role: form.responsibility_role.trim() || null,
+        required_documents: form.required_documents,
+        is_critical: form.is_critical,
       };
       if (editing) {
         const { error } = await supabase
@@ -116,7 +141,7 @@ function PlanDetail() {
         const nextSeq = (rows.data ?? []).reduce((m, r) => Math.max(m, r.sequence), 0) + 1;
         const { error } = await supabase
           .from("plan_characteristics")
-          .insert({ ...payload, sequence: nextSeq, is_critical: false } as any);
+          .insert({ ...payload, sequence: nextSeq } as any);
         if (error) throw error;
       }
     },
@@ -126,6 +151,8 @@ function PlanDetail() {
       setRowOpen(false);
       setEditing(null);
       setForm({ ...emptyRow });
+      setFormErr({});
+      setDocInput("");
     },
     onError: (e: Error) => notifyError(e.message, { retry: () => save.mutate() }),
   });
@@ -145,6 +172,8 @@ function PlanDetail() {
   function openNew() {
     setEditing(null);
     setForm({ ...emptyRow });
+    setFormErr({});
+    setDocInput("");
     setRowOpen(true);
   }
   function openEdit(row: ItpRow) {
@@ -159,9 +188,37 @@ function PlanDetail() {
       comments: row.comments ?? "",
       point_type: row.point_type ?? "",
       inspection_method: row.inspection_method ?? "",
+      tools: (row as any).tools ?? "",
+      responsibility_role: (row as any).responsibility_role ?? "",
+      required_documents: Array.isArray((row as any).required_documents)
+        ? ((row as any).required_documents as string[])
+        : [],
+      is_critical: !!row.is_critical,
     });
+    setFormErr({});
+    setDocInput("");
     setRowOpen(true);
   }
+
+  function addDoc() {
+    const v = docInput.trim();
+    if (!v) return;
+    if (form.required_documents.includes(v)) {
+      setDocInput("");
+      return;
+    }
+    setForm({ ...form, required_documents: [...form.required_documents, v] });
+    setDocInput("");
+  }
+  function removeDoc(d: string) {
+    setForm({ ...form, required_documents: form.required_documents.filter((x) => x !== d) });
+  }
+
+  function onSaveClick() {
+    if (!validate()) return;
+    save.mutate();
+  }
+
 
   return (
     <MesPage
@@ -243,13 +300,13 @@ function PlanDetail() {
               <TableRow>
                 <TableHead className="w-10">#</TableHead>
                 <TableHead>Activity</TableHead>
-                <TableHead>Procedure</TableHead>
-                <TableHead>Check points</TableHead>
+                <TableHead>Scope / Check</TableHead>
                 <TableHead>Acceptance</TableHead>
-                <TableHead>Verifying doc</TableHead>
-                <TableHead>Inspected by</TableHead>
-                <TableHead>Point</TableHead>
+                <TableHead>Tools</TableHead>
                 <TableHead>Method</TableHead>
+                <TableHead>Point</TableHead>
+                <TableHead>Responsible</TableHead>
+                <TableHead>Docs</TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -257,17 +314,32 @@ function PlanDetail() {
               {rows.data!.map((r) => {
                 const pt = POINT_TYPES.find((p) => p.value === r.point_type);
                 const m = METHODS.find((x) => x.value === r.inspection_method);
+                const docs = Array.isArray((r as any).required_documents)
+                  ? ((r as any).required_documents as string[])
+                  : [];
                 return (
                   <TableRow key={r.id}>
                     <TableCell>{r.sequence}</TableCell>
-                    <TableCell className="max-w-[180px] truncate">{r.activity ?? "—"}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">{r.procedure ?? "—"}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{r.check_points ?? "—"}</TableCell>
+                    <TableCell className="max-w-[180px]">
+                      <div className="font-medium truncate">{r.activity ?? "—"}</div>
+                      {r.is_critical && <StatusPill tone="danger">CCP</StatusPill>}
+                    </TableCell>
+                    <TableCell className="max-w-[220px] truncate">{r.check_points ?? "—"}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{r.acceptance_criteria ?? "—"}</TableCell>
-                    <TableCell className="max-w-[160px] truncate">{r.verifying_doc ?? "—"}</TableCell>
-                    <TableCell>{r.inspected_by ?? "—"}</TableCell>
-                    <TableCell>{pt ? <StatusPill tone={pt.tone}>{pt.label}</StatusPill> : "—"}</TableCell>
+                    <TableCell className="max-w-[160px] truncate">{(r as any).tools ?? "—"}</TableCell>
                     <TableCell>{m?.label ?? "—"}</TableCell>
+                    <TableCell>{pt ? <StatusPill tone={pt.tone}>{pt.label}</StatusPill> : "—"}</TableCell>
+                    <TableCell className="max-w-[140px] truncate">{(r as any).responsibility_role ?? "—"}</TableCell>
+                    <TableCell className="max-w-[160px]">
+                      {docs.length === 0 ? "—" : (
+                        <div className="flex flex-wrap gap-1">
+                          {docs.slice(0, 3).map((d) => (
+                            <span key={d} className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">{d}</span>
+                          ))}
+                          {docs.length > 3 && <span className="text-[10px] text-muted-foreground">+{docs.length - 3}</span>}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
                         <Pencil className="h-4 w-4" />
@@ -296,40 +368,28 @@ function PlanDetail() {
           <DialogHeader>
             <DialogTitle>{editing ? "Edit ITP row" : "Add ITP row"}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 max-h-[65vh] overflow-y-auto pr-1">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>Activity</Label>
+              <Label>Activity <span className="text-destructive">*</span></Label>
               <Input value={form.activity} onChange={(e) => setForm({ ...form, activity: e.target.value })} placeholder="e.g. Concrete pouring" />
+              {formErr.activity && <p className="text-xs text-destructive">{formErr.activity}</p>}
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Procedure</Label>
               <Textarea rows={2} value={form.procedure} onChange={(e) => setForm({ ...form, procedure: e.target.value })} placeholder="Construction procedure to describe this activity" />
             </div>
             <div className="space-y-1.5">
-              <Label>Check points</Label>
-              <Textarea rows={2} value={form.check_points} onChange={(e) => setForm({ ...form, check_points: e.target.value })} placeholder="Inspection check points" />
+              <Label>Inspection scope / Check points</Label>
+              <Textarea rows={2} value={form.check_points} onChange={(e) => setForm({ ...form, check_points: e.target.value })} placeholder="What to inspect (features, dimensions, characteristics)" />
             </div>
             <div className="space-y-1.5">
-              <Label>Level of acceptance</Label>
-              <Textarea rows={2} value={form.acceptance_criteria} onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })} placeholder="e.g. Contract Spec / Drawings / Client Procedures" />
+              <Label>Acceptance criteria / tolerance <span className="text-destructive">*</span></Label>
+              <Textarea rows={2} value={form.acceptance_criteria} onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })} placeholder="e.g. ±0.1 mm, or Contract Spec section 4.2" />
+              {formErr.acceptance_criteria && <p className="text-xs text-destructive">{formErr.acceptance_criteria}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label>Verifying document</Label>
-              <Input value={form.verifying_doc} onChange={(e) => setForm({ ...form, verifying_doc: e.target.value })} placeholder="e.g. Checklist #, Test report" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Inspected by</Label>
-              <Input value={form.inspected_by} onChange={(e) => setForm({ ...form, inspected_by: e.target.value })} placeholder="Who inspects and when" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Point type</Label>
-              <Select value={form.point_type || "__none"} onValueChange={(v) => setForm({ ...form, point_type: v === "__none" ? "" : v })}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none">—</SelectItem>
-                  {POINT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Tools / equipment</Label>
+              <Input value={form.tools} onChange={(e) => setForm({ ...form, tools: e.target.value })} placeholder="e.g. Caliper, CMM, UT probe" />
             </div>
             <div className="space-y-1.5">
               <Label>Inspection method</Label>
@@ -341,6 +401,63 @@ function PlanDetail() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-1.5">
+              <Label>Point type</Label>
+              <Select value={form.point_type || "__none"} onValueChange={(v) => setForm({ ...form, point_type: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">—</SelectItem>
+                  {POINT_TYPES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Hold blocks progression. Witness needs a witness present. Review is documentary.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Responsible role {form.point_type === "hold" && <span className="text-destructive">*</span>}</Label>
+              <Input value={form.responsibility_role} onChange={(e) => setForm({ ...form, responsibility_role: e.target.value })} placeholder="e.g. quality_manager, client_representative" />
+              {formErr.responsibility_role && <p className="text-xs text-destructive">{formErr.responsibility_role}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label>Inspected by (free text)</Label>
+              <Input value={form.inspected_by} onChange={(e) => setForm({ ...form, inspected_by: e.target.value })} placeholder="Who inspects and when" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Verifying document</Label>
+              <Input value={form.verifying_doc} onChange={(e) => setForm({ ...form, verifying_doc: e.target.value })} placeholder="e.g. Checklist #, Test report" />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Required documents</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={docInput}
+                  onChange={(e) => setDocInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDoc(); } }}
+                  placeholder="Add a document name and press Enter (e.g. MTR, ITP, Calibration cert)"
+                />
+                <Button type="button" variant="outline" onClick={addDoc}>Add</Button>
+              </div>
+              {form.required_documents.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {form.required_documents.map((d) => (
+                    <span key={d} className="inline-flex items-center gap-1 rounded-full border bg-muted px-2 py-0.5 text-xs">
+                      {d}
+                      <button type="button" onClick={() => removeDoc(d)} className="text-muted-foreground hover:text-destructive">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="space-y-1.5 sm:col-span-2 flex items-center gap-2">
+              <input
+                id="row-critical"
+                type="checkbox"
+                checked={form.is_critical}
+                onChange={(e) => setForm({ ...form, is_critical: e.target.checked })}
+              />
+              <Label htmlFor="row-critical" className="cursor-pointer">Critical characteristic (CCP)</Label>
+            </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Comments</Label>
               <Textarea rows={2} value={form.comments} onChange={(e) => setForm({ ...form, comments: e.target.value })} placeholder="Other requirements that need to be stated" />
@@ -348,7 +465,7 @@ function PlanDetail() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRowOpen(false)}>Cancel</Button>
-            <Button onClick={() => save.mutate()} disabled={save.isPending}>
+            <Button onClick={onSaveClick} disabled={save.isPending}>
               {save.isPending ? "Saving..." : editing ? "Save" : "Add row"}
             </Button>
           </DialogFooter>
