@@ -300,13 +300,13 @@ function PlanDetail() {
               <TableRow>
                 <TableHead className="w-10">#</TableHead>
                 <TableHead>Activity</TableHead>
-                <TableHead>Procedure</TableHead>
-                <TableHead>Check points</TableHead>
+                <TableHead>Scope / Check</TableHead>
                 <TableHead>Acceptance</TableHead>
-                <TableHead>Verifying doc</TableHead>
-                <TableHead>Inspected by</TableHead>
-                <TableHead>Point</TableHead>
+                <TableHead>Tools</TableHead>
                 <TableHead>Method</TableHead>
+                <TableHead>Point</TableHead>
+                <TableHead>Responsible</TableHead>
+                <TableHead>Docs</TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -314,17 +314,32 @@ function PlanDetail() {
               {rows.data!.map((r) => {
                 const pt = POINT_TYPES.find((p) => p.value === r.point_type);
                 const m = METHODS.find((x) => x.value === r.inspection_method);
+                const docs = Array.isArray((r as any).required_documents)
+                  ? ((r as any).required_documents as string[])
+                  : [];
                 return (
                   <TableRow key={r.id}>
                     <TableCell>{r.sequence}</TableCell>
-                    <TableCell className="max-w-[180px] truncate">{r.activity ?? "—"}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">{r.procedure ?? "—"}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{r.check_points ?? "—"}</TableCell>
+                    <TableCell className="max-w-[180px]">
+                      <div className="font-medium truncate">{r.activity ?? "—"}</div>
+                      {r.is_critical && <StatusPill tone="danger">CCP</StatusPill>}
+                    </TableCell>
+                    <TableCell className="max-w-[220px] truncate">{r.check_points ?? "—"}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{r.acceptance_criteria ?? "—"}</TableCell>
-                    <TableCell className="max-w-[160px] truncate">{r.verifying_doc ?? "—"}</TableCell>
-                    <TableCell>{r.inspected_by ?? "—"}</TableCell>
-                    <TableCell>{pt ? <StatusPill tone={pt.tone}>{pt.label}</StatusPill> : "—"}</TableCell>
+                    <TableCell className="max-w-[160px] truncate">{(r as any).tools ?? "—"}</TableCell>
                     <TableCell>{m?.label ?? "—"}</TableCell>
+                    <TableCell>{pt ? <StatusPill tone={pt.tone}>{pt.label}</StatusPill> : "—"}</TableCell>
+                    <TableCell className="max-w-[140px] truncate">{(r as any).responsibility_role ?? "—"}</TableCell>
+                    <TableCell className="max-w-[160px]">
+                      {docs.length === 0 ? "—" : (
+                        <div className="flex flex-wrap gap-1">
+                          {docs.slice(0, 3).map((d) => (
+                            <span key={d} className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">{d}</span>
+                          ))}
+                          {docs.length > 3 && <span className="text-[10px] text-muted-foreground">+{docs.length - 3}</span>}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
                         <Pencil className="h-4 w-4" />
