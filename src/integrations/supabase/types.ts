@@ -989,6 +989,51 @@ export type Database = {
           },
         ]
       }
+      product_routings: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          product_id: string
+          sequence: number
+          station_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id: string
+          sequence: number
+          station_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          product_id?: string
+          sequence?: number
+          station_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_routings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_routings_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_lines: {
         Row: {
           area: string | null
@@ -1211,6 +1256,119 @@ export type Database = {
           {
             foreignKeyName: "quality_specifications_product_id_fkey"
             columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["request_status"] | null
+          id: string
+          notes: string | null
+          request_id: string
+          to_status: Database["public"]["Enums"]["request_status"] | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["request_status"] | null
+          id?: string
+          notes?: string | null
+          request_id: string
+          to_status?: Database["public"]["Enums"]["request_status"] | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["request_status"] | null
+          id?: string
+          notes?: string | null
+          request_id?: string
+          to_status?: Database["public"]["Enums"]["request_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_events_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requests: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          description: string | null
+          id: string
+          kind: Database["public"]["Enums"]["request_kind"]
+          number: string
+          payload: Json
+          requester_id: string
+          result_plan_id: string | null
+          result_product_id: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          description?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["request_kind"]
+          number: string
+          payload?: Json
+          requester_id: string
+          result_plan_id?: string | null
+          result_product_id?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          description?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["request_kind"]
+          number?: string
+          payload?: Json
+          requester_id?: string
+          result_plan_id?: string | null
+          result_product_id?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_result_plan_id_fkey"
+            columns: ["result_plan_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requests_result_product_id_fkey"
+            columns: ["result_product_id"]
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
@@ -1701,6 +1859,14 @@ export type Database = {
       msa_study_type: "gage_rr" | "linearity" | "bias" | "stability"
       msa_verdict: "acceptable" | "marginal" | "unacceptable"
       plan_type: "incoming" | "in_process" | "final"
+      request_kind: "new_product"
+      request_status:
+        | "pending"
+        | "in_review"
+        | "approved"
+        | "rejected"
+        | "completed"
+        | "cancelled"
       wo_operation_status:
         | "pending"
         | "in_progress"
@@ -1863,6 +2029,15 @@ export const Constants = {
       msa_study_type: ["gage_rr", "linearity", "bias", "stability"],
       msa_verdict: ["acceptable", "marginal", "unacceptable"],
       plan_type: ["incoming", "in_process", "final"],
+      request_kind: ["new_product"],
+      request_status: [
+        "pending",
+        "in_review",
+        "approved",
+        "rejected",
+        "completed",
+        "cancelled",
+      ],
       wo_operation_status: [
         "pending",
         "in_progress",
