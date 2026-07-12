@@ -29,9 +29,41 @@ export const Route = createFileRoute("/inspection-plans/")({
             ]}
             fields={[
               { name: "name", label: "Name", required: true },
-              { name: "plan_type", label: "Type", required: true, placeholder: "incoming | in_process | final" },
-              { name: "aql_level", label: "AQL level", placeholder: "1.0 | 2.5 | 4.0" },
-              { name: "sample_size_rule", label: "Sample size rule", placeholder: "ANSI Z1.4 Level II" },
+              {
+                name: "plan_type",
+                label: "Type",
+                type: "select",
+                required: true,
+                options: [
+                  { value: "incoming", label: "Incoming" },
+                  { value: "in_process", label: "In-Process" },
+                  { value: "final", label: "Final" },
+                ],
+              },
+              {
+                name: "aql_level",
+                label: "AQL Level (Normal Inspection)",
+                type: "select",
+                required: true,
+                options: ["0.065", "0.10", "0.15", "0.25", "0.40", "0.65", "1.0", "1.5", "2.5", "4.0", "6.5"].map(
+                  (v) => ({ value: v, label: v }),
+                ),
+              },
+              {
+                name: "sample_size_rule",
+                label: "Inspection Level (ANSI/ASQ Z1.4)",
+                type: "select",
+                required: true,
+                options: [
+                  { value: "ANSI Z1.4 General Level I", label: "General Level I" },
+                  { value: "ANSI Z1.4 General Level II", label: "General Level II (default)" },
+                  { value: "ANSI Z1.4 General Level III", label: "General Level III" },
+                  { value: "ANSI Z1.4 Special Level S-1", label: "Special Level S-1" },
+                  { value: "ANSI Z1.4 Special Level S-2", label: "Special Level S-2" },
+                  { value: "ANSI Z1.4 Special Level S-3", label: "Special Level S-3" },
+                  { value: "ANSI Z1.4 Special Level S-4", label: "Special Level S-4" },
+                ],
+              },
             ]}
           />
         </MesPage>
