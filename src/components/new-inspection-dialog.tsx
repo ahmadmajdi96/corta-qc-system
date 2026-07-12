@@ -110,6 +110,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
         product_id: productId, scheduled_date: scheduledDate,
         lot_number: lot || undefined, notes: notes || undefined,
         work_order_id: workOrderId, station_id: stationId, plan_id: planId,
+        inspection_stage: stage, inspection_method: method,
       });
       if (!parsed.success) {
         const fe: Record<string, string> = {};
@@ -124,6 +125,7 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
       if (specErr) throw specErr;
       if (!spec) throw new Error("This product has no active specification. Create one first.");
       const chosenPlan = plans?.find((p) => p.id === planId);
+      const derivedStage = stage ?? (chosenPlan?.plan_type === "incoming" ? "iqc" : chosenPlan?.plan_type === "in_process" ? "dupro" : chosenPlan?.plan_type === "final" ? "final" : null);
       const { data, error } = await supabase.from("inspections").insert({
         product_id: productId!, spec_id: spec.id, scheduled_date: scheduledDate,
         lot_number: lot || null, notes: notes || null, status: "planned",
@@ -132,6 +134,8 @@ export function NewInspectionDialog({ open, onOpenChange, defaultProductId }: {
         station_id: stationId ?? null,
         plan_id: planId ?? null,
         plan_type: chosenPlan?.plan_type ?? null,
+        inspection_stage: derivedStage,
+        inspection_method: method ?? null,
       } as any).select("id").single();
       if (error) {
         const serverFe = parseServerFieldErrors(error);
