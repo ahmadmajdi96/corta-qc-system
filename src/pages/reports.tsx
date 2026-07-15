@@ -275,6 +275,9 @@ export function ReportsPage() {
         <p className="text-sm text-muted-foreground">Filtered, paginated, database-backed inspection & non-conformance analytics.</p>
       </div>
 
+      <KpiSummaryCards />
+
+
       <Card><CardContent className="pt-4">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div><Label>From</Label><Input type="date" value={filters.from} onChange={(e) => { setFilters(f => ({ ...f, from: e.target.value })); setInspPage(0); setNcPage(0); }} /></div>
@@ -684,6 +687,46 @@ function AcceptanceReport({ filters }: { filters: Filters }) {
                 ))}
               </tbody>
             </table>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function KpiSummaryCards() {
+  const q = useQuery({
+    queryKey: ["qms-kpi-summary"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("qms_kpi_summary" as any).select("*").maybeSingle();
+      if (error) throw error;
+      return data as unknown as Record<string, number>;
+    },
+    refetchInterval: 60_000,
+  });
+  const k = q.data ?? {};
+  const tiles: Array<{ label: string; value: number | undefined; tone?: string }> = [
+    { label: "Inspections (30d)", value: k.inspections_completed_30d },
+    { label: "Open NCs", value: k.open_ncs, tone: "text-destructive" },
+    { label: "CoPQ (30d)", value: k.copq_30d },
+    { label: "Open CAPAs", value: k.open_capas },
+    { label: "Overdue CAPAs", value: k.overdue_capas, tone: "text-destructive" },
+    { label: "Active Holds", value: k.active_holds, tone: "text-amber-500" },
+    { label: "Open SPC signals", value: k.open_spc_signals, tone: "text-amber-500" },
+    { label: "Gages OOT", value: k.gages_oot, tone: "text-destructive" },
+    { label: "Gages overdue cal", value: k.gages_overdue_cal, tone: "text-destructive" },
+    { label: "Open complaints", value: k.open_complaints },
+    { label: "Open SCARs", value: k.open_scars },
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+      {tiles.map((t) => (
+        <Card key={t.label}>
+          <CardContent className="pt-4">
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{t.label}</div>
+            <div className={`text-2xl font-semibold mt-1 ${t.tone ?? ""}`}>
+              {q.isLoading ? "…" : (t.value ?? 0).toLocaleString()}
+            </div>
           </CardContent>
         </Card>
       ))}

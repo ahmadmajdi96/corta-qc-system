@@ -438,6 +438,97 @@ export type Database = {
           },
         ]
       }
+      customer_complaints: {
+        Row: {
+          assigned_to: string | null
+          containment: string | null
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          customer_ref: string | null
+          description: string
+          id: string
+          linked_capa_id: string | null
+          linked_nc_id: string | null
+          lot_number: string | null
+          number: string | null
+          product_id: string | null
+          received_at: string
+          responded_at: string | null
+          response_due_at: string | null
+          root_cause: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          containment?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          customer_ref?: string | null
+          description: string
+          id?: string
+          linked_capa_id?: string | null
+          linked_nc_id?: string | null
+          lot_number?: string | null
+          number?: string | null
+          product_id?: string | null
+          received_at?: string
+          responded_at?: string | null
+          response_due_at?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          containment?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          customer_ref?: string | null
+          description?: string
+          id?: string
+          linked_capa_id?: string | null
+          linked_nc_id?: string | null
+          lot_number?: string | null
+          number?: string | null
+          product_id?: string | null
+          received_at?: string
+          responded_at?: string | null
+          response_due_at?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_complaints_linked_capa_id_fkey"
+            columns: ["linked_capa_id"]
+            isOneToOne: false
+            referencedRelation: "capa_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_complaints_linked_nc_id_fkey"
+            columns: ["linked_nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_complaints_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           code: string
@@ -3085,6 +3176,100 @@ export type Database = {
           },
         ]
       }
+      supplier_scars: {
+        Row: {
+          assigned_to: string | null
+          closed_at: string | null
+          containment_required: string | null
+          corrective_action: string | null
+          corrective_action_due: string | null
+          created_at: string
+          created_by: string | null
+          effectiveness_due: string | null
+          id: string
+          issue_description: string
+          issued_at: string
+          linked_incoming_lot_id: string | null
+          linked_nc_id: string | null
+          number: string | null
+          root_cause: string | null
+          root_cause_due: string | null
+          severity: string
+          status: string
+          supplier_id: string | null
+          supplier_response: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          containment_required?: string | null
+          corrective_action?: string | null
+          corrective_action_due?: string | null
+          created_at?: string
+          created_by?: string | null
+          effectiveness_due?: string | null
+          id?: string
+          issue_description: string
+          issued_at?: string
+          linked_incoming_lot_id?: string | null
+          linked_nc_id?: string | null
+          number?: string | null
+          root_cause?: string | null
+          root_cause_due?: string | null
+          severity?: string
+          status?: string
+          supplier_id?: string | null
+          supplier_response?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          containment_required?: string | null
+          corrective_action?: string | null
+          corrective_action_due?: string | null
+          created_at?: string
+          created_by?: string | null
+          effectiveness_due?: string | null
+          id?: string
+          issue_description?: string
+          issued_at?: string
+          linked_incoming_lot_id?: string | null
+          linked_nc_id?: string | null
+          number?: string | null
+          root_cause?: string | null
+          root_cause_due?: string | null
+          severity?: string
+          status?: string
+          supplier_id?: string | null
+          supplier_response?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_scars_linked_incoming_lot_id_fkey"
+            columns: ["linked_incoming_lot_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_scars_linked_nc_id_fkey"
+            columns: ["linked_nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_scars_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           code: string | null
@@ -3307,7 +3492,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      qms_kpi_summary: {
+        Row: {
+          active_holds: number | null
+          closed_ncs_30d: number | null
+          copq_30d: number | null
+          gages_oot: number | null
+          gages_overdue_cal: number | null
+          inspections_completed: number | null
+          inspections_completed_30d: number | null
+          open_capas: number | null
+          open_complaints: number | null
+          open_ncs: number | null
+          open_scars: number | null
+          open_spc_signals: number | null
+          overdue_capas: number | null
+          total_inspections: number | null
+          total_ncs: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       approve_inspection_plan: {
@@ -3321,6 +3525,15 @@ export type Database = {
       has_role: {
         Args: { _role_name: string; _user_id: string }
         Returns: boolean
+      }
+      iso_2859_1_sample: {
+        Args: { _aql: number; _lot_size: number }
+        Returns: {
+          accept: number
+          code_letter: string
+          reject: number
+          sample_size: number
+        }[]
       }
       nc_qty_reconciles: { Args: { _nc_id: string }; Returns: boolean }
       new_plan_revision: { Args: { _plan_id: string }; Returns: undefined }
@@ -3350,6 +3563,14 @@ export type Database = {
         }
         Returns: number
       }
+      run_overdue_escalations: {
+        Args: never
+        Returns: {
+          entity_id: string
+          entity_type: string
+          level: number
+        }[]
+      }
     }
     Enums: {
       calibration_result: "pass" | "fail" | "conditional"
@@ -3361,7 +3582,7 @@ export type Database = {
         | "closed"
         | "cancelled"
       disposition: "use_as_is" | "rework" | "scrap" | "return_to_supplier"
-      gage_status: "active" | "due" | "overdue" | "out_of_service"
+      gage_status: "active" | "due" | "overdue" | "out_of_service" | "oot"
       hold_status: "open" | "under_review" | "released" | "scrapped" | "rework"
       incoming_lot_status:
         | "received"
@@ -3530,7 +3751,7 @@ export const Constants = {
         "cancelled",
       ],
       disposition: ["use_as_is", "rework", "scrap", "return_to_supplier"],
-      gage_status: ["active", "due", "overdue", "out_of_service"],
+      gage_status: ["active", "due", "overdue", "out_of_service", "oot"],
       hold_status: ["open", "under_review", "released", "scrapped", "rework"],
       incoming_lot_status: [
         "received",
