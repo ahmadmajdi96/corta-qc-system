@@ -74,12 +74,13 @@ export function GlobalSearch() {
     queryFn: async () => {
       const { data } = await supabase
         .from("capa_records")
-        .select("id, number, title, status")
+        .select("id, capa_number, d2_problem, status")
         .order("created_at", { ascending: false })
         .limit(50);
       return data ?? [];
     },
   });
+
 
   const products = useQuery({
     enabled,
@@ -100,12 +101,13 @@ export function GlobalSearch() {
     queryFn: async () => {
       const { data } = await supabase
         .from("inspections")
-        .select("id, number, status")
+        .select("id, lot_number, status, scheduled_date")
         .order("scheduled_date", { ascending: false })
         .limit(50);
       return data ?? [];
     },
   });
+
 
   const gages = useQuery({
     enabled,
@@ -152,12 +154,13 @@ export function GlobalSearch() {
     queryFn: async () => {
       const { data } = await supabase
         .from("quality_holds")
-        .select("id, number, reason, status")
+        .select("id, hold_number, reason, status")
         .order("created_at", { ascending: false })
         .limit(50);
       return data ?? [];
     },
   });
+
 
   const scars = useQuery({
     enabled,
@@ -165,7 +168,7 @@ export function GlobalSearch() {
     queryFn: async () => {
       const { data } = await supabase
         .from("supplier_scars")
-        .select("id, number, title, status")
+        .select("id, number, issue_description, status")
         .order("created_at", { ascending: false })
         .limit(50);
       return data ?? [];
@@ -178,12 +181,13 @@ export function GlobalSearch() {
     queryFn: async () => {
       const { data } = await supabase
         .from("customer_complaints")
-        .select("id, number, subject, status")
+        .select("id, number, description, status")
         .order("received_at", { ascending: false })
         .limit(50);
       return data ?? [];
     },
   });
+
 
   const go = (to: string, params?: Record<string, string>) => {
     setOpen(false);
