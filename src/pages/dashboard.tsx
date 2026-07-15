@@ -513,7 +513,7 @@ export function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-sm font-semibold">Measurement Volume</h3>
-              <p className="text-xs text-muted-foreground">Records per hour · last 12h</p>
+              <p className="text-xs text-muted-foreground">Records per day · last 14d</p>
             </div>
             <span className="font-mono text-xl font-semibold text-primary">
               {(trend.data ?? []).reduce((a, b) => a + b.volume, 0)}
