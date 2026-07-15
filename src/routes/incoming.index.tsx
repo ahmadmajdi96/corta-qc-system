@@ -3,6 +3,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { AppShell } from "@/components/app-shell";
 import { MesPage, StatusPill } from "@/components/mes/mes-page";
 import { SimpleList } from "@/components/mes/simple-list";
+import { IsoSamplingCalculator } from "@/components/iso-sampling-calculator";
 import { Truck } from "lucide-react";
 
 function tone(s: string): "success" | "warning" | "danger" | "info" | "muted" {
@@ -21,8 +22,11 @@ export const Route = createFileRoute("/incoming/")({
         <MesPage
           icon={<Truck className="h-5 w-5" />}
           title="Incoming Inspection"
-          description="Track received lots, sampling verdicts and dispositions from suppliers."
+          description="Track received lots, ISO 2859-1 sampling and dispositions from suppliers."
         >
+          <div className="mb-4">
+            <IsoSamplingCalculator />
+          </div>
           <SimpleList
             table="incoming_lots"
             entityName="Lot"

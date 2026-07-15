@@ -13,6 +13,7 @@ import { FileSearch, ArrowLeft, CheckCircle2, History, ArrowUp, ArrowDown, X } f
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { useEffect, useState } from "react";
+import { ElectronicSignatureDialog } from "@/components/electronic-signature-dialog";
 
 
 
@@ -37,6 +38,7 @@ function CapaDetail() {
   const qc = useQueryClient();
   const { user } = useSession();
   const [draft, setDraft] = useState<Record<string, string>>({});
+  const [esigOpen, setEsigOpen] = useState(false);
 
   const auditPage = search.auditPage ?? AUDIT_DEFAULTS.auditPage;
   const auditStep = search.auditStep ?? AUDIT_DEFAULTS.auditStep;
@@ -138,12 +140,22 @@ function CapaDetail() {
           <StatusPill tone={c.status === "closed" ? "success" : c.status === "in_progress" ? "info" : "warning"}>{c.status}</StatusPill>
           <span className="text-xs font-mono text-muted-foreground">{progress}/8 steps</span>
           {c.status !== "closed" && (
-            <Button size="sm" variant="outline" className="gap-2" onClick={() => close.mutate()} disabled={progress < 8}>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => setEsigOpen(true)} disabled={progress < 8}>
               <CheckCircle2 className="h-4 w-4" /> Close CAPA
             </Button>
           )}
         </div>
       </div>
+
+      <ElectronicSignatureDialog
+        open={esigOpen}
+        onOpenChange={setEsigOpen}
+        entityType="capa_record"
+        entityId={id}
+        meaning="Approve and close CAPA — I certify all 8D steps are complete and effective."
+        requiredRoles={["administrator", "quality_manager", "quality_engineer"]}
+        onSigned={() => close.mutate()}
+      />
 
       <div className="glass-panel rounded-2xl p-6">
         <div className="mb-1 text-xs uppercase tracking-[0.18em] text-muted-foreground font-mono">{c.capa_number ?? "—"}</div>

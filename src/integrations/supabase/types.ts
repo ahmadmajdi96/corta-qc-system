@@ -438,6 +438,33 @@ export type Database = {
           },
         ]
       }
+      cron_run_log: {
+        Row: {
+          id: string
+          job_name: string
+          message: string | null
+          ran_at: string
+          rows_affected: number | null
+          status: string
+        }
+        Insert: {
+          id?: string
+          job_name: string
+          message?: string | null
+          ran_at?: string
+          rows_affected?: number | null
+          status: string
+        }
+        Update: {
+          id?: string
+          job_name?: string
+          message?: string | null
+          ran_at?: string
+          rows_affected?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
       customer_complaints: {
         Row: {
           assigned_to: string | null
@@ -3571,6 +3598,7 @@ export type Database = {
           level: number
         }[]
       }
+      run_overdue_escalations_logged: { Args: never; Returns: number }
     }
     Enums: {
       calibration_result: "pass" | "fail" | "conditional"
