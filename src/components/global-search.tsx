@@ -345,12 +345,12 @@ export function GlobalSearch() {
             {(scars.data ?? []).map((s) => (
               <CommandItem
                 key={s.id}
-                value={`${s.number ?? ""} ${s.title ?? ""}`}
+                value={`${s.number ?? ""} ${s.issue_description ?? ""}`}
                 onSelect={() => go("/supplier-scars")}
               >
                 <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                 <span className="font-mono text-xs">{s.number}</span>
-                <span className="truncate text-xs">· {s.title ?? "—"}</span>
+                <span className="truncate text-xs">· {s.issue_description ?? "—"}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -359,15 +359,16 @@ export function GlobalSearch() {
             {(complaints.data ?? []).map((c) => (
               <CommandItem
                 key={c.id}
-                value={`${c.number ?? ""} ${c.subject ?? ""}`}
+                value={`${c.number ?? ""} ${c.description ?? ""}`}
                 onSelect={() => go("/complaints")}
               >
                 <MessageSquareWarning className="h-3.5 w-3.5 text-destructive" />
                 <span className="font-mono text-xs">{c.number}</span>
-                <span className="truncate text-xs">· {c.subject ?? "—"}</span>
+                <span className="truncate text-xs">· {c.description ?? "—"}</span>
               </CommandItem>
             ))}
           </CommandGroup>
+
 
           <CommandGroup heading="Requests">
             {(requests.data ?? []).map((r) => (
