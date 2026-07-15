@@ -1,0 +1,10 @@
+node_modules
+dist
+.wrangler
+.vite
+.turbo
+.git
+.env
+.env.*
+!.env.example
+tsconfig.tsbuildinfo
