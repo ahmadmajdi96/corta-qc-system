@@ -298,10 +298,19 @@ function SpecEditorDialog({ open, onOpenChange, productId, userId, nextVersion, 
     if (items.some((i) => !i.name.trim())) { notifyError("Each item needs a name"); return; }
     setSaving(true);
     try {
+      // Recompute version at save time to avoid stale nextVersion causing duplicates
+      const { data: maxRow } = await supabase
+        .from("quality_specifications")
+        .select("version")
+        .eq("product_id", productId)
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const versionToUse = ((maxRow?.version as number | undefined) ?? 0) + 1;
       // Deactivate current
       await supabase.from("quality_specifications").update({ is_active: false }).eq("product_id", productId).eq("is_active", true);
       const { data: spec, error } = await supabase.from("quality_specifications").insert({
-        product_id: productId, version: nextVersion, is_active: true, created_by: userId, effective_date: effectiveDate,
+        product_id: productId, version: versionToUse, is_active: true, created_by: userId, effective_date: effectiveDate,
       }).select("id").single();
       if (error) throw error;
       const rows = items.map((it, idx) => ({
@@ -314,7 +323,7 @@ function SpecEditorDialog({ open, onOpenChange, productId, userId, nextVersion, 
       }));
       const { error: itemsErr } = await supabase.from("specification_items").insert(rows);
       if (itemsErr) throw itemsErr;
-      toast.success(`Version ${nextVersion} created`);
+      toast.success(`Version ${versionToUse} created`);
       onCreated();
       onOpenChange(false);
       setItems([{ sequence: 1, name: "", measurement_type: "numeric", unit: "", target_value: "", lower_tolerance: "", upper_tolerance: "", pass_criteria: "", is_critical: false }]);
