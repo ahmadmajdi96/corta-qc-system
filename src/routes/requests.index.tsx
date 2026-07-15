@@ -93,7 +93,7 @@ function RequestsPage() {
 
   function resetPage() { setPage(1); }
   function exportCsv() {
-    downloadCsv(
+    downloadCSV(
       `requests-${new Date().toISOString().slice(0, 10)}.csv`,
       filtered.map((r) => ({
         number: r.number,
