@@ -17,7 +17,9 @@ import { ElectronicSignatureDialog } from "@/components/electronic-signature-dia
 
 
 
-const D_STEPS: { key: string; label: string; help: string }[] = [
+type StepDef = { key: string; label: string; help: string };
+
+const STEPS_8D: StepDef[] = [
   { key: "d1_team", label: "D1 — Team", help: "Establish a cross-functional team with the right skills." },
   { key: "d2_problem", label: "D2 — Problem", help: "Describe the problem in measurable terms (what, where, when, how many)." },
   { key: "d3_containment", label: "D3 — Containment", help: "Interim actions to protect the customer from the problem." },
@@ -27,6 +29,53 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d7_prevent", label: "D7 — Prevent recurrence", help: "Systemic changes (procedures, training, poka-yoke) to prevent recurrence." },
   { key: "d8_recognition", label: "D8 — Recognition & closure", help: "Recognize the team and formally close the CAPA." },
 ];
+
+const STEPS_5WHY: StepDef[] = [
+  { key: "d2_problem", label: "Problem statement", help: "Describe the problem in measurable terms." },
+  { key: "d1_team", label: "Why #1", help: "Why did this happen? First layer." },
+  { key: "d3_containment", label: "Why #2", help: "Why did that happen? Dig deeper." },
+  { key: "d4_root_cause", label: "Why #3 → #5 (Root cause)", help: "Continue asking until you reach the systemic root cause." },
+  { key: "d5_corrective", label: "Corrective action", help: "Action that addresses the identified root cause." },
+  { key: "d7_prevent", label: "Preventive action", help: "Systemic change to prevent recurrence." },
+];
+
+const STEPS_FISHBONE: StepDef[] = [
+  { key: "d2_problem", label: "Problem statement", help: "The effect being analyzed." },
+  { key: "d1_team", label: "Man / People", help: "Human-factor causes: skills, training, fatigue, communication." },
+  { key: "d3_containment", label: "Machine / Equipment", help: "Tooling, machines, fixtures, gauges." },
+  { key: "d4_root_cause", label: "Method", help: "Procedures, work instructions, standards." },
+  { key: "d5_corrective", label: "Material", help: "Raw material, components, consumables." },
+  { key: "d6_implement", label: "Measurement", help: "Inspection, gauges, calibration, sampling." },
+  { key: "d7_prevent", label: "Environment", help: "Temperature, humidity, layout, lighting." },
+  { key: "d8_recognition", label: "Root cause & corrective actions", help: "Confirmed root cause(s) and permanent actions." },
+];
+
+const STEPS_A3: StepDef[] = [
+  { key: "d2_problem", label: "Background", help: "Context — why this problem matters." },
+  { key: "d1_team", label: "Current condition", help: "Facts and data describing today's state." },
+  { key: "d3_containment", label: "Goal / Target condition", help: "Measurable target state." },
+  { key: "d4_root_cause", label: "Root cause analysis", help: "Analysis leading to the root cause(s)." },
+  { key: "d5_corrective", label: "Countermeasures", help: "Selected countermeasures to close the gap." },
+  { key: "d6_implement", label: "Implementation plan", help: "Who, what, when — the action plan." },
+  { key: "d7_prevent", label: "Follow-up / effect confirmation", help: "Verify results and standardize." },
+];
+
+function stepsFor(methodology: string | null | undefined): StepDef[] {
+  switch (methodology) {
+    case "5why": return STEPS_5WHY;
+    case "fishbone": return STEPS_FISHBONE;
+    case "a3": return STEPS_A3;
+    case "8d":
+    default: return STEPS_8D;
+  }
+}
+
+const METHODOLOGY_LABEL: Record<string, string> = {
+  "8d": "8D — Eight Disciplines",
+  "5why": "5-Why",
+  "fishbone": "Fishbone / Ishikawa",
+  "a3": "A3",
+};
 
 const AUDIT_PAGE_SIZES = [10, 25, 50, 100] as const;
 const AUDIT_DEFAULTS = { auditPage: 0, auditStep: "all", auditSort: "desc" as const, auditSize: 10 };
