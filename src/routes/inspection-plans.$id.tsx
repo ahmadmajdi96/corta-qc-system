@@ -169,6 +169,32 @@ function PlanDetail() {
     onError: (e: Error) => notifyError(e.message),
   });
 
+  const approve = useMutation({
+    mutationFn: async () => {
+      const reason = prompt("Approval note (optional):") ?? undefined;
+      const { error } = await supabase.rpc("approve_inspection_plan" as any, { _plan_id: id, _reason: reason });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Plan approved and frozen");
+      qc.invalidateQueries({ queryKey: ["inspection-plan", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+  const newRev = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("new_plan_revision" as any, { _plan_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("New draft revision created — edits enabled");
+      qc.invalidateQueries({ queryKey: ["inspection-plan", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+
   function openNew() {
     setEditing(null);
     setForm({ ...emptyRow });
