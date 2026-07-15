@@ -2756,6 +2756,7 @@ export type Database = {
           effective_until: string | null
           id: string
           lcl: number
+          locked_at: string | null
           reason: string
           sample_count: number | null
           sigma_method: string | null
@@ -2773,6 +2774,7 @@ export type Database = {
           effective_until?: string | null
           id?: string
           lcl: number
+          locked_at?: string | null
           reason: string
           sample_count?: number | null
           sigma_method?: string | null
@@ -2790,6 +2792,7 @@ export type Database = {
           effective_until?: string | null
           id?: string
           lcl?: number
+          locked_at?: string | null
           reason?: string
           sample_count?: number | null
           sigma_method?: string | null
@@ -3307,6 +3310,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_inspection_plan: {
+        Args: { _plan_id: string; _reason?: string }
+        Returns: string
+      }
       has_any_role: {
         Args: { _role_names: string[]; _user_id: string }
         Returns: boolean
@@ -3316,6 +3323,7 @@ export type Database = {
         Returns: boolean
       }
       nc_qty_reconciles: { Args: { _nc_id: string }; Returns: boolean }
+      new_plan_revision: { Args: { _plan_id: string }; Returns: undefined }
     }
     Enums: {
       calibration_result: "pass" | "fail" | "conditional"
