@@ -387,20 +387,27 @@ function PlanDetail() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => {
-                          if (confirm("Delete this ITP row?")) del.mutate(r.id);
-                        }}
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {plan.data?.revision_status === "approved" ? (
+                        <span className="text-xs text-muted-foreground">Frozen</span>
+                      ) : (
+                        <>
+                          <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => {
+                              if (confirm("Delete this ITP row?")) del.mutate(r.id);
+                            }}
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </TableCell>
+
                   </TableRow>
                 );
               })}
