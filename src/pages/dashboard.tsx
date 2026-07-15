@@ -493,7 +493,7 @@ export function DashboardPage() {
       {/* Pareto + Volume line + Donut */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="glass-panel rounded-2xl p-5">
-          <h3 className="text-sm font-semibold">NC Pareto — 30 days</h3>
+          <h3 className="text-sm font-semibold">NC Pareto — 90 days</h3>
           <p className="text-xs text-muted-foreground">Count by category</p>
           <div className="h-56">
             <ResponsiveContainer>
