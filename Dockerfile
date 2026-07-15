@@ -1,19 +1,19 @@
-# ---- Frontend build stage ----
-FROM oven/bun:1 AS build
+FROM oven/bun:1.2-alpine
+
 WORKDIR /app
-COPY package.json bun.lock* bunfig.toml ./
+
+# Install deps first for better layer caching
+COPY package.json bun.lock* bunfig.toml* ./
 RUN bun install --frozen-lockfile || bun install
+
+# Copy the rest of the project
 COPY . .
-# API base URL is baked in at build time
-ARG VITE_API_BASE=/api
-ENV VITE_API_BASE=$VITE_API_BASE
-RUN bun run build && ls -la /app/.output/public
 
-# ---- Runtime: nginx ----
-FROM nginx:1.27-alpine AS runtime
-COPY --from=build /app/.output/public /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-  CMD wget -q --spider http://localhost/ || exit 1
+ENV NODE_ENV=development
+ENV HOST=0.0.0.0
+ENV PORT=8120
 
+EXPOSE 8120
+
+# Vite dev server bound to 0.0.0.0:8120.
+CMD ["bun", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8120"]
