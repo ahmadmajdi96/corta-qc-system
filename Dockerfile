@@ -7,11 +7,11 @@ COPY . .
 # API base URL is baked in at build time
 ARG VITE_API_BASE=/api
 ENV VITE_API_BASE=$VITE_API_BASE
-RUN bun run build && ls -la /app/dist && ls -la /app/dist/client
+RUN bun run build && ls -la /app/.output/public
 
 # ---- Runtime: nginx ----
 FROM nginx:1.27-alpine AS runtime
-COPY --from=build /app/dist/client /usr/share/nginx/html
+COPY --from=build /app/.output/public /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
