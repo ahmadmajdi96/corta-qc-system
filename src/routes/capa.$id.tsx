@@ -180,7 +180,7 @@ function CapaDetail() {
   if (capa.isLoading) return <Skeleton className="h-96 w-full" />;
   if (capa.error) return <div className="text-destructive">Failed to load.</div>;
   const c = capa.data;
-  const progress = D_STEPS.filter((s) => (draft[s.key] ?? "").trim().length > 0).length;
+  const progress = steps.filter((s: StepDef) => (draft[s.key] ?? "").trim().length > 0).length;
 
   return (
     <div className="space-y-4">
@@ -215,7 +215,7 @@ function CapaDetail() {
       </div>
 
       <div className="space-y-3">
-        {D_STEPS.map((s) => {
+        {steps.map((s: StepDef) => {
           const filled = (draft[s.key] ?? "").trim().length > 0;
           return (
             <div key={s.key} className="glass-panel rounded-xl p-4">
@@ -259,7 +259,7 @@ function CapaDetail() {
             >
               <option value="all">All events</option>
               <option value="closed">CAPA closed</option>
-              {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+              {steps.map((s: StepDef) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
             <select
               value={auditSize}
@@ -292,7 +292,7 @@ function CapaDetail() {
             <ul className="divide-y divide-border/40">
               {trail.data!.rows.map((e: any) => {
                 const who = e.profiles?.full_name || e.profiles?.email || "system";
-                const step = e.details?.step ? D_STEPS.find((s) => s.key === e.details.step)?.label ?? e.details.step : null;
+                const step = e.details?.step ? steps.find((s: StepDef) => s.key === e.details.step)?.label ?? e.details.step : null;
                 return (
                   <li key={e.id} className="py-2 text-sm">
                     <div className="flex items-center justify-between gap-2">
