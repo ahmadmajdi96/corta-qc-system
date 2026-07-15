@@ -62,11 +62,6 @@ export const Route = createFileRoute("/capa/")({
                 loadOptions: () => loadOptions("non_conformances", "number", ", description"),
               },
               {
-                name: "product_id", label: "Product", type: "select",
-                placeholder: "— None —",
-                loadOptions: () => loadOptions("products", "name", ", sku"),
-              },
-              {
                 name: "owner_id", label: "Owner", type: "select",
                 placeholder: "— None —",
                 loadOptions: () => loadOptions("profiles", "full_name", ", email"),
