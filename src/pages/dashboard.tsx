@@ -534,7 +534,7 @@ export function DashboardPage() {
 
         <div className="glass-panel rounded-2xl p-5">
           <h3 className="text-sm font-semibold">Severity Mix</h3>
-          <p className="text-xs text-muted-foreground">Open + recent NCs (30d)</p>
+          <p className="text-xs text-muted-foreground">Open + recent NCs (90d)</p>
           <div className="h-40">
             <ResponsiveContainer>
               <PieChart>
