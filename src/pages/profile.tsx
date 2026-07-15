@@ -169,15 +169,6 @@ export function ProfilePage() {
             <Label className="flex items-center gap-1.5">
               Email
               {!canEditEmail && <Lock className="h-3 w-3 text-muted-foreground" />}
-              {emailVerified ? (
-                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
-                  <MailCheck className="h-3 w-3" /> Verified
-                </span>
-              ) : user?.email ? (
-                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
-                  <MailWarning className="h-3 w-3" /> Unverified
-                </span>
-              ) : null}
             </Label>
             <Input
               type="email"
@@ -189,7 +180,7 @@ export function ProfilePage() {
             />
             <p className="mt-1 text-xs text-muted-foreground">
               {canEditEmail
-                ? "Changing your email sends a confirmation link to the new address."
+                ? "Changing your email takes effect immediately — no confirmation email is sent."
                 : "Email changes require an administrator. Contact your admin to update."}
             </p>
             {emailErr && <p className="mt-1 text-xs text-destructive">{emailErr}</p>}
@@ -201,13 +192,7 @@ export function ProfilePage() {
                   disabled={emailSaving || email.trim() === (profile.email ?? "").trim()}
                 >
                   {emailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  {emailSaving ? "Sending..." : "Update email"}
-                </Button>
-              )}
-              {!emailVerified && user?.email && (
-                <Button variant="outline" className="gap-2" onClick={resendVerification} disabled={resending}>
-                  {resending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MailCheck className="h-3.5 w-3.5" />}
-                  {resending ? "Sending..." : "Resend verification email"}
+                  {emailSaving ? "Saving..." : "Update email"}
                 </Button>
               )}
             </div>
@@ -219,10 +204,6 @@ export function ProfilePage() {
         <CardHeader><CardTitle className="text-base">Change Password</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <Label>Current password</Label>
-            <Input type="password" value={pwCurrent} onChange={(e) => setPwCurrent(e.target.value)} disabled={pwSaving} />
-          </div>
-          <div>
             <Label>New password</Label>
             <Input type="password" value={pwNew} onChange={(e) => setPwNew(e.target.value)} disabled={pwSaving} minLength={8} maxLength={72} />
           </div>
@@ -231,7 +212,7 @@ export function ProfilePage() {
             <Input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} disabled={pwSaving} />
           </div>
           {pwErr && <p className="text-xs text-destructive">{pwErr}</p>}
-          <Button onClick={changePassword} disabled={pwSaving || !pwCurrent || !pwNew || !pwConfirm} className="gap-2">
+          <Button onClick={changePassword} disabled={pwSaving || !pwNew || !pwConfirm} className="gap-2">
             {pwSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {pwSaving ? "Updating..." : "Update password"}
           </Button>
