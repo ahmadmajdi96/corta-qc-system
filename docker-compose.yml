@@ -5,67 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: corta-qc-web
     restart: unless-stopped
+    network_mode: bridge
     ports:
       - "8120:8120"
-    depends_on:
-      api:
-        condition: service_healthy
     environment:
       HOST: 0.0.0.0
       PORT: "8120"
-      VITE_API_BASE: ${VITE_API_BASE:-/api}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-oms.cortanexai.com,localhost}
     volumes:
       # Mount source for hot reload; keep node_modules inside the container
       - .:/app
       - /app/node_modules
-
-  api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    expose:
-      - "3000"
-    ports:
-      - "3000:3000"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://corta:secret@db:5432/cortaqc
-      JWT_SECRET: ${JWT_SECRET:-change-in-production}
-      JWT_EXPIRY: ${JWT_EXPIRY:-24h}
-      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-also-change-in-production}
-      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY:-7d}
-      PORT: 3000
-      # Allowed browser origins (CORS). Add https:// variant when serving via TLS.
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://oms.cortanexai.com,http://oms.cortanexai.com,http://localhost:8120}
-      # Trusted host headers the API will accept.
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-oms.cortanexai.com,localhost}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  db:
-    image: postgres:16-alpine
-    volumes:
-      - corta_db_data:/var/lib/postgresql/data
-      - ./api/db/init:/docker-entrypoint-initdb.d:ro
-    environment:
-      POSTGRES_USER: corta
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: cortaqc
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U corta -d cortaqc"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
-
-volumes:
-  corta_db_data:
