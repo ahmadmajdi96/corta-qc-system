@@ -261,12 +261,12 @@ export function GlobalSearch() {
             {(capas.data ?? []).map((c) => (
               <CommandItem
                 key={c.id}
-                value={`${c.number ?? ""} ${c.title ?? ""}`}
+                value={`${c.capa_number ?? ""} ${c.d2_problem ?? ""}`}
                 onSelect={() => go("/capa/$id", { id: c.id })}
               >
                 <Wrench className="h-3.5 w-3.5 text-info" />
-                <span className="font-mono text-xs">{c.number}</span>
-                <span className="truncate text-xs">· {c.title ?? "—"}</span>
+                <span className="font-mono text-xs">{c.capa_number}</span>
+                <span className="truncate text-xs">· {c.d2_problem ?? "—"}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -275,11 +275,11 @@ export function GlobalSearch() {
             {(inspections.data ?? []).map((i) => (
               <CommandItem
                 key={i.id}
-                value={`${i.number ?? ""} ${i.status ?? ""}`}
+                value={`${i.lot_number ?? ""} ${i.status ?? ""}`}
                 onSelect={() => go("/inspections/$id", { id: i.id })}
               >
                 <ClipboardCheck className="h-3.5 w-3.5 text-success" />
-                <span className="font-mono text-xs">{i.number}</span>
+                <span className="font-mono text-xs">{i.lot_number ?? i.id.slice(0, 8)}</span>
                 <span className="ml-auto text-[10px] uppercase text-muted-foreground">{i.status}</span>
               </CommandItem>
             ))}
@@ -303,15 +303,16 @@ export function GlobalSearch() {
             {(holds.data ?? []).map((h) => (
               <CommandItem
                 key={h.id}
-                value={`${h.number ?? ""} ${h.reason ?? ""}`}
+                value={`${h.hold_number ?? ""} ${h.reason ?? ""}`}
                 onSelect={() => go("/holds")}
               >
                 <ShieldCheck className="h-3.5 w-3.5 text-warning" />
-                <span className="font-mono text-xs">{h.number}</span>
+                <span className="font-mono text-xs">{h.hold_number}</span>
                 <span className="truncate text-xs text-muted-foreground">· {h.reason ?? "—"}</span>
               </CommandItem>
             ))}
           </CommandGroup>
+
 
           <CommandGroup heading="Gages">
             {(gages.data ?? []).map((g) => (
