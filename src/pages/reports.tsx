@@ -275,6 +275,9 @@ export function ReportsPage() {
         <p className="text-sm text-muted-foreground">Filtered, paginated, database-backed inspection & non-conformance analytics.</p>
       </div>
 
+      <KpiSummaryCards />
+
+
       <Card><CardContent className="pt-4">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div><Label>From</Label><Input type="date" value={filters.from} onChange={(e) => { setFilters(f => ({ ...f, from: e.target.value })); setInspPage(0); setNcPage(0); }} /></div>
