@@ -93,9 +93,9 @@ export function ProfilePage() {
     if (parsed.data === profile?.email) { setEmailErr("New email is the same as current."); return; }
     setEmailErr(null); setEmailSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: parsed.data });
-      if (error) throw error;
-      toast.success("Confirmation link sent — check the new inbox to verify.");
+      await updateEmailFn({ data: { email: parsed.data } });
+      toast.success("Email updated");
+      refetch();
     } catch (e: any) {
       const m = mapDbError(e, "email");
       setEmailErr(m);
@@ -103,35 +103,16 @@ export function ProfilePage() {
     } finally { setEmailSaving(false); }
   }
 
-  async function resendVerification() {
-    if (!user?.email) return;
-    setResending(true);
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
-      if (error) throw error;
-      toast.success(`Verification email sent to ${user.email}`);
-    } catch (e: any) {
-      const msg = /rate limit/i.test(e?.message ?? "")
-        ? "Too many attempts — please wait a moment and try again."
-        : e?.message ?? "Failed to send verification email.";
-      toast.error(msg);
-    } finally { setResending(false); }
-  }
-
   async function changePassword() {
     setPwErr(null);
     const parsed = passwordSchema.safeParse(pwNew);
     if (!parsed.success) { setPwErr(parsed.error.issues[0].message); return; }
     if (pwNew !== pwConfirm) { setPwErr("Passwords do not match"); return; }
-    if (!pwCurrent) { setPwErr("Enter your current password"); return; }
     setPwSaving(true);
     try {
-      const { error: reAuthErr } = await supabase.auth.signInWithPassword({ email: user!.email!, password: pwCurrent });
-      if (reAuthErr) throw new Error("Current password is incorrect");
-      const { error } = await supabase.auth.updateUser({ password: parsed.data });
-      if (error) throw error;
+      await updatePasswordFn({ data: { password: parsed.data } });
       toast.success("Password updated");
-      setPwCurrent(""); setPwNew(""); setPwConfirm("");
+      setPwNew(""); setPwConfirm("");
     } catch (e: any) {
       setPwErr(mapDbError(e, "password"));
     } finally { setPwSaving(false); }
