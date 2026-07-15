@@ -4,75 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_BASE: ${VITE_API_BASE:-/api}
+        # Point this at your hosted backend (Lovable / remote API).
+        VITE_API_BASE: ${VITE_API_BASE}
     container_name: corta-qc-web-prod
     restart: unless-stopped
-    expose:
-      - "8120"
+    ports:
+      - "${WEB_PORT:-8120}:8120"
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: "8120"
-    depends_on:
-      api:
-        condition: service_healthy
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: corta-qc-nginx-prod
-    restart: unless-stopped
-    ports:
-      - "${WEB_PORT:-80}:80"
-    volumes:
-      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - web
-      - api
-
-  api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    container_name: corta-qc-api-prod
-    restart: unless-stopped
-    expose:
-      - "3000"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://corta:secret@db:5432/cortaqc
-      JWT_SECRET: ${JWT_SECRET:-change-in-production}
-      JWT_EXPIRY: ${JWT_EXPIRY:-24h}
-      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-also-change-in-production}
-      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY:-7d}
-      PORT: 3000
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://oms.cortanexai.com,http://oms.cortanexai.com,http://localhost}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-oms.cortanexai.com,localhost}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  db:
-    image: postgres:16-alpine
-    container_name: corta-qc-db-prod
-    restart: unless-stopped
-    volumes:
-      - corta_db_data_prod:/var/lib/postgresql/data
-      - ./api/db/init:/docker-entrypoint-initdb.d:ro
-    environment:
-      POSTGRES_USER: corta
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: cortaqc
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U corta -d cortaqc"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-volumes:
-  corta_db_data_prod:
