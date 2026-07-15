@@ -228,7 +228,7 @@ export function DashboardPage() {
   const ncMix = useQuery({
     queryKey: ["dash-nc-mix"],
     queryFn: async () => {
-      const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+      const since = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
       const { data, error } = await supabase
         .from("non_conformances")
         .select("severity, category")
