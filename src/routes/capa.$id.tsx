@@ -357,8 +357,8 @@ export const Route = createFileRoute("/capa/$id")({
       <AppShell>
         <MesPage
           icon={<FileSearch className="h-5 w-5" />}
-          title="CAPA (8D)"
-          description="Structured 8-discipline problem solving workflow."
+          title="CAPA"
+          description="Structured problem-solving — methodology-driven workflow."
         >
           <CapaDetail />
         </MesPage>
