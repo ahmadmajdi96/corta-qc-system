@@ -3324,6 +3324,32 @@ export type Database = {
       }
       nc_qty_reconciles: { Args: { _nc_id: string }; Returns: boolean }
       new_plan_revision: { Args: { _plan_id: string }; Returns: undefined }
+      notify: {
+        Args: {
+          _action_url?: string
+          _body?: string
+          _category: string
+          _entity_id: string
+          _entity_type: string
+          _recipient: string
+          _severity: string
+          _title: string
+        }
+        Returns: string
+      }
+      notify_role: {
+        Args: {
+          _action_url?: string
+          _body?: string
+          _category: string
+          _entity_id: string
+          _entity_type: string
+          _role: string
+          _severity: string
+          _title: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       calibration_result: "pass" | "fail" | "conditional"
