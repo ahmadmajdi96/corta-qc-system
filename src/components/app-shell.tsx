@@ -24,6 +24,9 @@ import {
   ChevronRight,
   FileSearch,
   Inbox,
+} from "lucide-react";
+import { GlobalSearch } from "@/components/global-search";
+
 
 import { supabase } from "@/integrations/supabase/client";
 import { useMyProfile, useMyRoles, hasAnyRole } from "@/lib/auth";
