@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useMyProfile, useMyRoles, useSession, hasAnyRole } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,8 @@ import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
-import { Loader2, Lock, MailCheck, MailWarning } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
+import { updateMyEmail, updateMyPassword } from "@/lib/account.functions";
 
 const nameSchema = z.string().trim()
   .min(2, "Full name must be at least 2 characters")
@@ -23,18 +25,17 @@ export function ProfilePage() {
   const { user } = useSession();
   const { data: profile, refetch } = useMyProfile();
   const { data: roles } = useMyRoles();
+  const updateEmailFn = useServerFn(updateMyEmail);
+  const updatePasswordFn = useServerFn(updateMyPassword);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [pwCurrent, setPwCurrent] = useState("");
   const [pwNew, setPwNew] = useState("");
   const [pwConfirm, setPwConfirm] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [emailSaving, setEmailSaving] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
-  const [resending, setResending] = useState(false);
-  const emailVerified = !!(user as any)?.email_confirmed_at;
 
   const [nameErr, setNameErr] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
@@ -92,9 +93,9 @@ export function ProfilePage() {
     if (parsed.data === profile?.email) { setEmailErr("New email is the same as current."); return; }
     setEmailErr(null); setEmailSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: parsed.data });
-      if (error) throw error;
-      toast.success("Confirmation link sent — check the new inbox to verify.");
+      await updateEmailFn({ data: { email: parsed.data } });
+      toast.success("Email updated");
+      refetch();
     } catch (e: any) {
       const m = mapDbError(e, "email");
       setEmailErr(m);
@@ -102,35 +103,16 @@ export function ProfilePage() {
     } finally { setEmailSaving(false); }
   }
 
-  async function resendVerification() {
-    if (!user?.email) return;
-    setResending(true);
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email: user.email });
-      if (error) throw error;
-      toast.success(`Verification email sent to ${user.email}`);
-    } catch (e: any) {
-      const msg = /rate limit/i.test(e?.message ?? "")
-        ? "Too many attempts — please wait a moment and try again."
-        : e?.message ?? "Failed to send verification email.";
-      toast.error(msg);
-    } finally { setResending(false); }
-  }
-
   async function changePassword() {
     setPwErr(null);
     const parsed = passwordSchema.safeParse(pwNew);
     if (!parsed.success) { setPwErr(parsed.error.issues[0].message); return; }
     if (pwNew !== pwConfirm) { setPwErr("Passwords do not match"); return; }
-    if (!pwCurrent) { setPwErr("Enter your current password"); return; }
     setPwSaving(true);
     try {
-      const { error: reAuthErr } = await supabase.auth.signInWithPassword({ email: user!.email!, password: pwCurrent });
-      if (reAuthErr) throw new Error("Current password is incorrect");
-      const { error } = await supabase.auth.updateUser({ password: parsed.data });
-      if (error) throw error;
+      await updatePasswordFn({ data: { password: parsed.data } });
       toast.success("Password updated");
-      setPwCurrent(""); setPwNew(""); setPwConfirm("");
+      setPwNew(""); setPwConfirm("");
     } catch (e: any) {
       setPwErr(mapDbError(e, "password"));
     } finally { setPwSaving(false); }
@@ -187,15 +169,6 @@ export function ProfilePage() {
             <Label className="flex items-center gap-1.5">
               Email
               {!canEditEmail && <Lock className="h-3 w-3 text-muted-foreground" />}
-              {emailVerified ? (
-                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
-                  <MailCheck className="h-3 w-3" /> Verified
-                </span>
-              ) : user?.email ? (
-                <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
-                  <MailWarning className="h-3 w-3" /> Unverified
-                </span>
-              ) : null}
             </Label>
             <Input
               type="email"
@@ -207,7 +180,7 @@ export function ProfilePage() {
             />
             <p className="mt-1 text-xs text-muted-foreground">
               {canEditEmail
-                ? "Changing your email sends a confirmation link to the new address."
+                ? "Changing your email takes effect immediately — no confirmation email is sent."
                 : "Email changes require an administrator. Contact your admin to update."}
             </p>
             {emailErr && <p className="mt-1 text-xs text-destructive">{emailErr}</p>}
@@ -219,13 +192,7 @@ export function ProfilePage() {
                   disabled={emailSaving || email.trim() === (profile.email ?? "").trim()}
                 >
                   {emailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  {emailSaving ? "Sending..." : "Update email"}
-                </Button>
-              )}
-              {!emailVerified && user?.email && (
-                <Button variant="outline" className="gap-2" onClick={resendVerification} disabled={resending}>
-                  {resending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MailCheck className="h-3.5 w-3.5" />}
-                  {resending ? "Sending..." : "Resend verification email"}
+                  {emailSaving ? "Saving..." : "Update email"}
                 </Button>
               )}
             </div>
@@ -237,10 +204,6 @@ export function ProfilePage() {
         <CardHeader><CardTitle className="text-base">Change Password</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <Label>Current password</Label>
-            <Input type="password" value={pwCurrent} onChange={(e) => setPwCurrent(e.target.value)} disabled={pwSaving} />
-          </div>
-          <div>
             <Label>New password</Label>
             <Input type="password" value={pwNew} onChange={(e) => setPwNew(e.target.value)} disabled={pwSaving} minLength={8} maxLength={72} />
           </div>
@@ -249,7 +212,7 @@ export function ProfilePage() {
             <Input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} disabled={pwSaving} />
           </div>
           {pwErr && <p className="text-xs text-destructive">{pwErr}</p>}
-          <Button onClick={changePassword} disabled={pwSaving || !pwCurrent || !pwNew || !pwConfirm} className="gap-2">
+          <Button onClick={changePassword} disabled={pwSaving || !pwNew || !pwConfirm} className="gap-2">
             {pwSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {pwSaving ? "Updating..." : "Update password"}
           </Button>

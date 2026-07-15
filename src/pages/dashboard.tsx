@@ -135,12 +135,12 @@ export function DashboardPage() {
   const summary = useQuery({
     queryKey: ["dash-summary", today],
     queryFn: async () => {
-      const sevenAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+      const thirtyAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
       const [insToday, openNC, overdueCA, recentMeas, openHolds, runningWO] = await Promise.all([
         supabase.from("inspections").select("id, status", { count: "exact" }).eq("scheduled_date", today),
         supabase.from("non_conformances").select("id", { count: "exact", head: true }).eq("status", "open"),
         supabase.from("corrective_actions").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]).lt("due_date", today),
-        supabase.from("inspection_measurements").select("is_pass, recorded_at").gte("recorded_at", sevenAgo),
+        supabase.from("inspection_measurements").select("is_pass, recorded_at").gte("recorded_at", thirtyAgo),
         supabase.from("quality_holds").select("id", { count: "exact", head: true }).eq("status", "open"),
         supabase.from("work_orders").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
       ]);
@@ -164,28 +164,30 @@ export function DashboardPage() {
     },
   });
 
-  // Pass rate trend — last 12 hours from measurements
+  // Pass rate trend — daily buckets over last 14 days
   const trend = useQuery({
     queryKey: ["dash-trend"],
     queryFn: async () => {
-      const since = new Date(Date.now() - 12 * 3600 * 1000).toISOString();
+      const DAYS = 14;
+      const since = new Date(Date.now() - DAYS * 24 * 3600 * 1000).toISOString();
       const { data, error } = await supabase
         .from("inspection_measurements")
         .select("is_pass, recorded_at")
         .gte("recorded_at", since);
       if (error) throw error;
-      const buckets = Array.from({ length: 12 }, (_, i) => {
-        const d = new Date(Date.now() - (11 - i) * 3600 * 1000);
-        return { hour: d.getHours().toString().padStart(2, "0") + "h", pass: 0, total: 0 };
+      const buckets = Array.from({ length: DAYS }, (_, i) => {
+        const d = new Date(Date.now() - (DAYS - 1 - i) * 24 * 3600 * 1000);
+        const label = `${d.getMonth() + 1}/${d.getDate()}`;
+        return { hour: label, pass: 0, total: 0, key: d.toISOString().slice(0, 10) };
       });
+      const idxByKey = new Map(buckets.map((b, i) => [b.key, i]));
       for (const m of data ?? []) {
         if (m.is_pass === null) continue;
-        const h = Math.floor((Date.now() - new Date(m.recorded_at).getTime()) / 3600 / 1000);
-        const idx = 11 - h;
-        if (idx >= 0 && idx < 12) {
-          buckets[idx].total += 1;
-          if (m.is_pass) buckets[idx].pass += 1;
-        }
+        const key = new Date(m.recorded_at).toISOString().slice(0, 10);
+        const idx = idxByKey.get(key);
+        if (idx === undefined) continue;
+        buckets[idx].total += 1;
+        if (m.is_pass) buckets[idx].pass += 1;
       }
       return buckets.map((b) => ({
         hour: b.hour,
@@ -201,7 +203,7 @@ export function DashboardPage() {
       const { data, error } = await supabase
         .from("work_orders")
         .select("id, number, status, quantity_planned, quantity_produced, line_id, products(name, sku)")
-        .in("status", ["in_progress", "released"])
+        .eq("status", "in_progress")
         .order("updated_at", { ascending: false })
         .limit(6);
       if (error) throw error;
@@ -226,7 +228,7 @@ export function DashboardPage() {
   const ncMix = useQuery({
     queryKey: ["dash-nc-mix"],
     queryFn: async () => {
-      const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+      const since = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
       const { data, error } = await supabase
         .from("non_conformances")
         .select("severity, category")
@@ -309,7 +311,7 @@ export function DashboardPage() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Kpi label="Pass Rate (7d)" value={summary.data?.passRate ?? 0} suffix="%" icon={Gauge} accent="primary" href="/inspections" />
+        <Kpi label="Pass Rate (30d)" value={summary.data?.passRate ?? 0} suffix="%" icon={Gauge} accent="primary" href="/inspections" />
         <Kpi label="Inspections Today" value={summary.data?.inspectionsToday ?? 0} delta={`${summary.data?.completionRate ?? 0}% completed`} icon={ClipboardCheck} accent="info" href={`/inspections?date=${today}`} />
         <Kpi label="Open NCs" value={summary.data?.openNCs ?? 0} icon={AlertOctagon} accent="destructive" href="/non-conformances?status=open" />
         <Kpi label="Overdue CAs" value={summary.data?.overdueCAs ?? 0} icon={Wrench} accent="warning" href="/corrective-actions?overdue=1" />
@@ -321,8 +323,8 @@ export function DashboardPage() {
         <div className="glass-panel rounded-2xl p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">Pass Rate — Last 12 hours</h3>
-              <p className="text-xs text-muted-foreground">Measurements evaluated per hour</p>
+              <h3 className="text-sm font-semibold">Pass Rate — Last 14 days</h3>
+              <p className="text-xs text-muted-foreground">Measurements evaluated per day</p>
             </div>
             <div className="flex gap-3 text-[11px]">
               <Legend dot="bg-primary" label="Pass rate %" />
@@ -352,7 +354,7 @@ export function DashboardPage() {
 
         <div className="glass-panel rounded-2xl p-5">
           <h3 className="text-sm font-semibold">Overall Pass Rate</h3>
-          <p className="text-xs text-muted-foreground">Last 7 days</p>
+          <p className="text-xs text-muted-foreground">Last 30 days</p>
           <div className="relative mt-2 h-64">
             <ResponsiveContainer>
               <RadialBarChart
@@ -491,7 +493,7 @@ export function DashboardPage() {
       {/* Pareto + Volume line + Donut */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="glass-panel rounded-2xl p-5">
-          <h3 className="text-sm font-semibold">NC Pareto — 30 days</h3>
+          <h3 className="text-sm font-semibold">NC Pareto — 90 days</h3>
           <p className="text-xs text-muted-foreground">Count by category</p>
           <div className="h-56">
             <ResponsiveContainer>
@@ -511,7 +513,7 @@ export function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-sm font-semibold">Measurement Volume</h3>
-              <p className="text-xs text-muted-foreground">Records per hour · last 12h</p>
+              <p className="text-xs text-muted-foreground">Records per day · last 14d</p>
             </div>
             <span className="font-mono text-xl font-semibold text-primary">
               {(trend.data ?? []).reduce((a, b) => a + b.volume, 0)}
@@ -532,7 +534,7 @@ export function DashboardPage() {
 
         <div className="glass-panel rounded-2xl p-5">
           <h3 className="text-sm font-semibold">Severity Mix</h3>
-          <p className="text-xs text-muted-foreground">Open + recent NCs (30d)</p>
+          <p className="text-xs text-muted-foreground">Open + recent NCs (90d)</p>
           <div className="h-40">
             <ResponsiveContainer>
               <PieChart>

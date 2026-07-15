@@ -1,8 +1,31 @@
 services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-/api}
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      # Comma-separated allowed hosts for nginx / app awareness.
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-oms.cortanexai.com,localhost}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: ./api
       dockerfile: Dockerfile
+    expose:
+      - "3000"
     ports:
       - "3000:3000"
     depends_on:
@@ -16,7 +39,10 @@ services:
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-also-change-in-production}
       REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY:-7d}
       PORT: 3000
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      # Allowed browser origins (CORS). Add https:// variant when serving via TLS.
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://oms.cortanexai.com,http://oms.cortanexai.com,http://localhost}
+      # Trusted host headers the API will accept.
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-oms.cortanexai.com,localhost}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     restart: unless-stopped
     healthcheck:
