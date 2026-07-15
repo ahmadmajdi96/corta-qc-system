@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useMyProfile, useMyRoles, useSession, hasAnyRole } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,8 @@ import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
-import { Loader2, Lock, MailCheck, MailWarning } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
+import { updateMyEmail, updateMyPassword } from "@/lib/account.functions";
 
 const nameSchema = z.string().trim()
   .min(2, "Full name must be at least 2 characters")
