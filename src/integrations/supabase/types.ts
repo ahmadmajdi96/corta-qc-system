@@ -3361,7 +3361,7 @@ export type Database = {
         | "closed"
         | "cancelled"
       disposition: "use_as_is" | "rework" | "scrap" | "return_to_supplier"
-      gage_status: "active" | "due" | "overdue" | "out_of_service"
+      gage_status: "active" | "due" | "overdue" | "out_of_service" | "oot"
       hold_status: "open" | "under_review" | "released" | "scrapped" | "rework"
       incoming_lot_status:
         | "received"
@@ -3530,7 +3530,7 @@ export const Constants = {
         "cancelled",
       ],
       disposition: ["use_as_is", "rework", "scrap", "return_to_supplier"],
-      gage_status: ["active", "due", "overdue", "out_of_service"],
+      gage_status: ["active", "due", "overdue", "out_of_service", "oot"],
       hold_status: ["open", "under_review", "released", "scrapped", "rework"],
       incoming_lot_status: [
         "received",
