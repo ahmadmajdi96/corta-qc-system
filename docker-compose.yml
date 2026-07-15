@@ -40,7 +40,7 @@ services:
       REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY:-7d}
       PORT: 3000
       # Allowed browser origins (CORS). Add https:// variant when serving via TLS.
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://oms.cortanexai.com,http://oms.cortanexai.com,http://localhost}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://oms.cortanexai.com,http://oms.cortanexai.com,http://localhost:8120}
       # Trusted host headers the API will accept.
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-oms.cortanexai.com,localhost}
       LOG_LEVEL: ${LOG_LEVEL:-info}
