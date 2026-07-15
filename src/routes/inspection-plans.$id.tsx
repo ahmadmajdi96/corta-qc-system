@@ -169,6 +169,32 @@ function PlanDetail() {
     onError: (e: Error) => notifyError(e.message),
   });
 
+  const approve = useMutation({
+    mutationFn: async () => {
+      const reason = prompt("Approval note (optional):") ?? undefined;
+      const { error } = await supabase.rpc("approve_inspection_plan" as any, { _plan_id: id, _reason: reason });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Plan approved and frozen");
+      qc.invalidateQueries({ queryKey: ["inspection-plan", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+  const newRev = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("new_plan_revision" as any, { _plan_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("New draft revision created — edits enabled");
+      qc.invalidateQueries({ queryKey: ["inspection-plan", id] });
+    },
+    onError: (e: Error) => notifyError(e.message),
+  });
+
+
   function openNew() {
     setEditing(null);
     setForm({ ...emptyRow });
@@ -270,17 +296,37 @@ function PlanDetail() {
         </div>
       ) : null}
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-lg font-semibold">Inspection & Test Plan rows</h2>
           <p className="text-xs text-muted-foreground">
             Add one row per activity — Hold / Witness / Review points guide inspector sign-off.
           </p>
         </div>
-        <Button onClick={openNew} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Add row
-        </Button>
+        <div className="flex items-center gap-2">
+          {plan.data?.revision_status === "approved" ? (
+            <>
+              <StatusPill tone="success">
+                Approved v{plan.data.version ?? 1} — frozen
+              </StatusPill>
+              <Button size="sm" variant="outline" onClick={() => newRev.mutate()} disabled={newRev.isPending}>
+                Create new revision
+              </Button>
+            </>
+          ) : (
+            <>
+              <StatusPill tone="warning">Draft v{plan.data?.version ?? 1}</StatusPill>
+              <Button size="sm" variant="outline" onClick={() => approve.mutate()} disabled={approve.isPending || (rows.data?.length ?? 0) === 0}>
+                Approve & freeze
+              </Button>
+              <Button onClick={openNew} size="sm">
+                <Plus className="h-4 w-4 mr-1" /> Add row
+              </Button>
+            </>
+          )}
+        </div>
       </div>
+
 
       <div className="mt-3 rounded-lg border bg-card overflow-x-auto">
         {rows.isLoading ? (
@@ -341,20 +387,27 @@ function PlanDetail() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => {
-                          if (confirm("Delete this ITP row?")) del.mutate(r.id);
-                        }}
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {plan.data?.revision_status === "approved" ? (
+                        <span className="text-xs text-muted-foreground">Frozen</span>
+                      ) : (
+                        <>
+                          <Button size="icon" variant="ghost" onClick={() => openEdit(r)} title="Edit">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => {
+                              if (confirm("Delete this ITP row?")) del.mutate(r.id);
+                            }}
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </TableCell>
+
                   </TableRow>
                 );
               })}
