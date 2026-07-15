@@ -1,0 +1,1 @@
+ALTER TYPE public.capa_methodology ADD VALUE IF NOT EXISTS 'a3';
