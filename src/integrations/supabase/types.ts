@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      amendments: {
+        Row: {
+          after_state: Json
+          amended_at: string
+          amended_by: string
+          approved_at: string | null
+          approved_by: string | null
+          before_state: Json
+          entity_id: string
+          entity_type: string
+          id: string
+          reason: string
+        }
+        Insert: {
+          after_state: Json
+          amended_at?: string
+          amended_by: string
+          approved_at?: string | null
+          approved_by?: string | null
+          before_state: Json
+          entity_id: string
+          entity_type: string
+          id?: string
+          reason: string
+        }
+        Update: {
+          after_state?: Json
+          amended_at?: string
+          amended_by?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          before_state?: Json
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amendments_amended_by_fkey"
+            columns: ["amended_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "amendments_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -54,37 +108,76 @@ export type Database = {
       }
       calibration_records: {
         Row: {
+          as_found: Json | null
+          as_left: Json | null
           certificate_ref: string | null
           created_at: string
+          environmental_conditions: Json | null
           gage_id: string
           id: string
+          impact_assessment_id: string | null
+          is_oot: boolean
           next_due: string | null
           notes: string | null
+          oot_direction: string | null
+          oot_magnitude: number | null
           performed_at: string
           performed_by: string | null
+          provider: string | null
+          provider_accreditation: string | null
+          reference_cert_number: string | null
+          reference_standard_id: string | null
           result: Database["public"]["Enums"]["calibration_result"]
+          uncertainty: number | null
+          uncertainty_unit: string | null
         }
         Insert: {
+          as_found?: Json | null
+          as_left?: Json | null
           certificate_ref?: string | null
           created_at?: string
+          environmental_conditions?: Json | null
           gage_id: string
           id?: string
+          impact_assessment_id?: string | null
+          is_oot?: boolean
           next_due?: string | null
           notes?: string | null
+          oot_direction?: string | null
+          oot_magnitude?: number | null
           performed_at?: string
           performed_by?: string | null
+          provider?: string | null
+          provider_accreditation?: string | null
+          reference_cert_number?: string | null
+          reference_standard_id?: string | null
           result: Database["public"]["Enums"]["calibration_result"]
+          uncertainty?: number | null
+          uncertainty_unit?: string | null
         }
         Update: {
+          as_found?: Json | null
+          as_left?: Json | null
           certificate_ref?: string | null
           created_at?: string
+          environmental_conditions?: Json | null
           gage_id?: string
           id?: string
+          impact_assessment_id?: string | null
+          is_oot?: boolean
           next_due?: string | null
           notes?: string | null
+          oot_direction?: string | null
+          oot_magnitude?: number | null
           performed_at?: string
           performed_by?: string | null
+          provider?: string | null
+          provider_accreditation?: string | null
+          reference_cert_number?: string | null
+          reference_standard_id?: string | null
           result?: Database["public"]["Enums"]["calibration_result"]
+          uncertainty?: number | null
+          uncertainty_unit?: string | null
         }
         Relationships: [
           {
@@ -173,6 +266,114 @@ export type Database = {
           },
         ]
       }
+      capability_studies: {
+        Row: {
+          characteristic_id: string | null
+          chart_id: string
+          computed_at: string
+          cp: number | null
+          cpk: number | null
+          id: string
+          mean: number | null
+          notes: string | null
+          pp: number | null
+          ppk: number | null
+          prerequisites_met: boolean
+          required_cpk: number | null
+          sample_count: number
+          sigma_overall: number | null
+          sigma_within: number | null
+        }
+        Insert: {
+          characteristic_id?: string | null
+          chart_id: string
+          computed_at?: string
+          cp?: number | null
+          cpk?: number | null
+          id?: string
+          mean?: number | null
+          notes?: string | null
+          pp?: number | null
+          ppk?: number | null
+          prerequisites_met?: boolean
+          required_cpk?: number | null
+          sample_count: number
+          sigma_overall?: number | null
+          sigma_within?: number | null
+        }
+        Update: {
+          characteristic_id?: string | null
+          chart_id?: string
+          computed_at?: string
+          cp?: number | null
+          cpk?: number | null
+          id?: string
+          mean?: number | null
+          notes?: string | null
+          pp?: number | null
+          ppk?: number | null
+          prerequisites_met?: boolean
+          required_cpk?: number | null
+          sample_count?: number
+          sigma_overall?: number | null
+          sigma_within?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capability_studies_characteristic_id_fkey"
+            columns: ["characteristic_id"]
+            isOneToOne: false
+            referencedRelation: "plan_characteristics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capability_studies_chart_id_fkey"
+            columns: ["chart_id"]
+            isOneToOne: false
+            referencedRelation: "spc_charts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_profiles: {
+        Row: {
+          code: string
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          require_esig: boolean
+          require_second_person_verification: boolean
+          retention_years: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          require_esig?: boolean
+          require_second_person_verification?: boolean
+          retention_years?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          require_esig?: boolean
+          require_second_person_verification?: boolean
+          retention_years?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       corrective_actions: {
         Row: {
           assigned_to: string | null
@@ -237,6 +438,145 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          site_id: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          site_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          site_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      electronic_signatures: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          entity_version: number | null
+          id: string
+          ip_address: string | null
+          meaning: string
+          reason: string | null
+          signature_hash: string | null
+          signed_at: string
+          signer_id: string
+          signer_role: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          entity_version?: number | null
+          id?: string
+          ip_address?: string | null
+          meaning: string
+          reason?: string | null
+          signature_hash?: string | null
+          signed_at?: string
+          signer_id: string
+          signer_role?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          entity_version?: number | null
+          id?: string
+          ip_address?: string | null
+          meaning?: string
+          reason?: string | null
+          signature_hash?: string | null
+          signed_at?: string
+          signer_id?: string
+          signer_role?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "electronic_signatures_signer_id_fkey"
+            columns: ["signer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escalations: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          entity_id: string
+          entity_type: string
+          escalated_at: string
+          escalated_to: string | null
+          id: string
+          level: number
+          reason: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          entity_id: string
+          entity_type: string
+          escalated_at?: string
+          escalated_to?: string | null
+          id?: string
+          level?: number
+          reason: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          escalated_at?: string
+          escalated_to?: string | null
+          id?: string
+          level?: number
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalations_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalations_escalated_to_fkey"
+            columns: ["escalated_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       export_jobs: {
         Row: {
           created_at: string
@@ -272,58 +612,91 @@ export type Database = {
       }
       gages: {
         Row: {
+          accuracy: number | null
           code: string
+          control_class: string | null
           created_at: string
           created_by: string | null
+          criticality: string | null
           gage_type: string | null
           id: string
+          interval_basis: string | null
+          interval_unit: string | null
+          interval_value: number | null
           last_cal_date: string | null
           location: string | null
           manufacturer: string | null
+          mpe: number | null
           name: string
           next_cal_date: string | null
           notes: string | null
+          qr_label: string | null
           resolution: number | null
+          restricted_use: boolean
           serial_number: string | null
           status: Database["public"]["Enums"]["gage_status"]
+          uncertainty: number | null
           unit_id: string | null
           updated_at: string
+          usage_count: number
         }
         Insert: {
+          accuracy?: number | null
           code: string
+          control_class?: string | null
           created_at?: string
           created_by?: string | null
+          criticality?: string | null
           gage_type?: string | null
           id?: string
+          interval_basis?: string | null
+          interval_unit?: string | null
+          interval_value?: number | null
           last_cal_date?: string | null
           location?: string | null
           manufacturer?: string | null
+          mpe?: number | null
           name: string
           next_cal_date?: string | null
           notes?: string | null
+          qr_label?: string | null
           resolution?: number | null
+          restricted_use?: boolean
           serial_number?: string | null
           status?: Database["public"]["Enums"]["gage_status"]
+          uncertainty?: number | null
           unit_id?: string | null
           updated_at?: string
+          usage_count?: number
         }
         Update: {
+          accuracy?: number | null
           code?: string
+          control_class?: string | null
           created_at?: string
           created_by?: string | null
+          criticality?: string | null
           gage_type?: string | null
           id?: string
+          interval_basis?: string | null
+          interval_unit?: string | null
+          interval_value?: number | null
           last_cal_date?: string | null
           location?: string | null
           manufacturer?: string | null
+          mpe?: number | null
           name?: string
           next_cal_date?: string | null
           notes?: string | null
+          qr_label?: string | null
           resolution?: number | null
+          restricted_use?: boolean
           serial_number?: string | null
           status?: Database["public"]["Enums"]["gage_status"]
+          uncertainty?: number | null
           unit_id?: string | null
           updated_at?: string
+          usage_count?: number
         }
         Relationships: [
           {
@@ -331,6 +704,126 @@ export type Database = {
             columns: ["unit_id"]
             isOneToOne: false
             referencedRelation: "measurement_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gauge_usage_history: {
+        Row: {
+          calibration_status_at_use: string
+          gage_id: string
+          id: string
+          inspection_id: string | null
+          last_cal_id: string | null
+          measurement_id: string | null
+          used_at: string
+          used_by: string | null
+        }
+        Insert: {
+          calibration_status_at_use: string
+          gage_id: string
+          id?: string
+          inspection_id?: string | null
+          last_cal_id?: string | null
+          measurement_id?: string | null
+          used_at?: string
+          used_by?: string | null
+        }
+        Update: {
+          calibration_status_at_use?: string
+          gage_id?: string
+          id?: string
+          inspection_id?: string | null
+          last_cal_id?: string | null
+          measurement_id?: string | null
+          used_at?: string
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gauge_usage_history_gage_id_fkey"
+            columns: ["gage_id"]
+            isOneToOne: false
+            referencedRelation: "gages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gauge_usage_history_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gauge_usage_history_last_cal_id_fkey"
+            columns: ["last_cal_id"]
+            isOneToOne: false
+            referencedRelation: "calibration_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gauge_usage_history_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_measurements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gauge_usage_history_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hold_scope_actions: {
+        Row: {
+          action: string
+          after_qty: number
+          authorized_by: string
+          before_qty: number
+          hold_id: string
+          id: string
+          performed_at: string
+          qty_delta: number
+          reason: string
+        }
+        Insert: {
+          action: string
+          after_qty: number
+          authorized_by: string
+          before_qty: number
+          hold_id: string
+          id?: string
+          performed_at?: string
+          qty_delta: number
+          reason: string
+        }
+        Update: {
+          action?: string
+          after_qty?: number
+          authorized_by?: string
+          before_qty?: number
+          hold_id?: string
+          id?: string
+          performed_at?: string
+          qty_delta?: number
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hold_scope_actions_authorized_by_fkey"
+            columns: ["authorized_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hold_scope_actions_hold_id_fkey"
+            columns: ["hold_id"]
+            isOneToOne: false
+            referencedRelation: "quality_holds"
             referencedColumns: ["id"]
           },
         ]
@@ -471,53 +964,111 @@ export type Database = {
       }
       inspection_plans: {
         Row: {
+          approval_reason: string | null
+          approved_at: string | null
+          approved_by: string | null
           aql_level: string | null
           created_at: string
           created_by: string | null
           description: string | null
+          effective_from: string | null
+          effective_until: string | null
           id: string
           is_active: boolean
           name: string
+          parent_plan_id: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
           product_id: string | null
+          revision_status: string
           sample_size_rule: string | null
+          site_id: string | null
           standard_reference: string | null
+          supersedes_id: string | null
           updated_at: string
+          version: number
         }
         Insert: {
+          approval_reason?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           aql_level?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
           id?: string
           is_active?: boolean
           name: string
+          parent_plan_id?: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
           product_id?: string | null
+          revision_status?: string
           sample_size_rule?: string | null
+          site_id?: string | null
           standard_reference?: string | null
+          supersedes_id?: string | null
           updated_at?: string
+          version?: number
         }
         Update: {
+          approval_reason?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           aql_level?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          parent_plan_id?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
           product_id?: string | null
+          revision_status?: string
           sample_size_rule?: string | null
+          site_id?: string | null
           standard_reference?: string | null
+          supersedes_id?: string | null
           updated_at?: string
+          version?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "inspection_plans_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_plans_parent_plan_id_fkey"
+            columns: ["parent_plan_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspection_plans_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_plans_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_plans_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -654,78 +1205,105 @@ export type Database = {
           cancel_reason: string | null
           completed_at: string | null
           created_at: string
+          environment: Json | null
           hold_id: string | null
           id: string
           incoming_lot_id: string | null
+          inspected_qty: number | null
           inspection_method: string | null
           inspection_stage: string | null
           line_id: string | null
           lot_number: string | null
+          lot_size: number | null
           notes: string | null
           operator_id: string | null
           performed_by: string | null
           plan_id: string | null
+          plan_revision_id: string | null
           plan_type: Database["public"]["Enums"]["plan_type"] | null
+          plan_version_at_execution: number | null
           product_id: string
+          sample_size: number | null
+          sampling_state: string | null
           schedule_id: string | null
           scheduled_date: string
+          site_id: string | null
           spec_id: string
           started_at: string | null
           station_id: string | null
           status: string
           updated_at: string
+          work_center_id: string | null
           work_order_id: string | null
         }
         Insert: {
           cancel_reason?: string | null
           completed_at?: string | null
           created_at?: string
+          environment?: Json | null
           hold_id?: string | null
           id?: string
           incoming_lot_id?: string | null
+          inspected_qty?: number | null
           inspection_method?: string | null
           inspection_stage?: string | null
           line_id?: string | null
           lot_number?: string | null
+          lot_size?: number | null
           notes?: string | null
           operator_id?: string | null
           performed_by?: string | null
           plan_id?: string | null
+          plan_revision_id?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"] | null
+          plan_version_at_execution?: number | null
           product_id: string
+          sample_size?: number | null
+          sampling_state?: string | null
           schedule_id?: string | null
           scheduled_date: string
+          site_id?: string | null
           spec_id: string
           started_at?: string | null
           station_id?: string | null
           status?: string
           updated_at?: string
+          work_center_id?: string | null
           work_order_id?: string | null
         }
         Update: {
           cancel_reason?: string | null
           completed_at?: string | null
           created_at?: string
+          environment?: Json | null
           hold_id?: string | null
           id?: string
           incoming_lot_id?: string | null
+          inspected_qty?: number | null
           inspection_method?: string | null
           inspection_stage?: string | null
           line_id?: string | null
           lot_number?: string | null
+          lot_size?: number | null
           notes?: string | null
           operator_id?: string | null
           performed_by?: string | null
           plan_id?: string | null
+          plan_revision_id?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"] | null
+          plan_version_at_execution?: number | null
           product_id?: string
+          sample_size?: number | null
+          sampling_state?: string | null
           schedule_id?: string | null
           scheduled_date?: string
+          site_id?: string | null
           spec_id?: string
           started_at?: string | null
           station_id?: string | null
           status?: string
           updated_at?: string
+          work_center_id?: string | null
           work_order_id?: string | null
         }
         Relationships: [
@@ -765,6 +1343,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inspections_plan_revision_id_fkey"
+            columns: ["plan_revision_id"]
+            isOneToOne: false
+            referencedRelation: "plan_revisions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "inspections_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -779,6 +1364,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inspections_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "inspections_spec_id_fkey"
             columns: ["spec_id"]
             isOneToOne: false
@@ -790,6 +1382,13 @@ export type Database = {
             columns: ["station_id"]
             isOneToOne: false
             referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_work_center_id_fkey"
+            columns: ["work_center_id"]
+            isOneToOne: false
+            referencedRelation: "work_centers"
             referencedColumns: ["id"]
           },
           {
@@ -866,30 +1465,122 @@ export type Database = {
           },
         ]
       }
+      nc_disposition_lines: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          disposition: string
+          id: string
+          location: string | null
+          nc_id: string
+          notes: string | null
+          qty: number
+          reinspection_id: string | null
+          reinspection_required: boolean
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          disposition: string
+          id?: string
+          location?: string | null
+          nc_id: string
+          notes?: string | null
+          qty: number
+          reinspection_id?: string | null
+          reinspection_required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          disposition?: string
+          id?: string
+          location?: string | null
+          nc_id?: string
+          notes?: string | null
+          qty?: number
+          reinspection_id?: string | null
+          reinspection_required?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nc_disposition_lines_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nc_disposition_lines_nc_id_fkey"
+            columns: ["nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nc_disposition_lines_reinspection_id_fkey"
+            columns: ["reinspection_id"]
+            isOneToOne: false
+            referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       non_conformances: {
         Row: {
           capa_id: string | null
           category: string | null
           closed_at: string | null
           containment: string | null
+          copq_currency: string | null
+          cost_downtime: number | null
+          cost_freight_return: number | null
+          cost_rework: number | null
+          cost_scrap: number | null
+          cost_sort: number | null
+          cost_warranty: number | null
+          defect_class: string | null
+          defect_code: string | null
           description: string
           disposition: string | null
           hold_id: string | null
           id: string
           inspection_id: string | null
+          is_repeat_occurrence: boolean
+          linked_oot_id: string | null
+          linked_spc_signal_id: string | null
           measurement_id: string | null
           number: string
+          qty_affected: number | null
+          qty_downgraded: number | null
+          qty_released: number | null
+          qty_remaining_held: number | null
+          qty_returned: number | null
+          qty_reworked: number | null
+          qty_scrapped: number | null
+          qty_uom: string | null
+          qty_use_as_is: number | null
           quarantine_location: string | null
           quarantine_qty: number | null
           quarantine_tag: string | null
           raised_at: string
           raised_by: string
           rejection_reason: string | null
+          repeat_of_nc_id: string | null
+          requirement_reference: string | null
           root_cause: string | null
           root_cause_category: string | null
           segregation_status: string | null
           severity: string
           status: string
+          suspect_window_end: string | null
+          suspect_window_start: string | null
           updated_at: string
           work_order_id: string | null
         }
@@ -898,24 +1589,49 @@ export type Database = {
           category?: string | null
           closed_at?: string | null
           containment?: string | null
+          copq_currency?: string | null
+          cost_downtime?: number | null
+          cost_freight_return?: number | null
+          cost_rework?: number | null
+          cost_scrap?: number | null
+          cost_sort?: number | null
+          cost_warranty?: number | null
+          defect_class?: string | null
+          defect_code?: string | null
           description: string
           disposition?: string | null
           hold_id?: string | null
           id?: string
           inspection_id?: string | null
+          is_repeat_occurrence?: boolean
+          linked_oot_id?: string | null
+          linked_spc_signal_id?: string | null
           measurement_id?: string | null
           number: string
+          qty_affected?: number | null
+          qty_downgraded?: number | null
+          qty_released?: number | null
+          qty_remaining_held?: number | null
+          qty_returned?: number | null
+          qty_reworked?: number | null
+          qty_scrapped?: number | null
+          qty_uom?: string | null
+          qty_use_as_is?: number | null
           quarantine_location?: string | null
           quarantine_qty?: number | null
           quarantine_tag?: string | null
           raised_at?: string
           raised_by: string
           rejection_reason?: string | null
+          repeat_of_nc_id?: string | null
+          requirement_reference?: string | null
           root_cause?: string | null
           root_cause_category?: string | null
           segregation_status?: string | null
           severity: string
           status?: string
+          suspect_window_end?: string | null
+          suspect_window_start?: string | null
           updated_at?: string
           work_order_id?: string | null
         }
@@ -924,24 +1640,49 @@ export type Database = {
           category?: string | null
           closed_at?: string | null
           containment?: string | null
+          copq_currency?: string | null
+          cost_downtime?: number | null
+          cost_freight_return?: number | null
+          cost_rework?: number | null
+          cost_scrap?: number | null
+          cost_sort?: number | null
+          cost_warranty?: number | null
+          defect_class?: string | null
+          defect_code?: string | null
           description?: string
           disposition?: string | null
           hold_id?: string | null
           id?: string
           inspection_id?: string | null
+          is_repeat_occurrence?: boolean
+          linked_oot_id?: string | null
+          linked_spc_signal_id?: string | null
           measurement_id?: string | null
           number?: string
+          qty_affected?: number | null
+          qty_downgraded?: number | null
+          qty_released?: number | null
+          qty_remaining_held?: number | null
+          qty_returned?: number | null
+          qty_reworked?: number | null
+          qty_scrapped?: number | null
+          qty_uom?: string | null
+          qty_use_as_is?: number | null
           quarantine_location?: string | null
           quarantine_qty?: number | null
           quarantine_tag?: string | null
           raised_at?: string
           raised_by?: string
           rejection_reason?: string | null
+          repeat_of_nc_id?: string | null
+          requirement_reference?: string | null
           root_cause?: string | null
           root_cause_category?: string | null
           segregation_status?: string | null
           severity?: string
           status?: string
+          suspect_window_end?: string | null
+          suspect_window_start?: string | null
           updated_at?: string
           work_order_id?: string | null
         }
@@ -968,6 +1709,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "non_conformances_linked_oot_id_fkey"
+            columns: ["linked_oot_id"]
+            isOneToOne: false
+            referencedRelation: "oot_impact_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "non_conformances_linked_spc_signal_id_fkey"
+            columns: ["linked_spc_signal_id"]
+            isOneToOne: false
+            referencedRelation: "spc_signals"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "non_conformances_measurement_id_fkey"
             columns: ["measurement_id"]
             isOneToOne: false
@@ -982,10 +1737,160 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "non_conformances_repeat_of_nc_id_fkey"
+            columns: ["repeat_of_nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "non_conformances_work_order_id_fkey"
             columns: ["work_order_id"]
             isOneToOne: false
             referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          body: string | null
+          category: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          read_at: string | null
+          recipient_id: string
+          severity: string
+          title: string
+        }
+        Insert: {
+          action_url?: string | null
+          body?: string | null
+          category: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          severity?: string
+          title: string
+        }
+        Update: {
+          action_url?: string | null
+          body?: string | null
+          category?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oot_impact_assessments: {
+        Row: {
+          affected_inspection_ids: string[]
+          affected_lot_ids: string[]
+          approved_at: string | null
+          approved_by: string | null
+          calibration_record_id: string
+          created_at: string
+          disposition: string | null
+          gage_id: string
+          id: string
+          last_known_good_at: string | null
+          linked_capa_id: string | null
+          linked_nc_id: string | null
+          risk_summary: string | null
+          suspect_window_end: string
+          suspect_window_start: string
+          updated_at: string
+        }
+        Insert: {
+          affected_inspection_ids?: string[]
+          affected_lot_ids?: string[]
+          approved_at?: string | null
+          approved_by?: string | null
+          calibration_record_id: string
+          created_at?: string
+          disposition?: string | null
+          gage_id: string
+          id?: string
+          last_known_good_at?: string | null
+          linked_capa_id?: string | null
+          linked_nc_id?: string | null
+          risk_summary?: string | null
+          suspect_window_end: string
+          suspect_window_start: string
+          updated_at?: string
+        }
+        Update: {
+          affected_inspection_ids?: string[]
+          affected_lot_ids?: string[]
+          approved_at?: string | null
+          approved_by?: string | null
+          calibration_record_id?: string
+          created_at?: string
+          disposition?: string | null
+          gage_id?: string
+          id?: string
+          last_known_good_at?: string | null
+          linked_capa_id?: string | null
+          linked_nc_id?: string | null
+          risk_summary?: string | null
+          suspect_window_end?: string
+          suspect_window_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oot_impact_assessments_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oot_impact_assessments_calibration_record_id_fkey"
+            columns: ["calibration_record_id"]
+            isOneToOne: false
+            referencedRelation: "calibration_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oot_impact_assessments_gage_id_fkey"
+            columns: ["gage_id"]
+            isOneToOne: false
+            referencedRelation: "gages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oot_impact_assessments_linked_capa_id_fkey"
+            columns: ["linked_capa_id"]
+            isOneToOne: false
+            referencedRelation: "capa_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oot_impact_assessments_linked_nc_id_fkey"
+            columns: ["linked_nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
             referencedColumns: ["id"]
           },
         ]
@@ -1015,6 +1920,7 @@ export type Database = {
           check_points: string | null
           comments: string | null
           created_at: string
+          criticality: string | null
           id: string
           inspected_by: string | null
           inspection_method: string | null
@@ -1022,8 +1928,12 @@ export type Database = {
           plan_id: string
           point_type: string | null
           procedure: string | null
+          reaction_plan_id: string | null
+          require_photo: boolean
+          require_second_person: boolean
           required_documents: Json
           responsibility_role: string | null
+          safety_regulatory_flag: boolean
           sample_frequency: string | null
           sequence: number
           spec_item_id: string | null
@@ -1037,6 +1947,7 @@ export type Database = {
           check_points?: string | null
           comments?: string | null
           created_at?: string
+          criticality?: string | null
           id?: string
           inspected_by?: string | null
           inspection_method?: string | null
@@ -1044,8 +1955,12 @@ export type Database = {
           plan_id: string
           point_type?: string | null
           procedure?: string | null
+          reaction_plan_id?: string | null
+          require_photo?: boolean
+          require_second_person?: boolean
           required_documents?: Json
           responsibility_role?: string | null
+          safety_regulatory_flag?: boolean
           sample_frequency?: string | null
           sequence?: number
           spec_item_id?: string | null
@@ -1059,6 +1974,7 @@ export type Database = {
           check_points?: string | null
           comments?: string | null
           created_at?: string
+          criticality?: string | null
           id?: string
           inspected_by?: string | null
           inspection_method?: string | null
@@ -1066,8 +1982,12 @@ export type Database = {
           plan_id?: string
           point_type?: string | null
           procedure?: string | null
+          reaction_plan_id?: string | null
+          require_photo?: boolean
+          require_second_person?: boolean
           required_documents?: Json
           responsibility_role?: string | null
+          safety_regulatory_flag?: boolean
           sample_frequency?: string | null
           sequence?: number
           spec_item_id?: string | null
@@ -1084,10 +2004,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "plan_characteristics_reaction_plan_id_fkey"
+            columns: ["reaction_plan_id"]
+            isOneToOne: false
+            referencedRelation: "reaction_plans"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "plan_characteristics_spec_item_id_fkey"
             columns: ["spec_item_id"]
             isOneToOne: false
             referencedRelation: "specification_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_revisions: {
+        Row: {
+          approved_at: string
+          approved_by: string | null
+          change_reason: string | null
+          effective_from: string
+          effective_until: string | null
+          id: string
+          plan_id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          approved_at?: string
+          approved_by?: string | null
+          change_reason?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          plan_id: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string | null
+          change_reason?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          plan_id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_revisions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_revisions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -1275,12 +2253,19 @@ export type Database = {
           created_at: string
           created_by: string | null
           disposition: Database["public"]["Enums"]["disposition"] | null
+          hard_block: boolean
           hold_number: string | null
           id: string
           lot_number: string | null
           notes: string | null
           product_id: string | null
+          qty_held: number | null
+          qty_uom: string | null
+          quarantine_location: string | null
+          quarantine_tag: string | null
           reason: string
+          release_criteria: Json | null
+          release_criteria_met: Json | null
           resolved_at: string | null
           resolved_by: string | null
           severity_id: string | null
@@ -1292,12 +2277,19 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           disposition?: Database["public"]["Enums"]["disposition"] | null
+          hard_block?: boolean
           hold_number?: string | null
           id?: string
           lot_number?: string | null
           notes?: string | null
           product_id?: string | null
+          qty_held?: number | null
+          qty_uom?: string | null
+          quarantine_location?: string | null
+          quarantine_tag?: string | null
           reason: string
+          release_criteria?: Json | null
+          release_criteria_met?: Json | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity_id?: string | null
@@ -1309,12 +2301,19 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           disposition?: Database["public"]["Enums"]["disposition"] | null
+          hard_block?: boolean
           hold_number?: string | null
           id?: string
           lot_number?: string | null
           notes?: string | null
           product_id?: string | null
+          qty_held?: number | null
+          qty_uom?: string | null
+          quarantine_location?: string | null
+          quarantine_tag?: string | null
           reason?: string
+          release_criteria?: Json | null
+          release_criteria_met?: Json | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity_id?: string | null
@@ -1390,6 +2389,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reaction_plan_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          params: Json
+          reaction_plan_id: string
+          seq: number
+          target: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          params?: Json
+          reaction_plan_id: string
+          seq?: number
+          target?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          params?: Json
+          reaction_plan_id?: string
+          seq?: number
+          target?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reaction_plan_actions_reaction_plan_id_fkey"
+            columns: ["reaction_plan_id"]
+            isOneToOne: false
+            referencedRelation: "reaction_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reaction_plans: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       request_events: {
         Row: {
@@ -1576,6 +2643,176 @@ export type Database = {
         }
         Relationships: []
       }
+      sites: {
+        Row: {
+          code: string
+          compliance_profile: string
+          created_at: string
+          id: string
+          name: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          compliance_profile?: string
+          created_at?: string
+          id?: string
+          name: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          compliance_profile?: string
+          created_at?: string
+          id?: string
+          name?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      spc_charts: {
+        Row: {
+          active: boolean
+          characteristic_id: string | null
+          chart_type: string
+          created_at: string
+          id: string
+          owner_id: string | null
+          product_id: string | null
+          rule_set: Json
+          station_id: string | null
+          subgroup_size: number | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          characteristic_id?: string | null
+          chart_type: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          product_id?: string | null
+          rule_set?: Json
+          station_id?: string | null
+          subgroup_size?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          characteristic_id?: string | null
+          chart_type?: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          product_id?: string | null
+          rule_set?: Json
+          station_id?: string | null
+          subgroup_size?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spc_charts_characteristic_id_fkey"
+            columns: ["characteristic_id"]
+            isOneToOne: false
+            referencedRelation: "plan_characteristics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_charts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_charts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_charts_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spc_control_limits: {
+        Row: {
+          approved_at: string
+          approved_by: string | null
+          baseline_from: string | null
+          baseline_to: string | null
+          center_line: number
+          chart_id: string
+          effective_from: string
+          effective_until: string | null
+          id: string
+          lcl: number
+          reason: string
+          sample_count: number | null
+          sigma_method: string | null
+          ucl: number
+          version: number
+        }
+        Insert: {
+          approved_at?: string
+          approved_by?: string | null
+          baseline_from?: string | null
+          baseline_to?: string | null
+          center_line: number
+          chart_id: string
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          lcl: number
+          reason: string
+          sample_count?: number | null
+          sigma_method?: string | null
+          ucl: number
+          version?: number
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string | null
+          baseline_from?: string | null
+          baseline_to?: string | null
+          center_line?: number
+          chart_id?: string
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          lcl?: number
+          reason?: string
+          sample_count?: number | null
+          sigma_method?: string | null
+          ucl?: number
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spc_control_limits_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_control_limits_chart_id_fkey"
+            columns: ["chart_id"]
+            isOneToOne: false
+            referencedRelation: "spc_charts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spc_samples: {
         Row: {
           cp: number | null
@@ -1667,6 +2904,83 @@ export type Database = {
             columns: ["work_order_id"]
             isOneToOne: false
             referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spc_signals: {
+        Row: {
+          chart_id: string
+          detected_at: string
+          id: string
+          linked_hold_id: string | null
+          linked_nc_id: string | null
+          resolution_notes: string | null
+          resolved: boolean
+          resolved_at: string | null
+          rule_violated: string
+          sample_id: string | null
+          severity: string
+          suspect_window_end: string | null
+          suspect_window_start: string | null
+        }
+        Insert: {
+          chart_id: string
+          detected_at?: string
+          id?: string
+          linked_hold_id?: string | null
+          linked_nc_id?: string | null
+          resolution_notes?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          rule_violated: string
+          sample_id?: string | null
+          severity?: string
+          suspect_window_end?: string | null
+          suspect_window_start?: string | null
+        }
+        Update: {
+          chart_id?: string
+          detected_at?: string
+          id?: string
+          linked_hold_id?: string | null
+          linked_nc_id?: string | null
+          resolution_notes?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          rule_violated?: string
+          sample_id?: string | null
+          severity?: string
+          suspect_window_end?: string | null
+          suspect_window_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spc_signals_chart_id_fkey"
+            columns: ["chart_id"]
+            isOneToOne: false
+            referencedRelation: "spc_charts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_signals_linked_hold_id_fkey"
+            columns: ["linked_hold_id"]
+            isOneToOne: false
+            referencedRelation: "quality_holds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_signals_linked_nc_id_fkey"
+            columns: ["linked_nc_id"]
+            isOneToOne: false
+            referencedRelation: "non_conformances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spc_signals_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: false
+            referencedRelation: "spc_samples"
             referencedColumns: ["id"]
           },
         ]
@@ -1881,6 +3195,41 @@ export type Database = {
           },
         ]
       }
+      work_centers: {
+        Row: {
+          code: string
+          created_at: string
+          department_id: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          department_id: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          department_id?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_centers_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_orders: {
         Row: {
           actual_end: string | null
@@ -1966,6 +3315,7 @@ export type Database = {
         Args: { _role_name: string; _user_id: string }
         Returns: boolean
       }
+      nc_qty_reconciles: { Args: { _nc_id: string }; Returns: boolean }
     }
     Enums: {
       calibration_result: "pass" | "fail" | "conditional"
