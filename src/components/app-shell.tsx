@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useState, type ReactNode } from "react";
 import { NewInspectionDialog } from "@/components/new-inspection-dialog";
+import { NotificationsBell } from "@/components/notifications-bell";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Role = "administrator" | "quality_manager" | "qc_engineer" | "inspector" | "auditor" | "viewer";
