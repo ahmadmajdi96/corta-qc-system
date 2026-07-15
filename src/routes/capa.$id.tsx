@@ -189,10 +189,11 @@ function CapaDetail() {
           <ArrowLeft className="h-4 w-4" /> Back to CAPA
         </Link>
         <div className="flex items-center gap-3">
+          <StatusPill tone="info">{methodLabel}</StatusPill>
           <StatusPill tone={c.status === "closed" ? "success" : c.status === "in_progress" ? "info" : "warning"}>{c.status}</StatusPill>
-          <span className="text-xs font-mono text-muted-foreground">{progress}/8 steps</span>
+          <span className="text-xs font-mono text-muted-foreground">{progress}/{steps.length} steps</span>
           {c.status !== "closed" && (
-            <Button size="sm" variant="outline" className="gap-2" onClick={() => setEsigOpen(true)} disabled={progress < 8}>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => setEsigOpen(true)} disabled={progress < steps.length}>
               <CheckCircle2 className="h-4 w-4" /> Close CAPA
             </Button>
           )}
@@ -204,7 +205,7 @@ function CapaDetail() {
         onOpenChange={setEsigOpen}
         entityType="capa_record"
         entityId={id}
-        meaning="Approve and close CAPA — I certify all 8D steps are complete and effective."
+        meaning={`Approve and close CAPA — I certify all ${methodLabel} steps are complete and effective.`}
         requiredRoles={["administrator", "quality_manager", "quality_engineer"]}
         onSigned={() => close.mutate()}
       />
