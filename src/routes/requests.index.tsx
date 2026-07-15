@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth";
 import { NewProductRequestDialog } from "@/components/new-product-request-dialog";
-import { downloadCsv } from "@/lib/csv";
+import { downloadCSV } from "@/lib/csv";
 
 type Row = {
   id: string;
