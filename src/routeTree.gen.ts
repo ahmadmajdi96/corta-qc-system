@@ -19,6 +19,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
+import { Route as SupplierScarsIndexRouteImport } from './routes/supplier-scars.index'
 import { Route as StationsIndexRouteImport } from './routes/stations.index'
 import { Route as RequestsIndexRouteImport } from './routes/requests.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
@@ -29,6 +30,7 @@ import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-pl
 import { Route as IncomingIndexRouteImport } from './routes/incoming.index'
 import { Route as HoldsIndexRouteImport } from './routes/holds.index'
 import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
+import { Route as ComplaintsIndexRouteImport } from './routes/complaints.index'
 import { Route as CapaIndexRouteImport } from './routes/capa.index'
 import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
 import { Route as WorkOrdersIdRouteImport } from './routes/work-orders.$id'
@@ -93,6 +95,11 @@ const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
   path: '/suppliers/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupplierScarsIndexRoute = SupplierScarsIndexRouteImport.update({
+  id: '/supplier-scars/',
+  path: '/supplier-scars/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StationsIndexRoute = StationsIndexRouteImport.update({
   id: '/stations/',
   path: '/stations/',
@@ -141,6 +148,11 @@ const HoldsIndexRoute = HoldsIndexRouteImport.update({
 const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
   id: '/corrective-actions/',
   path: '/corrective-actions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsIndexRoute = ComplaintsIndexRouteImport.update({
+  id: '/complaints/',
+  path: '/complaints/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CapaIndexRoute = CapaIndexRouteImport.update({
@@ -229,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/work-orders/$id': typeof WorkOrdersIdRoute
   '/calibration/': typeof CalibrationIndexRoute
   '/capa/': typeof CapaIndexRoute
+  '/complaints/': typeof ComplaintsIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
   '/incoming/': typeof IncomingIndexRoute
@@ -239,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/products/': typeof ProductsIndexRoute
   '/requests/': typeof RequestsIndexRoute
   '/stations/': typeof StationsIndexRoute
+  '/supplier-scars/': typeof SupplierScarsIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
@@ -264,6 +278,7 @@ export interface FileRoutesByTo {
   '/work-orders/$id': typeof WorkOrdersIdRoute
   '/calibration': typeof CalibrationIndexRoute
   '/capa': typeof CapaIndexRoute
+  '/complaints': typeof ComplaintsIndexRoute
   '/corrective-actions': typeof CorrectiveActionsIndexRoute
   '/holds': typeof HoldsIndexRoute
   '/incoming': typeof IncomingIndexRoute
@@ -274,6 +289,7 @@ export interface FileRoutesByTo {
   '/products': typeof ProductsIndexRoute
   '/requests': typeof RequestsIndexRoute
   '/stations': typeof StationsIndexRoute
+  '/supplier-scars': typeof SupplierScarsIndexRoute
   '/suppliers': typeof SuppliersIndexRoute
   '/work-orders': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
@@ -300,6 +316,7 @@ export interface FileRoutesById {
   '/work-orders/$id': typeof WorkOrdersIdRoute
   '/calibration/': typeof CalibrationIndexRoute
   '/capa/': typeof CapaIndexRoute
+  '/complaints/': typeof ComplaintsIndexRoute
   '/corrective-actions/': typeof CorrectiveActionsIndexRoute
   '/holds/': typeof HoldsIndexRoute
   '/incoming/': typeof IncomingIndexRoute
@@ -310,6 +327,7 @@ export interface FileRoutesById {
   '/products/': typeof ProductsIndexRoute
   '/requests/': typeof RequestsIndexRoute
   '/stations/': typeof StationsIndexRoute
+  '/supplier-scars/': typeof SupplierScarsIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
   '/work-orders/': typeof WorkOrdersIndexRoute
   '/inspections/$id/execute': typeof InspectionsIdExecuteRoute
@@ -337,6 +355,7 @@ export interface FileRouteTypes {
     | '/work-orders/$id'
     | '/calibration/'
     | '/capa/'
+    | '/complaints/'
     | '/corrective-actions/'
     | '/holds/'
     | '/incoming/'
@@ -347,6 +366,7 @@ export interface FileRouteTypes {
     | '/products/'
     | '/requests/'
     | '/stations/'
+    | '/supplier-scars/'
     | '/suppliers/'
     | '/work-orders/'
     | '/inspections/$id/execute'
@@ -372,6 +392,7 @@ export interface FileRouteTypes {
     | '/work-orders/$id'
     | '/calibration'
     | '/capa'
+    | '/complaints'
     | '/corrective-actions'
     | '/holds'
     | '/incoming'
@@ -382,6 +403,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/requests'
     | '/stations'
+    | '/supplier-scars'
     | '/suppliers'
     | '/work-orders'
     | '/inspections/$id/execute'
@@ -407,6 +429,7 @@ export interface FileRouteTypes {
     | '/work-orders/$id'
     | '/calibration/'
     | '/capa/'
+    | '/complaints/'
     | '/corrective-actions/'
     | '/holds/'
     | '/incoming/'
@@ -417,6 +440,7 @@ export interface FileRouteTypes {
     | '/products/'
     | '/requests/'
     | '/stations/'
+    | '/supplier-scars/'
     | '/suppliers/'
     | '/work-orders/'
     | '/inspections/$id/execute'
@@ -443,6 +467,7 @@ export interface RootRouteChildren {
   WorkOrdersIdRoute: typeof WorkOrdersIdRoute
   CalibrationIndexRoute: typeof CalibrationIndexRoute
   CapaIndexRoute: typeof CapaIndexRoute
+  ComplaintsIndexRoute: typeof ComplaintsIndexRoute
   CorrectiveActionsIndexRoute: typeof CorrectiveActionsIndexRoute
   HoldsIndexRoute: typeof HoldsIndexRoute
   IncomingIndexRoute: typeof IncomingIndexRoute
@@ -453,6 +478,7 @@ export interface RootRouteChildren {
   ProductsIndexRoute: typeof ProductsIndexRoute
   RequestsIndexRoute: typeof RequestsIndexRoute
   StationsIndexRoute: typeof StationsIndexRoute
+  SupplierScarsIndexRoute: typeof SupplierScarsIndexRoute
   SuppliersIndexRoute: typeof SuppliersIndexRoute
   WorkOrdersIndexRoute: typeof WorkOrdersIndexRoute
   InspectionsIdExecuteRoute: typeof InspectionsIdExecuteRoute
@@ -531,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuppliersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/supplier-scars/': {
+      id: '/supplier-scars/'
+      path: '/supplier-scars'
+      fullPath: '/supplier-scars/'
+      preLoaderRoute: typeof SupplierScarsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stations/': {
       id: '/stations/'
       path: '/stations'
@@ -599,6 +632,13 @@ declare module '@tanstack/react-router' {
       path: '/corrective-actions'
       fullPath: '/corrective-actions/'
       preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints/': {
+      id: '/complaints/'
+      path: '/complaints'
+      fullPath: '/complaints/'
+      preLoaderRoute: typeof ComplaintsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/capa/': {
@@ -715,6 +755,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkOrdersIdRoute: WorkOrdersIdRoute,
   CalibrationIndexRoute: CalibrationIndexRoute,
   CapaIndexRoute: CapaIndexRoute,
+  ComplaintsIndexRoute: ComplaintsIndexRoute,
   CorrectiveActionsIndexRoute: CorrectiveActionsIndexRoute,
   HoldsIndexRoute: HoldsIndexRoute,
   IncomingIndexRoute: IncomingIndexRoute,
@@ -725,6 +766,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsIndexRoute: ProductsIndexRoute,
   RequestsIndexRoute: RequestsIndexRoute,
   StationsIndexRoute: StationsIndexRoute,
+  SupplierScarsIndexRoute: SupplierScarsIndexRoute,
   SuppliersIndexRoute: SuppliersIndexRoute,
   WorkOrdersIndexRoute: WorkOrdersIndexRoute,
   InspectionsIdExecuteRoute: InspectionsIdExecuteRoute,

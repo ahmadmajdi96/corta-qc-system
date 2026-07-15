@@ -54,7 +54,11 @@ import {
 import { useState, type ReactNode } from "react";
 import { NewInspectionDialog } from "@/components/new-inspection-dialog";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { ComplianceProfileSwitcher } from "@/components/compliance-profile-switcher";
+import { ComplianceProfileProvider } from "@/lib/compliance-profile";
 import { useQueryClient } from "@tanstack/react-query";
+import { MessageSquareWarning, AlertTriangle } from "lucide-react";
+
 
 type Role = "administrator" | "quality_manager" | "qc_engineer" | "inspector" | "auditor" | "viewer";
 type NavItem = { title: string; url: string; icon: typeof LayoutDashboard; roles?: readonly Role[] };
@@ -72,10 +76,13 @@ const quality: NavItem[] = [
   { title: "Non-Conformances", url: "/non-conformances", icon: AlertOctagon },
   { title: "Corrective Actions", url: "/corrective-actions", icon: Wrench },
   { title: "CAPA (8D)", url: "/capa", icon: FileSearch, roles: ["administrator", "quality_manager", "qc_engineer"] as const },
+  { title: "Supplier SCARs", url: "/supplier-scars", icon: AlertTriangle },
+  { title: "Customer Complaints", url: "/complaints", icon: MessageSquareWarning },
   { title: "Quality Holds", url: "/holds", icon: ShieldCheck },
   { title: "SPC / Control Charts", url: "/spc", icon: Activity },
   { title: "Calibration", url: "/calibration", icon: Gauge },
 ];
+
 
 const masterData: NavItem[] = [
   { title: "Products", url: "/products", icon: Package },
@@ -193,6 +200,7 @@ function TopBar({
             className="h-9 w-64 rounded-lg border border-border/60 bg-card/60 pl-8 pr-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
           />
         </div>
+        <ComplianceProfileSwitcher />
         <NotificationsBell />
 
         <DropdownMenu>
@@ -244,6 +252,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
+    <ComplianceProfileProvider>
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar roles={rolesArr} />
@@ -264,5 +273,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
       <NewInspectionDialog open={showNew} onOpenChange={setShowNew} />
     </SidebarProvider>
+    </ComplianceProfileProvider>
   );
 }

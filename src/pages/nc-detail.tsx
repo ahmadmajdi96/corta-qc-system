@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMyRoles, hasAnyRole, useSession } from "@/lib/auth";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ElectronicSignatureDialog } from "@/components/electronic-signature-dialog";
 
 const NEXT_TRANSITIONS: Record<string, { label: string; next: string }[]> = {
   open: [{ label: "Investigate", next: "under_investigation" }],
@@ -39,6 +40,7 @@ export function NcDetailPage({ id }: { id: string }) {
   const [rejectReason, setRejectReason] = useState("");
   const [tab, setTab] = useState("info");
   const [showInlineCa, setShowInlineCa] = useState(false);
+  const [esigOpen, setEsigOpen] = useState(false);
 
   const nc = useQuery({
     queryKey: ["nc", id],
@@ -178,6 +180,7 @@ export function NcDetailPage({ id }: { id: string }) {
                 <Button key={t.next} size="sm" variant="outline"
                   onClick={() => {
                     if (t.next === "rejected") setRejectOpen(true);
+                    else if (t.next === "closed") setEsigOpen(true);
                     else transition.mutate({ next: t.next });
                   }}>
                   {t.label}
@@ -451,6 +454,16 @@ export function NcDetailPage({ id }: { id: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ElectronicSignatureDialog
+        open={esigOpen}
+        onOpenChange={setEsigOpen}
+        entityType="non_conformance"
+        entityId={id}
+        meaning="Approve NC disposition and close — I certify all corrective actions are verified."
+        requiredRoles={["administrator", "quality_manager", "disposition_approver"]}
+        onSigned={() => transition.mutate({ next: "closed" })}
+      />
     </div>
   );
 }
