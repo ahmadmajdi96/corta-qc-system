@@ -354,7 +354,7 @@ export function DashboardPage() {
 
         <div className="glass-panel rounded-2xl p-5">
           <h3 className="text-sm font-semibold">Overall Pass Rate</h3>
-          <p className="text-xs text-muted-foreground">Last 7 days</p>
+          <p className="text-xs text-muted-foreground">Last 30 days</p>
           <div className="relative mt-2 h-64">
             <ResponsiveContainer>
               <RadialBarChart
