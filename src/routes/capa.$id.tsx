@@ -129,10 +129,13 @@ function CapaDetail() {
 
 
 
+  const steps = stepsFor(capa.data?.methodology);
+  const methodLabel = METHODOLOGY_LABEL[capa.data?.methodology] ?? capa.data?.methodology ?? "";
+
   useEffect(() => {
     if (capa.data) {
       const d: Record<string, string> = {};
-      for (const s of D_STEPS) d[s.key] = capa.data[s.key] ?? "";
+      for (const s of stepsFor(capa.data.methodology)) d[s.key] = capa.data[s.key] ?? "";
       setDraft(d);
     }
   }, [capa.data]);
