@@ -311,7 +311,7 @@ export function DashboardPage() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Kpi label="Pass Rate (7d)" value={summary.data?.passRate ?? 0} suffix="%" icon={Gauge} accent="primary" href="/inspections" />
+        <Kpi label="Pass Rate (30d)" value={summary.data?.passRate ?? 0} suffix="%" icon={Gauge} accent="primary" href="/inspections" />
         <Kpi label="Inspections Today" value={summary.data?.inspectionsToday ?? 0} delta={`${summary.data?.completionRate ?? 0}% completed`} icon={ClipboardCheck} accent="info" href={`/inspections?date=${today}`} />
         <Kpi label="Open NCs" value={summary.data?.openNCs ?? 0} icon={AlertOctagon} accent="destructive" href="/non-conformances?status=open" />
         <Kpi label="Overdue CAs" value={summary.data?.overdueCAs ?? 0} icon={Wrench} accent="warning" href="/corrective-actions?overdue=1" />
