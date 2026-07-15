@@ -25,14 +25,14 @@ async function loadOptions(table: string, label: string, extra = "") {
 
 export const Route = createFileRoute("/capa/")({
   ssr: false,
-  head: () => ({ meta: [{ title: "CAPA (8D) — CORTA QC" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "CAPA — CORTA QC" }, { name: "robots", content: "noindex" }] }),
   component: () => (
     <AuthGate>
       <AppShell>
         <MesPage
           icon={<FileSearch className="h-5 w-5" />}
           title="Corrective & Preventive Actions"
-          description="8D problem-solving workflow — from team formation through closure."
+          description="Structured problem-solving — 8D, 5-Why, Fishbone, or A3."
         >
           <SimpleList
             table="capa_records"

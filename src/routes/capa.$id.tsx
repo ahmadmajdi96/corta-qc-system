@@ -17,7 +17,9 @@ import { ElectronicSignatureDialog } from "@/components/electronic-signature-dia
 
 
 
-const D_STEPS: { key: string; label: string; help: string }[] = [
+type StepDef = { key: string; label: string; help: string };
+
+const STEPS_8D: StepDef[] = [
   { key: "d1_team", label: "D1 — Team", help: "Establish a cross-functional team with the right skills." },
   { key: "d2_problem", label: "D2 — Problem", help: "Describe the problem in measurable terms (what, where, when, how many)." },
   { key: "d3_containment", label: "D3 — Containment", help: "Interim actions to protect the customer from the problem." },
@@ -27,6 +29,53 @@ const D_STEPS: { key: string; label: string; help: string }[] = [
   { key: "d7_prevent", label: "D7 — Prevent recurrence", help: "Systemic changes (procedures, training, poka-yoke) to prevent recurrence." },
   { key: "d8_recognition", label: "D8 — Recognition & closure", help: "Recognize the team and formally close the CAPA." },
 ];
+
+const STEPS_5WHY: StepDef[] = [
+  { key: "d2_problem", label: "Problem statement", help: "Describe the problem in measurable terms." },
+  { key: "d1_team", label: "Why #1", help: "Why did this happen? First layer." },
+  { key: "d3_containment", label: "Why #2", help: "Why did that happen? Dig deeper." },
+  { key: "d4_root_cause", label: "Why #3 → #5 (Root cause)", help: "Continue asking until you reach the systemic root cause." },
+  { key: "d5_corrective", label: "Corrective action", help: "Action that addresses the identified root cause." },
+  { key: "d7_prevent", label: "Preventive action", help: "Systemic change to prevent recurrence." },
+];
+
+const STEPS_FISHBONE: StepDef[] = [
+  { key: "d2_problem", label: "Problem statement", help: "The effect being analyzed." },
+  { key: "d1_team", label: "Man / People", help: "Human-factor causes: skills, training, fatigue, communication." },
+  { key: "d3_containment", label: "Machine / Equipment", help: "Tooling, machines, fixtures, gauges." },
+  { key: "d4_root_cause", label: "Method", help: "Procedures, work instructions, standards." },
+  { key: "d5_corrective", label: "Material", help: "Raw material, components, consumables." },
+  { key: "d6_implement", label: "Measurement", help: "Inspection, gauges, calibration, sampling." },
+  { key: "d7_prevent", label: "Environment", help: "Temperature, humidity, layout, lighting." },
+  { key: "d8_recognition", label: "Root cause & corrective actions", help: "Confirmed root cause(s) and permanent actions." },
+];
+
+const STEPS_A3: StepDef[] = [
+  { key: "d2_problem", label: "Background", help: "Context — why this problem matters." },
+  { key: "d1_team", label: "Current condition", help: "Facts and data describing today's state." },
+  { key: "d3_containment", label: "Goal / Target condition", help: "Measurable target state." },
+  { key: "d4_root_cause", label: "Root cause analysis", help: "Analysis leading to the root cause(s)." },
+  { key: "d5_corrective", label: "Countermeasures", help: "Selected countermeasures to close the gap." },
+  { key: "d6_implement", label: "Implementation plan", help: "Who, what, when — the action plan." },
+  { key: "d7_prevent", label: "Follow-up / effect confirmation", help: "Verify results and standardize." },
+];
+
+function stepsFor(methodology: string | null | undefined): StepDef[] {
+  switch (methodology) {
+    case "5why": return STEPS_5WHY;
+    case "fishbone": return STEPS_FISHBONE;
+    case "a3": return STEPS_A3;
+    case "8d":
+    default: return STEPS_8D;
+  }
+}
+
+const METHODOLOGY_LABEL: Record<string, string> = {
+  "8d": "8D — Eight Disciplines",
+  "5why": "5-Why",
+  "fishbone": "Fishbone / Ishikawa",
+  "a3": "A3",
+};
 
 const AUDIT_PAGE_SIZES = [10, 25, 50, 100] as const;
 const AUDIT_DEFAULTS = { auditPage: 0, auditStep: "all", auditSort: "desc" as const, auditSize: 10 };
@@ -80,10 +129,13 @@ function CapaDetail() {
 
 
 
+  const steps = stepsFor(capa.data?.methodology);
+  const methodLabel = METHODOLOGY_LABEL[capa.data?.methodology] ?? capa.data?.methodology ?? "";
+
   useEffect(() => {
     if (capa.data) {
       const d: Record<string, string> = {};
-      for (const s of D_STEPS) d[s.key] = capa.data[s.key] ?? "";
+      for (const s of stepsFor(capa.data.methodology)) d[s.key] = capa.data[s.key] ?? "";
       setDraft(d);
     }
   }, [capa.data]);
@@ -128,7 +180,7 @@ function CapaDetail() {
   if (capa.isLoading) return <Skeleton className="h-96 w-full" />;
   if (capa.error) return <div className="text-destructive">Failed to load.</div>;
   const c = capa.data;
-  const progress = D_STEPS.filter((s) => (draft[s.key] ?? "").trim().length > 0).length;
+  const progress = steps.filter((s: StepDef) => (draft[s.key] ?? "").trim().length > 0).length;
 
   return (
     <div className="space-y-4">
@@ -137,10 +189,11 @@ function CapaDetail() {
           <ArrowLeft className="h-4 w-4" /> Back to CAPA
         </Link>
         <div className="flex items-center gap-3">
+          <StatusPill tone="info">{methodLabel}</StatusPill>
           <StatusPill tone={c.status === "closed" ? "success" : c.status === "in_progress" ? "info" : "warning"}>{c.status}</StatusPill>
-          <span className="text-xs font-mono text-muted-foreground">{progress}/8 steps</span>
+          <span className="text-xs font-mono text-muted-foreground">{progress}/{steps.length} steps</span>
           {c.status !== "closed" && (
-            <Button size="sm" variant="outline" className="gap-2" onClick={() => setEsigOpen(true)} disabled={progress < 8}>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => setEsigOpen(true)} disabled={progress < steps.length}>
               <CheckCircle2 className="h-4 w-4" /> Close CAPA
             </Button>
           )}
@@ -152,7 +205,7 @@ function CapaDetail() {
         onOpenChange={setEsigOpen}
         entityType="capa_record"
         entityId={id}
-        meaning="Approve and close CAPA — I certify all 8D steps are complete and effective."
+        meaning={`Approve and close CAPA — I certify all ${methodLabel} steps are complete and effective.`}
         requiredRoles={["administrator", "quality_manager", "quality_engineer"]}
         onSigned={() => close.mutate()}
       />
@@ -163,7 +216,7 @@ function CapaDetail() {
       </div>
 
       <div className="space-y-3">
-        {D_STEPS.map((s) => {
+        {steps.map((s: StepDef) => {
           const filled = (draft[s.key] ?? "").trim().length > 0;
           return (
             <div key={s.key} className="glass-panel rounded-xl p-4">
@@ -207,7 +260,7 @@ function CapaDetail() {
             >
               <option value="all">All events</option>
               <option value="closed">CAPA closed</option>
-              {D_STEPS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+              {steps.map((s: StepDef) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
             <select
               value={auditSize}
@@ -240,7 +293,7 @@ function CapaDetail() {
             <ul className="divide-y divide-border/40">
               {trail.data!.rows.map((e: any) => {
                 const who = e.profiles?.full_name || e.profiles?.email || "system";
-                const step = e.details?.step ? D_STEPS.find((s) => s.key === e.details.step)?.label ?? e.details.step : null;
+                const step = e.details?.step ? steps.find((s: StepDef) => s.key === e.details.step)?.label ?? e.details.step : null;
                 return (
                   <li key={e.id} className="py-2 text-sm">
                     <div className="flex items-center justify-between gap-2">
@@ -304,8 +357,8 @@ export const Route = createFileRoute("/capa/$id")({
       <AppShell>
         <MesPage
           icon={<FileSearch className="h-5 w-5" />}
-          title="CAPA (8D)"
-          description="Structured 8-discipline problem solving workflow."
+          title="CAPA"
+          description="Structured problem-solving — methodology-driven workflow."
         >
           <CapaDetail />
         </MesPage>

@@ -3602,7 +3602,7 @@ export type Database = {
     }
     Enums: {
       calibration_result: "pass" | "fail" | "conditional"
-      capa_methodology: "8d" | "5why" | "fishbone"
+      capa_methodology: "8d" | "5why" | "fishbone" | "a3"
       capa_status:
         | "draft"
         | "in_progress"
@@ -3770,7 +3770,7 @@ export const Constants = {
   public: {
     Enums: {
       calibration_result: ["pass", "fail", "conditional"],
-      capa_methodology: ["8d", "5why", "fishbone"],
+      capa_methodology: ["8d", "5why", "fishbone", "a3"],
       capa_status: [
         "draft",
         "in_progress",
