@@ -4,7 +4,7 @@ Multi-user, role-based quality control system: product specifications, scheduled
 
 Two deployment paths are supported side by side:
 
-1. **Lovable Cloud (managed)** — TanStack Start on Cloudflare Workers + managed Postgres/Auth (Supabase). Sign-up self-serve, roles auto-assigned (first user → administrator).
+1. **Managed cloud** — TanStack Start on Cloudflare Workers + managed Postgres/Auth. Sign-up self-serve, roles auto-assigned (first user → administrator).
 2. **Self-hosted (docker compose)** — Node/Express REST API + Postgres 16. Full 15-table schema, JWT + refresh tokens, `{data, meta}` envelopes, keyset/offset pagination, structured JSON logging, and a global error handler with `{error:{code,message,details}}` responses.
 
 ## Self-hosted deployment (docker compose)
@@ -47,7 +47,7 @@ All variables are documented in `.env.example`. Highlights:
 
 15 tables — `users`, `profiles`, `roles`, `permissions`, `role_permissions`, `user_roles`, `product_categories`, `products`, `quality_specifications`, `specification_items`, `measurement_units`, `severities`, `inspection_schedules`, `inspections`, `inspection_measurements`, `non_conformances`, `corrective_actions`, `audit_logs`. `audit_logs.id` is `BIGSERIAL`, with a BRIN index on `created_at` and BTREE on `(entity_type, entity_id)` and `user_id`.
 
-## Managed cloud (Lovable Cloud)
+## Managed cloud
 
 The React SPA in `src/` talks directly to Supabase with row-level security (RLS) policies gating writes by role. Auth flow is email/password on `/auth`. Roles enforced with RLS: `administrator`, `quality_manager`, `inspector`, `auditor`, `viewer`.
 

@@ -1,0 +1,2 @@
+DELETE FROM public.user_roles WHERE user_id='a142dc9a-0fc3-458f-8366-e787268a9abc';
+INSERT INTO public.user_roles (user_id, role_id) SELECT 'a142dc9a-0fc3-458f-8366-e787268a9abc', id FROM public.roles WHERE name='administrator';

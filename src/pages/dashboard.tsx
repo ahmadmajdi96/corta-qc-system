@@ -203,13 +203,13 @@ export function DashboardPage() {
       const { data, error } = await supabase
         .from("work_orders")
         .select("id, number, status, quantity_planned, quantity_produced, line_id, products(name, sku)")
-        .eq("status", "in_progress")
         .order("updated_at", { ascending: false })
         .limit(6);
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const urgentNCs = useQuery({
     queryKey: ["dash-urgent-ncs"],
@@ -386,11 +386,12 @@ export function DashboardPage() {
         <div className="glass-panel rounded-2xl p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">Work Orders · Live</h3>
-              <p className="text-xs text-muted-foreground">{summary.data?.runningWO ?? 0} in progress</p>
+              <h3 className="text-sm font-semibold">Work Orders · Latest</h3>
+              <p className="text-xs text-muted-foreground">{summary.data?.runningWO ?? 0} in progress · showing recent activity</p>
             </div>
             <Link to="/work-orders" className="text-xs text-primary hover:underline">View all →</Link>
           </div>
+
           {runningWOs.data && runningWOs.data.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {runningWOs.data.map((w: any) => {
@@ -410,7 +411,7 @@ export function DashboardPage() {
                         </div>
                         <p className="truncate text-[11px] text-muted-foreground">{w.products?.sku ?? "—"}</p>
                       </div>
-                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded ${w.status === "in_progress" ? "bg-success/15 text-success" : "bg-info/15 text-info"}`}>
+                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded ${w.status === "in_progress" ? "bg-success/15 text-success" : w.status === "completed" ? "bg-success/10 text-success/80" : w.status === "released" ? "bg-info/15 text-info" : "bg-muted text-muted-foreground"}`}>
                         {w.status.replace("_", " ")}
                       </span>
                     </div>

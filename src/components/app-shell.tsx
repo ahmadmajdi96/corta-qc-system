@@ -21,11 +21,13 @@ import {
   ScrollText,
   Activity,
   Bell,
-  Search,
   ChevronRight,
   FileSearch,
   Inbox,
 } from "lucide-react";
+import { GlobalSearch } from "@/components/global-search";
+
+
 import { supabase } from "@/integrations/supabase/client";
 import { useMyProfile, useMyRoles, hasAnyRole } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -193,13 +195,8 @@ function TopBar({
         <span className="text-foreground">Plant · Live</span>
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <div className="relative hidden md:block">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            placeholder="Search WO, lot, NC, gage…"
-            className="h-9 w-64 rounded-lg border border-border/60 bg-card/60 pl-8 pr-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
-          />
-        </div>
+        <GlobalSearch />
+
         <ComplianceProfileSwitcher />
         <NotificationsBell />
 
