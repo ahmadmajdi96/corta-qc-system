@@ -323,8 +323,8 @@ export function DashboardPage() {
         <div className="glass-panel rounded-2xl p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">Pass Rate — Last 12 hours</h3>
-              <p className="text-xs text-muted-foreground">Measurements evaluated per hour</p>
+              <h3 className="text-sm font-semibold">Pass Rate — Last 14 days</h3>
+              <p className="text-xs text-muted-foreground">Measurements evaluated per day</p>
             </div>
             <div className="flex gap-3 text-[11px]">
               <Legend dot="bg-primary" label="Pass rate %" />
