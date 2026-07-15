@@ -25,18 +25,17 @@ export function ProfilePage() {
   const { user } = useSession();
   const { data: profile, refetch } = useMyProfile();
   const { data: roles } = useMyRoles();
+  const updateEmailFn = useServerFn(updateMyEmail);
+  const updatePasswordFn = useServerFn(updateMyPassword);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [pwCurrent, setPwCurrent] = useState("");
   const [pwNew, setPwNew] = useState("");
   const [pwConfirm, setPwConfirm] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [emailSaving, setEmailSaving] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
-  const [resending, setResending] = useState(false);
-  const emailVerified = !!(user as any)?.email_confirmed_at;
 
   const [nameErr, setNameErr] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
