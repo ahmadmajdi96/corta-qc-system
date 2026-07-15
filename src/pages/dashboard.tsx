@@ -135,12 +135,12 @@ export function DashboardPage() {
   const summary = useQuery({
     queryKey: ["dash-summary", today],
     queryFn: async () => {
-      const sevenAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+      const thirtyAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
       const [insToday, openNC, overdueCA, recentMeas, openHolds, runningWO] = await Promise.all([
         supabase.from("inspections").select("id, status", { count: "exact" }).eq("scheduled_date", today),
         supabase.from("non_conformances").select("id", { count: "exact", head: true }).eq("status", "open"),
         supabase.from("corrective_actions").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]).lt("due_date", today),
-        supabase.from("inspection_measurements").select("is_pass, recorded_at").gte("recorded_at", sevenAgo),
+        supabase.from("inspection_measurements").select("is_pass, recorded_at").gte("recorded_at", thirtyAgo),
         supabase.from("quality_holds").select("id", { count: "exact", head: true }).eq("status", "open"),
         supabase.from("work_orders").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
       ]);
@@ -164,28 +164,30 @@ export function DashboardPage() {
     },
   });
 
-  // Pass rate trend — last 12 hours from measurements
+  // Pass rate trend — daily buckets over last 14 days
   const trend = useQuery({
     queryKey: ["dash-trend"],
     queryFn: async () => {
-      const since = new Date(Date.now() - 12 * 3600 * 1000).toISOString();
+      const DAYS = 14;
+      const since = new Date(Date.now() - DAYS * 24 * 3600 * 1000).toISOString();
       const { data, error } = await supabase
         .from("inspection_measurements")
         .select("is_pass, recorded_at")
         .gte("recorded_at", since);
       if (error) throw error;
-      const buckets = Array.from({ length: 12 }, (_, i) => {
-        const d = new Date(Date.now() - (11 - i) * 3600 * 1000);
-        return { hour: d.getHours().toString().padStart(2, "0") + "h", pass: 0, total: 0 };
+      const buckets = Array.from({ length: DAYS }, (_, i) => {
+        const d = new Date(Date.now() - (DAYS - 1 - i) * 24 * 3600 * 1000);
+        const label = `${d.getMonth() + 1}/${d.getDate()}`;
+        return { hour: label, pass: 0, total: 0, key: d.toISOString().slice(0, 10) };
       });
+      const idxByKey = new Map(buckets.map((b, i) => [b.key, i]));
       for (const m of data ?? []) {
         if (m.is_pass === null) continue;
-        const h = Math.floor((Date.now() - new Date(m.recorded_at).getTime()) / 3600 / 1000);
-        const idx = 11 - h;
-        if (idx >= 0 && idx < 12) {
-          buckets[idx].total += 1;
-          if (m.is_pass) buckets[idx].pass += 1;
-        }
+        const key = new Date(m.recorded_at).toISOString().slice(0, 10);
+        const idx = idxByKey.get(key);
+        if (idx === undefined) continue;
+        buckets[idx].total += 1;
+        if (m.is_pass) buckets[idx].pass += 1;
       }
       return buckets.map((b) => ({
         hour: b.hour,
@@ -201,7 +203,7 @@ export function DashboardPage() {
       const { data, error } = await supabase
         .from("work_orders")
         .select("id, number, status, quantity_planned, quantity_produced, line_id, products(name, sku)")
-        .in("status", ["in_progress", "released"])
+        .eq("status", "in_progress")
         .order("updated_at", { ascending: false })
         .limit(6);
       if (error) throw error;
