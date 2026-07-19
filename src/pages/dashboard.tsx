@@ -43,11 +43,15 @@ import { AddNcDialog } from "@/components/add-nc-dialog";
 import { Button } from "@/components/ui/button";
 
 const tooltipStyle = {
-  background: "oklch(0.16 0.02 240 / 0.95)",
-  border: "1px solid oklch(0.3 0.02 245)",
+  background: "oklch(0.16 0.02 240 / 0.98)",
+  border: "1px solid oklch(0.35 0.02 245)",
   borderRadius: 8,
   fontSize: 12,
+  color: "oklch(0.98 0 0)",
 };
+const tooltipLabelStyle = { color: "oklch(0.85 0 0)", fontSize: 11, marginBottom: 4 };
+const tooltipItemStyle = { color: "oklch(0.98 0 0)" };
+
 
 const SEVERITY_COLOR: Record<string, string> = {
   critical: "oklch(0.65 0.24 22)",
