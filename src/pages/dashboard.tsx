@@ -43,11 +43,15 @@ import { AddNcDialog } from "@/components/add-nc-dialog";
 import { Button } from "@/components/ui/button";
 
 const tooltipStyle = {
-  background: "oklch(0.16 0.02 240 / 0.95)",
-  border: "1px solid oklch(0.3 0.02 245)",
+  background: "oklch(0.16 0.02 240 / 0.98)",
+  border: "1px solid oklch(0.35 0.02 245)",
   borderRadius: 8,
   fontSize: 12,
+  color: "oklch(0.98 0 0)",
 };
+const tooltipLabelStyle = { color: "oklch(0.85 0 0)", fontSize: 11, marginBottom: 4 };
+const tooltipItemStyle = { color: "oklch(0.98 0 0)" };
+
 
 const SEVERITY_COLOR: Record<string, string> = {
   critical: "oklch(0.65 0.24 22)",
@@ -344,7 +348,7 @@ export function DashboardPage() {
                 <XAxis dataKey="hour" stroke="oklch(0.68 0.02 245)" fontSize={11} />
                 <YAxis yAxisId="left" stroke="oklch(0.68 0.02 245)" fontSize={11} domain={[0, 100]} />
                 <YAxis yAxisId="right" orientation="right" stroke="oklch(0.68 0.02 245)" fontSize={11} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
                 <Area yAxisId="left" type="monotone" dataKey="passRate" stroke="oklch(0.78 0.16 195)" fill="url(#passArea)" strokeWidth={2} connectNulls />
                 <RLine yAxisId="right" type="monotone" dataKey="volume" stroke="oklch(0.82 0.17 80)" strokeWidth={1.5} dot={false} />
               </AreaChart>
@@ -501,7 +505,7 @@ export function DashboardPage() {
               <BarChart data={ncMix.data?.category ?? []} layout="vertical" margin={{ left: 10 }}>
                 <XAxis type="number" stroke="oklch(0.68 0.02 245)" fontSize={11} />
                 <YAxis type="category" dataKey="name" stroke="oklch(0.68 0.02 245)" fontSize={10} width={110} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
                 <Bar dataKey="value" radius={[0, 6, 6, 0]}>
                   {(ncMix.data?.category ?? []).map((d, i) => <Cell key={i} fill={d.color} />)}
                 </Bar>
@@ -526,7 +530,7 @@ export function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.02 245 / 0.4)" />
                 <XAxis dataKey="hour" stroke="oklch(0.68 0.02 245)" fontSize={10} />
                 <YAxis stroke="oklch(0.68 0.02 245)" fontSize={10} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
                 <RLine type="monotone" dataKey="volume" stroke="oklch(0.82 0.17 80)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
@@ -542,7 +546,7 @@ export function DashboardPage() {
                 <Pie data={ncMix.data?.severity ?? []} dataKey="value" innerRadius={40} outerRadius={65} paddingAngle={2}>
                   {(ncMix.data?.severity ?? []).map((d, i) => <Cell key={i} fill={d.color} />)}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
               </PieChart>
             </ResponsiveContainer>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,14 +56,12 @@ function UsersTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
 
-  // debounce search
-  useState(() => { const t = setTimeout(() => setDebounced(search), 300); return () => clearTimeout(t); });
-  // simpler: effect-free debounce via useEffect below not needed if we just apply on submit
-  // But we want smoothness — inline:
-  if (search !== debounced && !(typeof window === "undefined")) {
-    // schedule
-    setTimeout(() => { setDebounced(search); setPage(0); }, 300);
-  }
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => { setDebounced(search); setPage(0); }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
 
   const users = useQuery({
     queryKey: ["admin-users", debounced, page],

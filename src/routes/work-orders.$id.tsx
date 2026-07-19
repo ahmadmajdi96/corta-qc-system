@@ -147,7 +147,7 @@ function WoDetail() {
         product_id: wo.data.product_id ?? null,
         reason: holdReason,
         status: "open",
-        placed_by: user!.id,
+        created_by: user!.id,
       } as any);
       if (hErr) throw hErr;
       const { error: uErr } = await supabase.from("work_orders").update({ status: "on_hold" }).eq("id", id);

@@ -42,6 +42,7 @@ import { Route as InspectionsCalendarRouteImport } from './routes/inspections.ca
 import { Route as InspectionPlansIdRouteImport } from './routes/inspection-plans.$id'
 import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
 import { Route as CapaIdRouteImport } from './routes/capa.$id'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
@@ -210,6 +211,11 @@ const CapaIdRoute = CapaIdRouteImport.update({
   path: '/capa/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const InspectionsIdIndexRoute = InspectionsIdIndexRouteImport.update({
   id: '/inspections/$id/',
   path: '/inspections/$id/',
@@ -223,13 +229,14 @@ const InspectionsIdExecuteRoute = InspectionsIdExecuteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/spc': typeof SpcRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspection-plans/$id': typeof InspectionPlansIdRoute
@@ -260,13 +267,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/spc': typeof SpcRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspection-plans/$id': typeof InspectionPlansIdRoute
@@ -298,13 +306,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/spc': typeof SpcRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/capa/$id': typeof CapaIdRoute
   '/corrective-actions/$id': typeof CorrectiveActionsIdRoute
   '/inspection-plans/$id': typeof InspectionPlansIdRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/spc'
+    | '/admin/audit'
     | '/capa/$id'
     | '/corrective-actions/$id'
     | '/inspection-plans/$id'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/spc'
+    | '/admin/audit'
     | '/capa/$id'
     | '/corrective-actions/$id'
     | '/inspection-plans/$id'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/spc'
+    | '/admin/audit'
     | '/capa/$id'
     | '/corrective-actions/$id'
     | '/inspection-plans/$id'
@@ -449,7 +461,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   LiveRoute: typeof LiveRoute
   LoginRoute: typeof LoginRoute
@@ -718,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CapaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/inspections/$id/': {
       id: '/inspections/$id/'
       path: '/inspections/$id'
@@ -735,9 +754,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   LiveRoute: LiveRoute,
   LoginRoute: LoginRoute,

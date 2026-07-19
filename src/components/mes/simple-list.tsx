@@ -18,12 +18,18 @@ export type SelectOption = { value: string; label: string };
 export type FieldDef = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "textarea" | "select";
+  type?: "text" | "number" | "date" | "textarea" | "select" | "email";
   required?: boolean;
   placeholder?: string;
   options?: SelectOption[];
   loadOptions?: () => Promise<SelectOption[]>;
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
+  pattern?: string;
+  helpText?: string;
 };
+
 
 export type ColumnDef<T> = {
   key: string;
@@ -41,7 +47,7 @@ export type FilterDef = {
 
 const PAGE_SIZES = [25, 50, 100, 200];
 
-export function SimpleList<T extends { id: string; created_at?: string | null }>({
+export function SimpleList<T extends { id: string | number; created_at?: string | null }>({
   table,
   columns,
   fields,
@@ -54,8 +60,11 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
   extraActions,
   filters,
   dateColumn = "created_at",
+  dateFromLabel = "Created from",
+  dateToLabel = "to",
   exportFilename,
   hideCreate = false,
+  validate,
 }: {
   table: string;
   columns: ColumnDef<T>[];
@@ -69,9 +78,13 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
   extraActions?: (row: T) => ReactNode;
   filters?: FilterDef[];
   dateColumn?: string;
+  dateFromLabel?: string;
+  dateToLabel?: string;
   exportFilename?: string;
   hideCreate?: boolean;
+  validate?: (form: Record<string, string>) => Record<string, string> | null;
 }) {
+
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -233,18 +246,24 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
                         ) : (
                           <Input
                             id={f.name}
-                            type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                            type={f.type === "number" ? "number" : f.type === "date" ? "date" : f.type === "email" ? "email" : "text"}
                             value={form[f.name] ?? ""}
                             onChange={(e) => { setForm({ ...form, [f.name]: e.target.value }); if (err) setFieldErrors((p) => { const n = { ...p }; delete n[f.name]; return n; }); }}
                             placeholder={f.placeholder}
                             aria-invalid={!!err}
                             className={err ? "border-destructive" : ""}
+                            min={f.min as any}
+                            max={f.max as any}
+                            step={f.step as any}
+                            pattern={f.pattern}
                           />
                         )}
+                        {f.helpText && !err && <p className="text-xs text-muted-foreground">{f.helpText}</p>}
                         {err && <p className="text-xs text-destructive">{err}</p>}
                       </div>
                     );
                   })}
+
                   {formError && (
                     <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-start gap-2">
                       <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
@@ -258,12 +277,30 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
                     onClick={() => {
                       const errs: Record<string, string> = {};
                       for (const f of fields) {
-                        if (f.required && !form[f.name]) errs[f.name] = `${f.label} is required`;
+                        const v = form[f.name] ?? "";
+                        if (f.required && !v) { errs[f.name] = `${f.label} is required`; continue; }
+                        if (v && f.type === "number") {
+                          const n = Number(v);
+                          if (Number.isNaN(n)) errs[f.name] = `${f.label} must be a number`;
+                          else if (f.min !== undefined && n < Number(f.min)) errs[f.name] = `${f.label} must be ≥ ${f.min}`;
+                          else if (f.max !== undefined && n > Number(f.max)) errs[f.name] = `${f.label} must be ≤ ${f.max}`;
+                        }
+                        if (v && f.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+                          errs[f.name] = `${f.label} must be a valid email`;
+                        }
+                        if (v && f.pattern && !new RegExp(f.pattern).test(v)) {
+                          errs[f.name] = `${f.label} format is invalid`;
+                        }
+                      }
+                      if (validate && !Object.keys(errs).length) {
+                        const extra = validate(form);
+                        if (extra) Object.assign(errs, extra);
                       }
                       if (Object.keys(errs).length) { setFieldErrors(errs); setFormError(null); return; }
                       setFieldErrors({}); setFormError(null);
                       create.mutate(form);
                     }}
+
                     disabled={create.isPending}
                   >{create.isPending ? "Saving..." : "Create"}</Button>
                 </DialogFooter>
@@ -283,13 +320,14 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
           </div>
         </div>
         <div className="grid gap-1">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Created from</Label>
-          <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(0); }} className="h-9 w-40" />
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{dateFromLabel}</Label>
+          <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(0); }} className="h-9 w-40" placeholder="YYYY-MM-DD" />
         </div>
         <div className="grid gap-1">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">to</Label>
-          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(0); }} className="h-9 w-40" />
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{dateToLabel}</Label>
+          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(0); }} className="h-9 w-40" placeholder="YYYY-MM-DD" />
         </div>
+
         {(filters ?? []).map((f) => (
           <div key={f.key} className="grid gap-1">
             <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{f.label}</Label>

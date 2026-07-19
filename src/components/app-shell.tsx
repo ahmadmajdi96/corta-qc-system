@@ -97,12 +97,13 @@ const masterData: NavItem[] = [
 const admin: NavItem[] = [
   { title: "Reports", url: "/reports", icon: BarChart3 },
   { title: "Administration", url: "/admin", icon: Settings, roles: ["administrator"] as const },
-  { title: "Audit Log", url: "/admin", icon: History, roles: ["administrator", "auditor"] as const },
+  { title: "Audit Log", url: "/admin/audit", icon: History, roles: ["administrator", "auditor"] as const },
 ];
 
 function AppSidebar({ roles }: { roles: readonly string[] }) {
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const isActive = (url: string) => (url === "/" ? path === "/" : path.startsWith(url));
+  const isActive = (url: string) => (url === "/" ? path === "/" : path === url || path.startsWith(url + "/"));
+
 
   const allowed = (item: NavItem) =>
     !item.roles || item.roles.some((r) => roles.includes(r));
