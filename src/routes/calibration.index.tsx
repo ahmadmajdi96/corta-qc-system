@@ -53,11 +53,18 @@ export const Route = createFileRoute("/calibration/")({
               { name: "gage_type", label: "Type", placeholder: "Caliper" },
               { name: "manufacturer", label: "Manufacturer" },
               { name: "serial_number", label: "Serial number" },
-              { name: "resolution", label: "Resolution", type: "number" },
+              { name: "resolution", label: "Resolution", type: "number", min: 0, step: "any" },
               { name: "location", label: "Location" },
               { name: "last_cal_date", label: "Last cal date", type: "date" },
               { name: "next_cal_date", label: "Next cal date", type: "date" },
             ]}
+            validate={(f) => {
+              if (f.last_cal_date && f.next_cal_date && f.next_cal_date <= f.last_cal_date) {
+                return { next_cal_date: "Next calibration must be after last calibration" };
+              }
+              return null;
+            }}
+
           />
         </MesPage>
       </AppShell>
