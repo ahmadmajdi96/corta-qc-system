@@ -18,12 +18,18 @@ export type SelectOption = { value: string; label: string };
 export type FieldDef = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "textarea" | "select";
+  type?: "text" | "number" | "date" | "textarea" | "select" | "email";
   required?: boolean;
   placeholder?: string;
   options?: SelectOption[];
   loadOptions?: () => Promise<SelectOption[]>;
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
+  pattern?: string;
+  helpText?: string;
 };
+
 
 export type ColumnDef<T> = {
   key: string;
