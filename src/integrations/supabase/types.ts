@@ -829,6 +829,7 @@ export type Database = {
       gauge_usage_history: {
         Row: {
           calibration_status_at_use: string
+          context: Json | null
           gage_id: string
           id: string
           inspection_id: string | null
@@ -839,6 +840,7 @@ export type Database = {
         }
         Insert: {
           calibration_status_at_use: string
+          context?: Json | null
           gage_id: string
           id?: string
           inspection_id?: string | null
@@ -849,6 +851,7 @@ export type Database = {
         }
         Update: {
           calibration_status_at_use?: string
+          context?: Json | null
           gage_id?: string
           id?: string
           inspection_id?: string | null
@@ -898,36 +901,36 @@ export type Database = {
       hold_scope_actions: {
         Row: {
           action: string
-          after_qty: number
-          authorized_by: string
-          before_qty: number
+          after_qty: number | null
+          authorized_by: string | null
+          before_qty: number | null
           hold_id: string
           id: string
           performed_at: string
-          qty_delta: number
-          reason: string
+          qty_delta: number | null
+          reason: string | null
         }
         Insert: {
           action: string
-          after_qty: number
-          authorized_by: string
-          before_qty: number
+          after_qty?: number | null
+          authorized_by?: string | null
+          before_qty?: number | null
           hold_id: string
           id?: string
           performed_at?: string
-          qty_delta: number
-          reason: string
+          qty_delta?: number | null
+          reason?: string | null
         }
         Update: {
           action?: string
-          after_qty?: number
-          authorized_by?: string
-          before_qty?: number
+          after_qty?: number | null
+          authorized_by?: string | null
+          before_qty?: number | null
           hold_id?: string
           id?: string
           performed_at?: string
-          qty_delta?: number
-          reason?: string
+          qty_delta?: number | null
+          reason?: string | null
         }
         Relationships: [
           {
