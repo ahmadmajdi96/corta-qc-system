@@ -30,10 +30,11 @@ export const Route = createFileRoute("/suppliers/")({
             fields={[
               { name: "code", label: "Code", placeholder: "SUP-001" },
               { name: "name", label: "Name", required: true },
-              { name: "contact_email", label: "Contact email" },
-              { name: "contact_phone", label: "Contact phone" },
-              { name: "rating", label: "Rating (0-5)", type: "number" },
+              { name: "contact_email", label: "Contact email", type: "email" },
+              { name: "contact_phone", label: "Contact phone", pattern: "^[+0-9()\\-\\s]{6,}$", helpText: "Digits, spaces, +, - and () only" },
+              { name: "rating", label: "Rating (0-5)", type: "number", min: 0, max: 5, step: 0.1 },
             ]}
+
           />
         </MesPage>
       </AppShell>
