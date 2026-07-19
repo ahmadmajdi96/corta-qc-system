@@ -277,12 +277,30 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
                     onClick={() => {
                       const errs: Record<string, string> = {};
                       for (const f of fields) {
-                        if (f.required && !form[f.name]) errs[f.name] = `${f.label} is required`;
+                        const v = form[f.name] ?? "";
+                        if (f.required && !v) { errs[f.name] = `${f.label} is required`; continue; }
+                        if (v && f.type === "number") {
+                          const n = Number(v);
+                          if (Number.isNaN(n)) errs[f.name] = `${f.label} must be a number`;
+                          else if (f.min !== undefined && n < Number(f.min)) errs[f.name] = `${f.label} must be ≥ ${f.min}`;
+                          else if (f.max !== undefined && n > Number(f.max)) errs[f.name] = `${f.label} must be ≤ ${f.max}`;
+                        }
+                        if (v && f.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+                          errs[f.name] = `${f.label} must be a valid email`;
+                        }
+                        if (v && f.pattern && !new RegExp(f.pattern).test(v)) {
+                          errs[f.name] = `${f.label} format is invalid`;
+                        }
+                      }
+                      if (validate && !Object.keys(errs).length) {
+                        const extra = validate(form);
+                        if (extra) Object.assign(errs, extra);
                       }
                       if (Object.keys(errs).length) { setFieldErrors(errs); setFormError(null); return; }
                       setFieldErrors({}); setFormError(null);
                       create.mutate(form);
                     }}
+
                     disabled={create.isPending}
                   >{create.isPending ? "Saving..." : "Create"}</Button>
                 </DialogFooter>
