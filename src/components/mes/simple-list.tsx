@@ -246,18 +246,24 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
                         ) : (
                           <Input
                             id={f.name}
-                            type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                            type={f.type === "number" ? "number" : f.type === "date" ? "date" : f.type === "email" ? "email" : "text"}
                             value={form[f.name] ?? ""}
                             onChange={(e) => { setForm({ ...form, [f.name]: e.target.value }); if (err) setFieldErrors((p) => { const n = { ...p }; delete n[f.name]; return n; }); }}
                             placeholder={f.placeholder}
                             aria-invalid={!!err}
                             className={err ? "border-destructive" : ""}
+                            min={f.min as any}
+                            max={f.max as any}
+                            step={f.step as any}
+                            pattern={f.pattern}
                           />
                         )}
+                        {f.helpText && !err && <p className="text-xs text-muted-foreground">{f.helpText}</p>}
                         {err && <p className="text-xs text-destructive">{err}</p>}
                       </div>
                     );
                   })}
+
                   {formError && (
                     <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive flex items-start gap-2">
                       <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
