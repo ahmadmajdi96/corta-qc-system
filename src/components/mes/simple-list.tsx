@@ -320,13 +320,14 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
           </div>
         </div>
         <div className="grid gap-1">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Created from</Label>
-          <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(0); }} className="h-9 w-40" />
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{dateFromLabel}</Label>
+          <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(0); }} className="h-9 w-40" placeholder="YYYY-MM-DD" />
         </div>
         <div className="grid gap-1">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">to</Label>
-          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(0); }} className="h-9 w-40" />
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{dateToLabel}</Label>
+          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(0); }} className="h-9 w-40" placeholder="YYYY-MM-DD" />
         </div>
+
         {(filters ?? []).map((f) => (
           <div key={f.key} className="grid gap-1">
             <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">{f.label}</Label>
