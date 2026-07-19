@@ -47,7 +47,7 @@ export type FilterDef = {
 
 const PAGE_SIZES = [25, 50, 100, 200];
 
-export function SimpleList<T extends { id: string; created_at?: string | null }>({
+export function SimpleList<T extends { id: string | number; created_at?: string | null }>({
   table,
   columns,
   fields,
@@ -60,8 +60,11 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
   extraActions,
   filters,
   dateColumn = "created_at",
+  dateFromLabel = "Created from",
+  dateToLabel = "to",
   exportFilename,
   hideCreate = false,
+  validate,
 }: {
   table: string;
   columns: ColumnDef<T>[];
@@ -75,9 +78,13 @@ export function SimpleList<T extends { id: string; created_at?: string | null }>
   extraActions?: (row: T) => ReactNode;
   filters?: FilterDef[];
   dateColumn?: string;
+  dateFromLabel?: string;
+  dateToLabel?: string;
   exportFilename?: string;
   hideCreate?: boolean;
+  validate?: (form: Record<string, string>) => Record<string, string> | null;
 }) {
+
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
