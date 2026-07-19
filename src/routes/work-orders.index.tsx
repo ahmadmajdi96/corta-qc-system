@@ -58,12 +58,19 @@ export const Route = createFileRoute("/work-orders/")({
                 const { data } = await supabase.from("production_lines").select("id, name").order("name");
                 return (data ?? []).map((p: any) => ({ value: p.id, label: p.name }));
               } },
-              { name: "quantity_planned", label: "Planned quantity", type: "number", required: true },
+              { name: "quantity_planned", label: "Planned quantity", type: "number", required: true, min: 1, step: 1 },
               { name: "lot_number", label: "Lot number" },
               { name: "planned_start", label: "Planned start", type: "date" },
               { name: "planned_end", label: "Planned end", type: "date" },
               { name: "notes", label: "Notes", type: "textarea" },
             ]}
+            validate={(f) => {
+              if (f.planned_start && f.planned_end && f.planned_end < f.planned_start) {
+                return { planned_end: "Planned end must be on or after planned start" };
+              }
+              return null;
+            }}
+
             extraActions={(r: any) => (
               <Button asChild variant="ghost" size="sm">
                 <Link to="/work-orders/$id" params={{ id: r.id }}>Open</Link>
