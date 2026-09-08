@@ -344,12 +344,13 @@ function CapaDetail() {
 
 export const Route = createFileRoute("/capa/$id")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>) => ({
-    auditPage: Number(s.auditPage) || 0,
-    auditStep: typeof s.auditStep === "string" ? s.auditStep : "all",
-    auditSort: s.auditSort === "asc" ? "asc" as const : "desc" as const,
-    auditSize: [10, 25, 50, 100].includes(Number(s.auditSize)) ? Number(s.auditSize) : 10,
+  validateSearch: z.object({
+    auditPage: z.coerce.number().catch(0).default(0),
+    auditStep: z.string().catch("all").default("all"),
+    auditSort: z.enum(["asc", "desc"]).catch("desc").default("desc"),
+    auditSize: z.coerce.number().catch(10).default(10),
   }),
+
   head: () => ({ meta: [{ title: "CAPA — CORTA QC" }, { name: "robots", content: "noindex" }] }),
 
   component: () => (
