@@ -17,6 +17,7 @@ const schema = z.object({
 
 export function AuthCard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
