@@ -14,7 +14,7 @@ export default defineConfig({
   },
   vite: {
     server: {
-      allowedHosts: ["qms.cortanexai.com"],
+      allowedHosts: ["qms.cortanexai.com", "qms.manuqube.com"],
     },
   },
 });
