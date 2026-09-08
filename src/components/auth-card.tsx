@@ -27,7 +27,9 @@ export function AuthCard() {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
-    const parsed = schema.safeParse({ email, password });
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const parsed = schema.safeParse({ email: cleanEmail, password: cleanPassword });
     if (!parsed.success) {
       const f: typeof fieldErrors = {};
       for (const iss of parsed.error.issues) {
@@ -39,7 +41,7 @@ export function AuthCard() {
     }
     setLoading(true);
     try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: err } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
       if (err) {
         if (err.message.toLowerCase().includes("invalid")) {
           setError("Invalid email or password. Please try again.");
@@ -86,6 +88,10 @@ export function AuthCard() {
               type="email"
               placeholder="you@company.com"
               autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               aria-invalid={!!fieldErrors.email}
@@ -100,6 +106,10 @@ export function AuthCard() {
                 type={showPass ? "text" : "password"}
                 placeholder="Enter password"
                 autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="pr-10"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 aria-invalid={!!fieldErrors.password}
