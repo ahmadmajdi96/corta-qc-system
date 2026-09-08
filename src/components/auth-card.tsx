@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,35 @@ const schema = z.object({
 
 export function AuthCard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+
+  // If a session already exists (or arrives while this page is open), leave the sign-in page.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) {
+        queryClient.setQueryData(["auth-user"], data.session.user);
+        navigate({ to: "/", replace: true });
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session?.user) {
+        queryClient.setQueryData(["auth-user"], session.user);
+        navigate({ to: "/", replace: true });
+      }
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate, queryClient]);
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,9 +76,11 @@ export function AuthCard() {
       }
       const { data: u } = await supabase.auth.getUser();
       if (u.user) {
-        await supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.user.id);
+        queryClient.setQueryData(["auth-user"], u.user);
+        void supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.user.id);
       }
-      navigate({ to: "/" });
+      await queryClient.invalidateQueries({ queryKey: ["auth-user"] });
+      navigate({ to: "/", replace: true });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Network error";
       notifyError(msg, { retry: () => submit(e as unknown as React.FormEvent) });
