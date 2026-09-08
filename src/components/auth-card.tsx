@@ -25,6 +25,28 @@ export function AuthCard() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
+  // If a session already exists (or arrives while this page is open), leave the sign-in page.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) {
+        queryClient.setQueryData(["auth-user"], data.session.user);
+        navigate({ to: "/", replace: true });
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session?.user) {
+        queryClient.setQueryData(["auth-user"], session.user);
+        navigate({ to: "/", replace: true });
+      }
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate, queryClient]);
+
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
