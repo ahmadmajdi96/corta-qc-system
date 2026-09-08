@@ -52,9 +52,11 @@ export function AuthCard() {
       }
       const { data: u } = await supabase.auth.getUser();
       if (u.user) {
-        await supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.user.id);
+        queryClient.setQueryData(["auth-user"], u.user);
+        void supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.user.id);
       }
-      navigate({ to: "/" });
+      await queryClient.invalidateQueries({ queryKey: ["auth-user"] });
+      navigate({ to: "/", replace: true });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Network error";
       notifyError(msg, { retry: () => submit(e as unknown as React.FormEvent) });
