@@ -9,77 +9,47 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as DocsRouteImport } from './routes/docs'
-import { Route as LiveRouteImport } from './routes/live'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SpcRouteImport } from './routes/spc'
-import { Route as AdminAuditRouteImport } from './routes/admin.audit'
-import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
-import { Route as CapaIndexRouteImport } from './routes/capa.index'
-import { Route as CapaIdRouteImport } from './routes/capa.$id'
-import { Route as ComplaintsIndexRouteImport } from './routes/complaints.index'
-import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
-import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
-import { Route as HoldsIndexRouteImport } from './routes/holds.index'
-import { Route as IncomingIndexRouteImport } from './routes/incoming.index'
-import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-plans.index'
-import { Route as InspectionPlansIdRouteImport } from './routes/inspection-plans.$id'
-import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
-import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
-import { Route as LinesIndexRouteImport } from './routes/lines.index'
-import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
-import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
-import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
-import { Route as ProductsIndexRouteImport } from './routes/products.index'
-import { Route as ProductsIdRouteImport } from './routes/products.$id'
-import { Route as RequestsIndexRouteImport } from './routes/requests.index'
-import { Route as RequestsIdRouteImport } from './routes/requests.$id'
-import { Route as StationsIndexRouteImport } from './routes/stations.index'
-import { Route as SupplierScarsIndexRouteImport } from './routes/supplier-scars.index'
-import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkOrdersIndexRouteImport } from './routes/work-orders.index'
+import { Route as SuppliersIndexRouteImport } from './routes/suppliers.index'
+import { Route as SupplierScarsIndexRouteImport } from './routes/supplier-scars.index'
+import { Route as StationsIndexRouteImport } from './routes/stations.index'
+import { Route as RequestsIndexRouteImport } from './routes/requests.index'
+import { Route as ProductsIndexRouteImport } from './routes/products.index'
+import { Route as NonConformancesIndexRouteImport } from './routes/non-conformances.index'
+import { Route as LinesIndexRouteImport } from './routes/lines.index'
+import { Route as InspectionsIndexRouteImport } from './routes/inspections.index'
+import { Route as InspectionPlansIndexRouteImport } from './routes/inspection-plans.index'
+import { Route as IncomingIndexRouteImport } from './routes/incoming.index'
+import { Route as HoldsIndexRouteImport } from './routes/holds.index'
+import { Route as CorrectiveActionsIndexRouteImport } from './routes/corrective-actions.index'
+import { Route as ComplaintsIndexRouteImport } from './routes/complaints.index'
+import { Route as CapaIndexRouteImport } from './routes/capa.index'
+import { Route as CalibrationIndexRouteImport } from './routes/calibration.index'
 import { Route as WorkOrdersIdRouteImport } from './routes/work-orders.$id'
+import { Route as RequestsIdRouteImport } from './routes/requests.$id'
+import { Route as ProductsIdRouteImport } from './routes/products.$id'
+import { Route as NonConformancesListRouteImport } from './routes/non-conformances.list'
+import { Route as NonConformancesIdRouteImport } from './routes/non-conformances.$id'
+import { Route as InspectionsCalendarRouteImport } from './routes/inspections.calendar'
+import { Route as InspectionPlansIdRouteImport } from './routes/inspection-plans.$id'
+import { Route as CorrectiveActionsIdRouteImport } from './routes/corrective-actions.$id'
+import { Route as CapaIdRouteImport } from './routes/capa.$id'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as InspectionsIdIndexRouteImport } from './routes/inspections.$id.index'
 import { Route as InspectionsIdExecuteRouteImport } from './routes/inspections.$id.execute'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LiveRoute = LiveRouteImport.update({
-  id: '/live',
-  path: '/live',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const SpcRoute = SpcRouteImport.update({
+  id: '/spc',
+  path: '/spc',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -87,129 +57,39 @@ const ReportsRoute = ReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SpcRoute = SpcRouteImport.update({
-  id: '/spc',
-  path: '/spc',
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminAuditRoute = AdminAuditRouteImport.update({
-  id: '/audit',
-  path: '/audit',
-  getParentRoute: () => AdminRoute,
-} as any)
-const CalibrationIndexRoute = CalibrationIndexRouteImport.update({
-  id: '/calibration/',
-  path: '/calibration/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CapaIndexRoute = CapaIndexRouteImport.update({
-  id: '/capa/',
-  path: '/capa/',
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CapaIdRoute = CapaIdRouteImport.update({
-  id: '/capa/$id',
-  path: '/capa/$id',
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ComplaintsIndexRoute = ComplaintsIndexRouteImport.update({
-  id: '/complaints/',
-  path: '/complaints/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
-  id: '/corrective-actions/',
-  path: '/corrective-actions/',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CorrectiveActionsIdRoute = CorrectiveActionsIdRouteImport.update({
-  id: '/corrective-actions/$id',
-  path: '/corrective-actions/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HoldsIndexRoute = HoldsIndexRouteImport.update({
-  id: '/holds/',
-  path: '/holds/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IncomingIndexRoute = IncomingIndexRouteImport.update({
-  id: '/incoming/',
-  path: '/incoming/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InspectionPlansIndexRoute = InspectionPlansIndexRouteImport.update({
-  id: '/inspection-plans/',
-  path: '/inspection-plans/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InspectionPlansIdRoute = InspectionPlansIdRouteImport.update({
-  id: '/inspection-plans/$id',
-  path: '/inspection-plans/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InspectionsIndexRoute = InspectionsIndexRouteImport.update({
-  id: '/inspections/',
-  path: '/inspections/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
-  id: '/inspections/calendar',
-  path: '/inspections/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LinesIndexRoute = LinesIndexRouteImport.update({
-  id: '/lines/',
-  path: '/lines/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NonConformancesIndexRoute = NonConformancesIndexRouteImport.update({
-  id: '/non-conformances/',
-  path: '/non-conformances/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NonConformancesIdRoute = NonConformancesIdRouteImport.update({
-  id: '/non-conformances/$id',
-  path: '/non-conformances/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NonConformancesListRoute = NonConformancesListRouteImport.update({
-  id: '/non-conformances/list',
-  path: '/non-conformances/list',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsIndexRoute = ProductsIndexRouteImport.update({
-  id: '/products/',
-  path: '/products/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsIdRoute = ProductsIdRouteImport.update({
-  id: '/products/$id',
-  path: '/products/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RequestsIndexRoute = RequestsIndexRouteImport.update({
-  id: '/requests/',
-  path: '/requests/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RequestsIdRoute = RequestsIdRouteImport.update({
-  id: '/requests/$id',
-  path: '/requests/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StationsIndexRoute = StationsIndexRouteImport.update({
-  id: '/stations/',
-  path: '/stations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SupplierScarsIndexRoute = SupplierScarsIndexRouteImport.update({
-  id: '/supplier-scars/',
-  path: '/supplier-scars/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
-  id: '/suppliers/',
-  path: '/suppliers/',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkOrdersIndexRoute = WorkOrdersIndexRouteImport.update({
@@ -217,10 +97,130 @@ const WorkOrdersIndexRoute = WorkOrdersIndexRouteImport.update({
   path: '/work-orders/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
+  id: '/suppliers/',
+  path: '/suppliers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupplierScarsIndexRoute = SupplierScarsIndexRouteImport.update({
+  id: '/supplier-scars/',
+  path: '/supplier-scars/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StationsIndexRoute = StationsIndexRouteImport.update({
+  id: '/stations/',
+  path: '/stations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestsIndexRoute = RequestsIndexRouteImport.update({
+  id: '/requests/',
+  path: '/requests/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsIndexRoute = ProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NonConformancesIndexRoute = NonConformancesIndexRouteImport.update({
+  id: '/non-conformances/',
+  path: '/non-conformances/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinesIndexRoute = LinesIndexRouteImport.update({
+  id: '/lines/',
+  path: '/lines/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsIndexRoute = InspectionsIndexRouteImport.update({
+  id: '/inspections/',
+  path: '/inspections/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionPlansIndexRoute = InspectionPlansIndexRouteImport.update({
+  id: '/inspection-plans/',
+  path: '/inspection-plans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncomingIndexRoute = IncomingIndexRouteImport.update({
+  id: '/incoming/',
+  path: '/incoming/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HoldsIndexRoute = HoldsIndexRouteImport.update({
+  id: '/holds/',
+  path: '/holds/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectiveActionsIndexRoute = CorrectiveActionsIndexRouteImport.update({
+  id: '/corrective-actions/',
+  path: '/corrective-actions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsIndexRoute = ComplaintsIndexRouteImport.update({
+  id: '/complaints/',
+  path: '/complaints/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CapaIndexRoute = CapaIndexRouteImport.update({
+  id: '/capa/',
+  path: '/capa/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalibrationIndexRoute = CalibrationIndexRouteImport.update({
+  id: '/calibration/',
+  path: '/calibration/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkOrdersIdRoute = WorkOrdersIdRouteImport.update({
   id: '/work-orders/$id',
   path: '/work-orders/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RequestsIdRoute = RequestsIdRouteImport.update({
+  id: '/requests/$id',
+  path: '/requests/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsIdRoute = ProductsIdRouteImport.update({
+  id: '/products/$id',
+  path: '/products/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NonConformancesListRoute = NonConformancesListRouteImport.update({
+  id: '/non-conformances/list',
+  path: '/non-conformances/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NonConformancesIdRoute = NonConformancesIdRouteImport.update({
+  id: '/non-conformances/$id',
+  path: '/non-conformances/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionsCalendarRoute = InspectionsCalendarRouteImport.update({
+  id: '/inspections/calendar',
+  path: '/inspections/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InspectionPlansIdRoute = InspectionPlansIdRouteImport.update({
+  id: '/inspection-plans/$id',
+  path: '/inspection-plans/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectiveActionsIdRoute = CorrectiveActionsIdRouteImport.update({
+  id: '/corrective-actions/$id',
+  path: '/corrective-actions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CapaIdRoute = CapaIdRouteImport.update({
+  id: '/capa/$id',
+  path: '/capa/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
 } as any)
 const InspectionsIdIndexRoute = InspectionsIdIndexRouteImport.update({
   id: '/inspections/$id/',
@@ -512,53 +512,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/live': {
-      id: '/live'
-      path: '/live'
-      fullPath: '/live'
-      preLoaderRoute: typeof LiveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+    '/spc': {
+      id: '/spc'
+      path: '/spc'
+      fullPath: '/spc'
+      preLoaderRoute: typeof SpcRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -568,179 +526,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/spc': {
-      id: '/spc'
-      path: '/spc'
-      fullPath: '/spc'
-      preLoaderRoute: typeof SpcRouteImport
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/audit': {
-      id: '/admin/audit'
-      path: '/audit'
-      fullPath: '/admin/audit'
-      preLoaderRoute: typeof AdminAuditRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/calibration/': {
-      id: '/calibration/'
-      path: '/calibration'
-      fullPath: '/calibration/'
-      preLoaderRoute: typeof CalibrationIndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/capa/': {
-      id: '/capa/'
-      path: '/capa'
-      fullPath: '/capa/'
-      preLoaderRoute: typeof CapaIndexRouteImport
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/capa/$id': {
-      id: '/capa/$id'
-      path: '/capa/$id'
-      fullPath: '/capa/$id'
-      preLoaderRoute: typeof CapaIdRouteImport
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/complaints/': {
-      id: '/complaints/'
-      path: '/complaints'
-      fullPath: '/complaints/'
-      preLoaderRoute: typeof ComplaintsIndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/corrective-actions/': {
-      id: '/corrective-actions/'
-      path: '/corrective-actions'
-      fullPath: '/corrective-actions/'
-      preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/corrective-actions/$id': {
-      id: '/corrective-actions/$id'
-      path: '/corrective-actions/$id'
-      fullPath: '/corrective-actions/$id'
-      preLoaderRoute: typeof CorrectiveActionsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/holds/': {
-      id: '/holds/'
-      path: '/holds'
-      fullPath: '/holds/'
-      preLoaderRoute: typeof HoldsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/incoming/': {
-      id: '/incoming/'
-      path: '/incoming'
-      fullPath: '/incoming/'
-      preLoaderRoute: typeof IncomingIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inspection-plans/': {
-      id: '/inspection-plans/'
-      path: '/inspection-plans'
-      fullPath: '/inspection-plans/'
-      preLoaderRoute: typeof InspectionPlansIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inspection-plans/$id': {
-      id: '/inspection-plans/$id'
-      path: '/inspection-plans/$id'
-      fullPath: '/inspection-plans/$id'
-      preLoaderRoute: typeof InspectionPlansIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inspections/': {
-      id: '/inspections/'
-      path: '/inspections'
-      fullPath: '/inspections/'
-      preLoaderRoute: typeof InspectionsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inspections/calendar': {
-      id: '/inspections/calendar'
-      path: '/inspections/calendar'
-      fullPath: '/inspections/calendar'
-      preLoaderRoute: typeof InspectionsCalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lines/': {
-      id: '/lines/'
-      path: '/lines'
-      fullPath: '/lines/'
-      preLoaderRoute: typeof LinesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/non-conformances/': {
-      id: '/non-conformances/'
-      path: '/non-conformances'
-      fullPath: '/non-conformances/'
-      preLoaderRoute: typeof NonConformancesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/non-conformances/$id': {
-      id: '/non-conformances/$id'
-      path: '/non-conformances/$id'
-      fullPath: '/non-conformances/$id'
-      preLoaderRoute: typeof NonConformancesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/non-conformances/list': {
-      id: '/non-conformances/list'
-      path: '/non-conformances/list'
-      fullPath: '/non-conformances/list'
-      preLoaderRoute: typeof NonConformancesListRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products/': {
-      id: '/products/'
-      path: '/products'
-      fullPath: '/products/'
-      preLoaderRoute: typeof ProductsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products/$id': {
-      id: '/products/$id'
-      path: '/products/$id'
-      fullPath: '/products/$id'
-      preLoaderRoute: typeof ProductsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/requests/': {
-      id: '/requests/'
-      path: '/requests'
-      fullPath: '/requests/'
-      preLoaderRoute: typeof RequestsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/requests/$id': {
-      id: '/requests/$id'
-      path: '/requests/$id'
-      fullPath: '/requests/$id'
-      preLoaderRoute: typeof RequestsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/stations/': {
-      id: '/stations/'
-      path: '/stations'
-      fullPath: '/stations/'
-      preLoaderRoute: typeof StationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/supplier-scars/': {
-      id: '/supplier-scars/'
-      path: '/supplier-scars'
-      fullPath: '/supplier-scars/'
-      preLoaderRoute: typeof SupplierScarsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/suppliers/': {
-      id: '/suppliers/'
-      path: '/suppliers'
-      fullPath: '/suppliers/'
-      preLoaderRoute: typeof SuppliersIndexRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/work-orders/': {
@@ -750,12 +582,180 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkOrdersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/suppliers/': {
+      id: '/suppliers/'
+      path: '/suppliers'
+      fullPath: '/suppliers/'
+      preLoaderRoute: typeof SuppliersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/supplier-scars/': {
+      id: '/supplier-scars/'
+      path: '/supplier-scars'
+      fullPath: '/supplier-scars/'
+      preLoaderRoute: typeof SupplierScarsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stations/': {
+      id: '/stations/'
+      path: '/stations'
+      fullPath: '/stations/'
+      preLoaderRoute: typeof StationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requests/': {
+      id: '/requests/'
+      path: '/requests'
+      fullPath: '/requests/'
+      preLoaderRoute: typeof RequestsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/': {
+      id: '/products/'
+      path: '/products'
+      fullPath: '/products/'
+      preLoaderRoute: typeof ProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/non-conformances/': {
+      id: '/non-conformances/'
+      path: '/non-conformances'
+      fullPath: '/non-conformances/'
+      preLoaderRoute: typeof NonConformancesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lines/': {
+      id: '/lines/'
+      path: '/lines'
+      fullPath: '/lines/'
+      preLoaderRoute: typeof LinesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections/': {
+      id: '/inspections/'
+      path: '/inspections'
+      fullPath: '/inspections/'
+      preLoaderRoute: typeof InspectionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspection-plans/': {
+      id: '/inspection-plans/'
+      path: '/inspection-plans'
+      fullPath: '/inspection-plans/'
+      preLoaderRoute: typeof InspectionPlansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incoming/': {
+      id: '/incoming/'
+      path: '/incoming'
+      fullPath: '/incoming/'
+      preLoaderRoute: typeof IncomingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/holds/': {
+      id: '/holds/'
+      path: '/holds'
+      fullPath: '/holds/'
+      preLoaderRoute: typeof HoldsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/corrective-actions/': {
+      id: '/corrective-actions/'
+      path: '/corrective-actions'
+      fullPath: '/corrective-actions/'
+      preLoaderRoute: typeof CorrectiveActionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints/': {
+      id: '/complaints/'
+      path: '/complaints'
+      fullPath: '/complaints/'
+      preLoaderRoute: typeof ComplaintsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/capa/': {
+      id: '/capa/'
+      path: '/capa'
+      fullPath: '/capa/'
+      preLoaderRoute: typeof CapaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calibration/': {
+      id: '/calibration/'
+      path: '/calibration'
+      fullPath: '/calibration/'
+      preLoaderRoute: typeof CalibrationIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/work-orders/$id': {
       id: '/work-orders/$id'
       path: '/work-orders/$id'
       fullPath: '/work-orders/$id'
       preLoaderRoute: typeof WorkOrdersIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/requests/$id': {
+      id: '/requests/$id'
+      path: '/requests/$id'
+      fullPath: '/requests/$id'
+      preLoaderRoute: typeof RequestsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/$id': {
+      id: '/products/$id'
+      path: '/products/$id'
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof ProductsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/non-conformances/list': {
+      id: '/non-conformances/list'
+      path: '/non-conformances/list'
+      fullPath: '/non-conformances/list'
+      preLoaderRoute: typeof NonConformancesListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/non-conformances/$id': {
+      id: '/non-conformances/$id'
+      path: '/non-conformances/$id'
+      fullPath: '/non-conformances/$id'
+      preLoaderRoute: typeof NonConformancesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspections/calendar': {
+      id: '/inspections/calendar'
+      path: '/inspections/calendar'
+      fullPath: '/inspections/calendar'
+      preLoaderRoute: typeof InspectionsCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inspection-plans/$id': {
+      id: '/inspection-plans/$id'
+      path: '/inspection-plans/$id'
+      fullPath: '/inspection-plans/$id'
+      preLoaderRoute: typeof InspectionPlansIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/corrective-actions/$id': {
+      id: '/corrective-actions/$id'
+      path: '/corrective-actions/$id'
+      fullPath: '/corrective-actions/$id'
+      preLoaderRoute: typeof CorrectiveActionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/capa/$id': {
+      id: '/capa/$id'
+      path: '/capa/$id'
+      fullPath: '/capa/$id'
+      preLoaderRoute: typeof CapaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/inspections/$id/': {
       id: '/inspections/$id/'
