@@ -1,6 +1,6 @@
 {
-  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:54fe8803790d12c8a9625f3b88d1bd735c6bdf0c0d2647fae73c84155878d8ee",
-  "commit": "f137f9857df3dac172ef199017d8df0898669fe2",
+  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:850398a5d904edf6348d30b1d77a253f84a5f15e5c30dd1370ba737fa9562a86",
+  "commit": "4f7863a442bdac7999b4735c31d3dea2d49f43f1",
   "environment": "production",
   "ref": "refs/heads/main"
 }
