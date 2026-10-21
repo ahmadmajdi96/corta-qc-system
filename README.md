@@ -2,7 +2,11 @@
 
 Multi-user, role-based quality control system: product specifications, scheduled inspections, non-conformances (NC), corrective actions (CAPA), dashboards and reports.
 
-Two deployment paths are supported side by side:
+## Current office deployment
+
+Production is https://qc.manuqube.com. Development (`qc.apps.dev.cortanexai.com`) and staging (`qc.apps.staging.cortanexai.com`) require the office VPN. CI/CD builds the compiled TanStack Node server and uses independent self-hosted Supabase backends for each environment. See [deployment and backend guide](deploy/supabase/README.md). PRs run Build check; `dev-*` / `staging-*` tags deploy those environments, and merging `main` deploys production. The Docker Compose section below describes the standalone API deployment option.
+
+Two standalone deployment paths are also supported side by side:
 
 1. **Managed cloud** — TanStack Start on Cloudflare Workers + managed Postgres/Auth. Sign-up self-serve, roles auto-assigned (first user → administrator).
 2. **Self-hosted (docker compose)** — Node/Express REST API + Postgres 16. Full 15-table schema, JWT + refresh tokens, `{data, meta}` envelopes, keyset/offset pagination, structured JSON logging, and a global error handler with `{error:{code,message,details}}` responses.
