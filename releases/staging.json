@@ -1,6 +1,6 @@
 {
-  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:ae4720ce2733db813e29e100f1a5fa7d6180c79963514b9c0580f3d601282440",
-  "commit": "f137f9857df3dac172ef199017d8df0898669fe2",
+  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:f7ff180e1db5337d59d7d6eecbb3521177b8dce456b859b24d3d3f41693eaede",
+  "commit": "4f7863a442bdac7999b4735c31d3dea2d49f43f1",
   "environment": "staging",
-  "ref": "refs/tags/staging-qc-selfhosted-20261021-2"
+  "ref": "refs/tags/staging-qc-selfhosted-20261021-3"
 }
