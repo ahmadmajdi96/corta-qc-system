@@ -1,1 +1,6 @@
-{"environment": "staging", "image": "pending", "commit": "090a44cf2c118bc4ca24438529bd72a717be3ad9"}
+{
+  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:fd37b017a10fe4b511f528ddc478483a3300caec05801c488b963ba147e0b225",
+  "commit": "7bf26b6d04fb05fabc6fea699fc36e816fd2e6c0",
+  "environment": "staging",
+  "ref": "refs/tags/staging-qc-selfhosted-20261021-1"
+}
