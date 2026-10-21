@@ -1,6 +1,6 @@
 {
-  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:dc299884ce37adc229fe9c2db1bf9b0c5b12ed89f16b1a2b0778bd9f69a6cb58",
-  "commit": "f137f9857df3dac172ef199017d8df0898669fe2",
+  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:cbe4ff960f8f78d2863345fc2a0b1123ab1dc60a0de7c0e0a3514d277b16a5f8",
+  "commit": "4f7863a442bdac7999b4735c31d3dea2d49f43f1",
   "environment": "dev",
-  "ref": "refs/tags/dev-qc-selfhosted-20261021-2"
+  "ref": "refs/tags/dev-qc-selfhosted-20261021-3"
 }
