@@ -1,1 +1,6 @@
-{"environment": "production", "image": "pending", "commit": "090a44cf2c118bc4ca24438529bd72a717be3ad9"}
+{
+  "image": "ghcr.io/ahmadmajdi96/corta-qc-system@sha256:97ebcc388cfe519bae57f8ee89272507ba222f58f785e2aea7c69a0155a76d4f",
+  "commit": "7bf26b6d04fb05fabc6fea699fc36e816fd2e6c0",
+  "environment": "production",
+  "ref": "refs/heads/main"
+}
