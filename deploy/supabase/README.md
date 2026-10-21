@@ -10,7 +10,7 @@ App runtime uses SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_K
 
 PRs require the Build check. dev-* tags release development, staging-* tags release staging and main releases production. Immutable image records are published on deploy-releases and read by namespace-scoped consumers. Build output is a compiled Node server, not the root development Dockerfile. The legacy Express api directory is not deployed by this workflow.
 
-Apply source SQL files in order using migrate.sh. Checksums and dispositions are recorded in qc_deploy.migrations. The cloud-only role grant in 20260715165721 is skipped only if its specific old cloud user does not exist; no dummy identity is fabricated. The remaining SQL is applied normally. Private attachments and avatars buckets are provisioned.
+Apply source SQL files in order using migrate.sh. Checksums and dispositions are recorded in qc_deploy.migrations. The cloud-only role grant in 20260715165721 is skipped only if its specific old cloud user does not exist; no dummy identity is fabricated. The remaining SQL is applied normally. Private attachments and avatars buckets are provisioned. The runner also enables the notifications table in the Realtime publication.
 
 Longhorn persists database, files and daily local recovery dumps/roles/files. Recovery copies are retained for seven days. Production PVCs are 16/4/16 GiB (database/files/backups), dev and staging 8/2/8 GiB. These sizes are capacity ceilings, not RAM reservations. One database instance per environment supports recovery with volume reattachment, not zero-downtime DB failover. Backups remain inside the office; no offsite backup or full disaster-recovery rehearsal is implied.
 

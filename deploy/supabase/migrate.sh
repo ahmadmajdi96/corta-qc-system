@@ -28,6 +28,15 @@ for file in /tmp/qc-migrations/*.sql; do
 done
 psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -q <<'SQL'
 INSERT INTO storage.buckets(id,name,public) VALUES ('avatars','avatars',false),('attachments','attachments',false) ON CONFLICT(id) DO NOTHING;
+DO $$ BEGIN
+ IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname='supabase_realtime') THEN
+  CREATE PUBLICATION supabase_realtime;
+ END IF;
+ IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND schemaname='public' AND tablename='notifications') THEN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+ END IF;
+END $$;
+ALTER TABLE public.notifications REPLICA IDENTITY FULL;
 NOTIFY pgrst, 'reload schema';
 SELECT count(*) AS verified_migrations FROM qc_deploy.migrations;
 SQL
