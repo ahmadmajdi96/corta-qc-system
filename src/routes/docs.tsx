@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowLeft, ArrowRight, BookOpen, ChevronRight, FileText, Maximize2, Printer, Search, X } from "lucide-react";
-import { isValidElement, useEffect, useState, type ReactNode } from "react";
+import { createContext, isValidElement, useContext, useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/docs")({
 });
 
 const IMG = (n: string) => `/doc-images/${n}.jpg`;
+const PrintGuideContext = createContext(false);
 
 type Section = { id: string; title: string; group: string };
 const SECTIONS: Section[] = [
@@ -66,23 +67,27 @@ function Flow({ steps }: { steps: string[] }) {
 
 function Shot({ name, caption }: { name: string; caption: string }) {
   const [open, setOpen] = useState(false);
+  const printGuide = useContext(PrintGuideContext);
+  const captionId = `${printGuide ? "print-" : ""}caption-${name}`;
   return <>
     <figure className="my-7">
       <div className="relative overflow-hidden rounded-md border border-border bg-card">
-        <img src={IMG(name)} alt={caption} loading="lazy" width={1440} height={900} className="h-auto w-full" />
+        <img src={IMG(name)} alt={caption} loading={printGuide ? "eager" : "lazy"} width={1440} height={900} className="h-auto w-full" />
         <Button variant="secondary" size="icon" title="Enlarge screenshot" aria-label={`Enlarge ${caption} screenshot`} onClick={() => setOpen(true)} className="absolute right-3 top-3 print:hidden"><Maximize2 /></Button>
       </div>
       <figcaption className="mt-3 text-xs leading-5 text-muted-foreground">{caption}</figcaption>
     </figure>
-    <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto bg-background" aria-describedby={`caption-${name}`}><DialogHeader><DialogTitle>{caption}</DialogTitle></DialogHeader><img src={IMG(name)} alt={`${caption} enlarged application screenshot`} width={1440} height={900} className="h-auto w-full rounded-md"/><p id={`caption-${name}`} className="text-xs leading-5 text-muted-foreground">{caption}</p></DialogContent></Dialog>
+    <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto bg-background" aria-describedby={captionId}><DialogHeader><DialogTitle>{caption}</DialogTitle></DialogHeader><img src={IMG(name)} alt={`${caption} enlarged application screenshot`} width={1440} height={900} className="h-auto w-full rounded-md"/><p id={captionId} className="text-xs leading-5 text-muted-foreground">{caption}</p></DialogContent></Dialog>
   </>;
 }
 
 function Sec({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   const index = SECTIONS.findIndex(section => section.id === id);
-  return <article id={id} className="doc-chapter min-w-0 scroll-mt-20" aria-labelledby={`title-${id}`}>
+  const printGuide = useContext(PrintGuideContext);
+  const sectionId = `${printGuide ? "print-" : ""}${id}`;
+  return <article id={sectionId} className="doc-chapter min-w-0 scroll-mt-20" aria-labelledby={`title-${sectionId}`}>
     <div className="mb-4 flex items-center gap-2 font-mono text-xs text-muted-foreground"><span className="text-primary">{String(index + 1).padStart(2, "0")}</span><ChevronRight className="size-3"/>{SECTIONS[index]?.group}</div>
-    <h2 id={`title-${id}`} className="text-2xl font-semibold sm:text-3xl">{title.replace(/^\d+\.\s*/, "")}</h2>
+    <h2 id={`title-${sectionId}`} className="text-2xl font-semibold sm:text-3xl">{title.replace(/^\d+\.\s*/, "")}</h2>
     <div className="mt-4 space-y-5 text-sm leading-7 text-foreground [&>p:first-child]:max-w-3xl [&>p:first-child]:text-base [&>p:first-child]:text-muted-foreground [&_strong]:text-foreground [&_li]:ml-5 [&_li]:list-disc [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs [&_code]:text-foreground">{children}</div>
   </article>;
 }
@@ -122,11 +127,15 @@ function DocsPage() {
   useEffect(() => {
     const syncHash = () => {
       const id = window.location.hash.slice(1);
-      if (SECTIONS.some(section => section.id === id)) { setSelected(id); setMode("chapter"); }
+      if (!id || SECTIONS.some(section => section.id === id)) { setSelected(id || "overview"); setMode("chapter"); setQuery(""); }
     };
     syncHash();
     window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
+    window.addEventListener("popstate", syncHash);
+    return () => {
+      window.removeEventListener("hashchange", syncHash);
+      window.removeEventListener("popstate", syncHash);
+    };
   }, []);
   const chapters = [
           <Sec id="overview" title="1. System overview">
@@ -335,13 +344,16 @@ function DocsPage() {
   const groups = [...new Set(SECTIONS.map(section => section.group))];
   const normalized = query.trim().toLowerCase();
   const filtered = SECTIONS.filter((section, index) => `${section.title} ${section.group} ${searchableText(chapters[index])}`.toLowerCase().includes(normalized));
-  const index = SECTIONS.findIndex(section => section.id === selected);
+  const activeSection = filtered.find(section => section.id === selected) ?? filtered[0];
+  const activeId = activeSection?.id;
+  const index = activeSection ? SECTIONS.indexOf(activeSection) : -1;
+  const navigationIndex = filtered.findIndex(section => section.id === activeId);
   const select = (id: string) => {
     setSelected(id); setMode("chapter");
     window.history.pushState(null, "", `#${id}`);
     window.scrollTo({ top: 0, behavior: "instant" });
   };
-  const visible = mode === "all" ? filtered.map(section => chapters[SECTIONS.indexOf(section)]) : [chapters[index]];
+  const visible = mode === "all" ? filtered.map(section => chapters[SECTIONS.indexOf(section)]) : index < 0 ? [] : [chapters[index]];
   return <div className="technical-docs mx-auto max-w-[1600px] p-4 sm:p-6">
     <header className="doc-header mb-8 border-b border-border pb-6">
       <div className="mb-3 flex items-center gap-2 text-xs text-primary"><BookOpen className="size-4"/><span className="font-mono uppercase">Engineering & operations reference</span></div>
@@ -356,13 +368,13 @@ function DocsPage() {
         <nav aria-label="Documentation chapters" className="mt-4 max-h-52 overflow-y-auto pr-1 lg:max-h-[65vh]">{groups.map(group => {
           const items = filtered.filter(section => section.group === group);
           if (!items.length) return null;
-          return <div key={group} className="mb-5"><h2 className="mb-2 font-mono text-[10px] uppercase text-muted-foreground">{group}</h2>{items.map(section => <Button key={section.id} variant="ghost" onClick={() => select(section.id)} aria-current={selected === section.id && mode === "chapter" ? "page" : undefined} className={`mb-1 h-auto min-h-9 w-full justify-start whitespace-normal py-2 text-left text-xs leading-5 ${selected === section.id && mode === "chapter" ? "border-l-2 border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}><span className="w-5 shrink-0 font-mono text-[10px]">{String(SECTIONS.indexOf(section) + 1).padStart(2, "0")}</span>{section.title}</Button>)}</div>;
+          return <div key={group} className="mb-5"><h2 className="mb-2 font-mono text-[10px] uppercase text-muted-foreground">{group}</h2>{items.map(section => <Button key={section.id} variant="ghost" onClick={() => select(section.id)} aria-current={activeId === section.id && mode === "chapter" ? "page" : undefined} className={`mb-1 h-auto min-h-9 w-full justify-start whitespace-normal py-2 text-left text-xs leading-5 ${activeId === section.id && mode === "chapter" ? "border-l-2 border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}><span className="w-5 shrink-0 font-mono text-[10px]">{String(SECTIONS.indexOf(section) + 1).padStart(2, "0")}</span>{section.title}</Button>)}</div>;
         })}{filtered.length === 0 && <div className="py-6 text-sm text-muted-foreground">No matching chapters.</div>}</nav>
       </div></aside>
       <main className="min-w-0 max-w-[1080px]">
         <div className="doc-visible space-y-16">{visible.map((chapter) => chapter && <div key={chapter.props.id}>{chapter}</div>)}{visible.length === 0 && <p className="py-12 text-muted-foreground">No chapters match this search.</p>}</div>
-        <div className="doc-print-only hidden space-y-16">{chapters.map(chapter => <div key={chapter.props.id}>{chapter}</div>)}</div>
-        {mode === "chapter" && <footer className="mt-12 flex flex-wrap justify-between gap-3 border-t border-border pt-5 print:hidden"><Button variant="ghost" disabled={index <= 0} onClick={() => { const prev = SECTIONS[index - 1]; if (prev) select(prev.id); }}><ArrowLeft/>Previous chapter</Button><Button variant="outline" disabled={index >= SECTIONS.length - 1} onClick={() => { const next = SECTIONS[index + 1]; if (next) select(next.id); }}>Next chapter<ArrowRight/></Button></footer>}
+        <PrintGuideContext.Provider value={true}><div className="doc-print-only hidden space-y-16">{chapters.map(chapter => <div key={chapter.props.id}>{chapter}</div>)}</div></PrintGuideContext.Provider>
+        {mode === "chapter" && activeSection && <footer className="mt-12 flex flex-wrap justify-between gap-3 border-t border-border pt-5 print:hidden"><Button variant="ghost" disabled={navigationIndex <= 0} onClick={() => { const prev = filtered[navigationIndex - 1]; if (prev) select(prev.id); }}><ArrowLeft/>Previous chapter</Button><Button variant="outline" disabled={navigationIndex >= filtered.length - 1} onClick={() => { const next = filtered[navigationIndex + 1]; if (next) select(next.id); }}>Next chapter<ArrowRight/></Button></footer>}
         <p className="mt-10 border-t border-border py-5 text-xs leading-5 text-muted-foreground">CORTA QC · Technical reference · Screenshots use demonstration records. No credentials are included.</p>
       </main>
     </div>
