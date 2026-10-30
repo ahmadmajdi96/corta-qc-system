@@ -11,3 +11,4 @@
 
 - Keep public QC documentation in `/docs` with chapter and full-guide views; preserve QC content independently of the MES reference design.
 - Bundle application fonts and keep documentation screenshots in project-served assets so self-hosting does not depend on external font or image services.
+- Shared catalogue tables support an opt-in read-only mode that guards both creation controls and submission; enable it only after source synchronization and server-side ownership enforcement pass validation, to avoid disrupting quality workflows.
