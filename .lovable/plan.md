@@ -1,91 +1,79 @@
-# CORTA QC → MES-Grade QC (Design + Feature Overhaul)
+# QMS master-data simplification and portal integration
 
-## Phase A — Design system full clone
+## Goal
+Apply the attached **QMS UX Impact Analysis**: eliminate duplicate Product, Production Line, and Station management in QMS while preserving all quality workflows and historical records. Connect to the separate portals identified by you: **MES Command Center** and **MES Command Central**.
 
-Adopt MES Command Center's dark industrial theme verbatim:
-- Replace `src/styles.css` with MES tokens: graphite/cyan/amber palette, Space Grotesk + JetBrains Mono, `glass-panel`, `text-glow`, `status-dot`, `animate-pulse-glow`, `animate-ticker` utilities, radial gradient body background.
-- Load Space Grotesk + JetBrains Mono via `<link>` in `src/routes/__root.tsx`.
-- Rebuild app shell (`src/components/app-shell.tsx`) as a `SidebarProvider` layout with a persistent icon-collapsible sidebar (cyan glow on active), top ticker/status bar, glass header. Sidebar sections: **Operations** (Dashboard, Live, Work Orders, Execution), **Quality** (Inspections, Non-Conformances, Corrective Actions, Holds, SPC, Calibration), **Master Data** (Products, Lines, Stations, Gages, Suppliers), **Admin** (Users, Settings, Audit).
-- Retheme all shadcn primitives (Button, Card, Badge, Table, Dialog, Tabs) to use the new tokens; no hardcoded colors.
-- Rebrand auth card + login with the new theme.
+**Release gate:** Do not remove management controls until the relevant integration is working and dependent workflows have passed testing. Approval of this plan does not assume source access is already available.
 
-## Phase B — Data model (native tables)
+## Findings from the current applications
+- QMS has Product creation/editing and activation controls. Lines and Stations currently have creation controls; not every page implements all three Add/Edit/Delete operations.
+- Product quality specifications and inspection history are QMS-owned functions and must remain available.
+- QMS currently reads its own records; no established external master-data synchronization was found. The prior MES seed copy is a snapshot, not integration.
+- Stations already have a production-line relationship, but the Station creation page does not collect it.
+- MES Command Center contains line/station/product structures and an API/portal-event foundation worth reusing after contract verification. MES Command Central has overlapping product and production-order structures. Neither reviewed snapshot establishes the OMS product authority described in the PDF.
+- The current Docker setup runs the web app only. A separate API folder exists, but must not be assumed to power the deployed screens.
 
-One Supabase migration + matching self-hosted DDL in `api/db/init/00-schema.sql`:
+## 1. Establish ownership and the integration contract
+- Treat Lines and Stations as externally managed, consistent with your separate-portal decision. Inventory quality-specific station types before retiring controls so necessary quality setup is not accidentally removed.
+- Assign exactly one authoritative source per entity across the named portals; confirm whether Products originate in an OMS upstream of them or in one of these portals. Do not synchronize conflicting catalogues in both directions.
+- Define source identifiers, product code/name/category/status, line code/name/status, and station code/name/type/sequence/line/status mappings.
+- Agree on authentication, initial export, incremental updates, deactivation events, and a measurable synchronization target. Proposed starting target: changes available within five minutes, subject to source support.
+- Identify the responsible portal/team and its verified URL for each catalogue.
 
-New tables (with RLS + GRANTs):
-- `production_lines` (name, area, is_active)
-- `stations` (line_id, name, code, station_type, is_active)
-- `work_orders` (number, product_id, lot_number, quantity_planned, quantity_produced, status[planned|released|in_progress|completed|closed|on_hold], line_id, planned_start, planned_end, actual_start, actual_end)
-- `wo_operations` (work_order_id, station_id, sequence, status)
-- `inspection_plans` (name, plan_type[incoming|in_process|final], product_id, aql_level, sample_size_rule, is_active)
-- `plan_characteristics` (plan_id, spec_item_id, sample_frequency)
-- `suppliers` (name, code, rating, is_active)
-- `incoming_lots` (supplier_id, product_id, po_number, lot_number, received_qty, received_at, status)
-- `gages` (code, name, type, manufacturer, serial, resolution, last_cal_date, next_cal_date, status[active|due|overdue|out_of_service])
-- `calibration_records` (gage_id, performed_at, performed_by, result[pass|fail|conditional], certificate_ref, notes, next_due)
-- `msa_studies` (gage_id, study_type[gage_rr|linearity|bias], performed_at, result_json, verdict)
-- `quality_holds` (lot_number, work_order_id, product_id, reason, severity_id, status[open|under_review|released|scrapped|rework], created_by, resolved_by, resolved_at, disposition[use_as_is|rework|scrap|return_to_supplier])
-- `capa_records` (nc_id, methodology[8d|5why|fishbone], d1_team, d2_problem, d3_containment, d4_root_cause, d5_corrective, d6_implement, d7_prevent, d8_recognition, effectiveness_verified_at, effectiveness_verified_by, status)
-- `spc_samples` (spec_item_id, product_id, station_id, sample_time, subgroup_id, x_bar, r_value, sigma, ucl, lcl, out_of_control_rules jsonb)
+**Dependency:** Source-side endpoints, event delivery, exports, or permissions may require work in those projects. This chat can inspect their code but cannot modify those projects or read their private live records. If initial records require CSV export, export them from the source project's chat and upload them here.
 
-Extend existing tables:
-- `inspections`: add `work_order_id`, `station_id`, `line_id`, `operator_id`, `plan_id`, `plan_type` (default in_process), `hold_id`.
-- `non_conformances`: add `work_order_id`, `hold_id`, `capa_id`.
-- `inspection_measurements`: add `gage_id`.
+## 2. Build reliable one-way data availability first
+- Maintain a local QMS read model so inspections do not depend on a live source call for every selection.
+- Map source-system + entity + external ID to existing QMS IDs. Reconcile the current seeded records before import; flag ambiguous code matches for review rather than creating duplicates or changing referenced IDs.
+- Import Products, then Lines, then Stations, preserving station-to-line relationships. Resolve category mappings as part of the product contract.
+- Implement initial backfill and incremental synchronization through verified source contracts, with idempotent writes, stale-event protection, bounded retries, durable failure records, and administrator retry/reconciliation.
+- Track last successful synchronization, freshness, source ownership, and unresolved records. Keep the last valid data available during outages; never replace it with an empty catalogue.
+- Validate the complete catalogue against the source before cutover, including paginated imports and updates during backfill.
 
-RLS: viewer read-all, inspector/qc_engineer/quality_manager write per role, administrator full. GRANTs to authenticated + service_role for every table.
+## 3. Simplify QMS catalogue pages and enforce ownership
+- Keep Products, Lines, and Stations as searchable, filterable, paginated, exportable read-only catalogues; preserve existing page sizes.
+- Remove Add/Edit/Delete and activation controls wherever present for externally owned fields, including alternative detail pages and indirect write paths.
+- Show a compact source label and synchronization status; offer a verified source-portal link where access is available.
+- Retain Product quality specifications, acceptance criteria, inspection-plan configuration, quality records, and quality-specific routing relationships unless a reviewed contract explicitly makes those relationships external.
+- Enforce the read-only boundary on data writes, not just buttons. Ordinary QMS users, including QMS administrators, cannot mutate externally managed fields; only the authorized integration path can update them.
+- Review New Product requests: preserve quality review/approval, but prevent request completion from creating external master data locally. Reference the source product or hand off creation to the owner; do not add an unverified outbound API.
 
-## Phase C — Backend API (self-hosted)
+## 4. Preserve dependent quality workflows
+Audit and update all entity selectors and save paths in:
+- New Inspection, inspection scheduling/execution, and inspection-plan configuration.
+- Work Order product/line selection, release-generated inspections, and station operations.
+- NCRs, quality holds, incoming lots, complaints/SCARs where applicable, SPC, product routings, requests, reports, and global search.
 
-Extend `api/src/routes/crud.ts` with endpoints for every new table (list/get/create/update/delete + role gates). Add:
-- `POST /work-orders/:id/release`, `/complete`, `/hold`
-- `POST /holds/:id/disposition`
-- `POST /gages/:id/calibrate`
-- `GET /spc/:specItemId?station=&from=&to=` — returns subgroups, X-bar/R/Cp/Cpk, WE rule violations
-- `POST /inspections/from-wo` — auto-create inspection from WO operation + plan
-- Zod schemas for all new payloads.
+Active synced records remain selectable without manual re-entry. Filter stations by their correct line where relevant. Previously linked inactive records remain readable on existing records, but are excluded from new selections. Missing or stale data gets an explicit state and recovery action; distinguish no matching search results from a failed integration. Validate activation and relationships again on save.
 
-## Phase D — Frontend routes / features
+## 5. Protect history and deployment portability
+- Convert source deletions into local retirement/deactivation rather than hard deletion. Preserve QMS IDs and historical product/line/station references.
+- Review current mixed cascade/restrict/set-null relationships and prevent synchronization from deleting quality specifications, plans, inspections, NCRs, or traceability links.
+- Retain descriptive snapshots where needed for historical interpretation when source names change.
+- Make source addresses and private integration credentials deployment configuration, never browser-visible secrets. Verify connectivity, retry scheduling, and synchronization health on your server as well as the preview.
+- Roll out entity by entity after reconciliation. During failure, retain read-only cached catalogues and repair synchronization; do not restore competing QMS edits as an outage workaround.
 
-New routes under `src/routes/`:
-- `work-orders.index.tsx`, `work-orders.$id.tsx` — kanban + detail (linked inspections, holds).
-- `stations.index.tsx`, `lines.index.tsx` — master data grids.
-- `live.tsx` — WIP dashboard (ticker of active WOs, live inspection queue, hold alerts).
-- `holds.index.tsx`, `holds.$id.tsx` — quality hold list + disposition wizard.
-- `spc.tsx` — SPC control charts (recharts X-bar/R chart with UCL/LCL bands, Cp/Cpk display, WE rule flags), spec/product/station selector.
-- `calibration.index.tsx` — gage registry with due/overdue badges.
-- `calibration.$id.tsx` — gage detail with calibration history + MSA studies.
-- `inspection-plans.index.tsx` — plan library (incoming / in-process / final tabs).
-- `suppliers.index.tsx`, `incoming.index.tsx` — receiving inspection queue.
-- `capa.$id.tsx` — 8D form (D1-D8 stepper) linked from NC detail.
+## 6. Validate before release and update documentation
+Add focused automated tests for ownership, idempotency, ordering, activation, relationship validation, and historical retention, plus authenticated end-to-end workflow checks.
 
-Retheme existing pages (dashboard, inspections, ncs, corrective-actions, products, admin, reports, profile) to match the new shell — glass cards, gradient KPIs, cyan accents, mono numeric readouts.
+### Acceptance checks
+1. Creating/updating a source Product makes it available in QMS within the agreed target without duplicate records; replaying its event changes no record count.
+2. Source Line/Station updates preserve associations; mismatched or missing parents are held for recovery, not silently accepted.
+3. No ordinary QMS UI or direct write path can create/edit/delete external master data; QMS quality specifications remain editable by authorized roles.
+4. A synced Product/Line/Station can be selected, saved, and read back in an inspection; work-order release and plan execution still work with real linked data.
+5. Retired entities are unavailable for new selection while old inspections, NCRs, reports, and traceability remain readable.
+6. Integration delays and outages display accurate status, preserve cached data, and recover through retry/reconciliation without duplicates.
+7. Existing seed records reconcile without losing their linked quality records; catalogue pagination, search, filters, and exports remain functional.
+8. Requests no longer create duplicate local Products; quality-review steps remain functional.
+9. Verify the same flow on self-hosted deployment, including integration connectivity and scheduled retries.
+10. Refresh public `/docs` workflows and screenshots while preserving its existing MES-style design, chapter/full-guide views, bundled fonts, and server-served images.
 
-## Phase E — Integration touches
+## Technical implementation scope
+- Frontend surfaces: `src/pages/products-list.tsx`, `src/pages/product-detail.tsx`, Lines/Stations routes, `src/components/mes/simple-list.tsx`, and affected inspection/work-order/plan/request/report/search consumers. Add opt-in read-only behaviour to shared tables without disabling unrelated QMS CRUD.
+- Data changes: additive source mappings and durable synchronization state; reconcile existing records before enabling externally owned write restrictions. Apply migrations with explicit grants, RLS, and integration-only privileged writes.
+- Use TanStack server functions for internal administrative actions and verified external server routes for inbound integration. Validate sender identity/signatures before privileged writes; keep credentials server-side.
+- Determine the actual production data path before changing the legacy Express API. Update it only if it is deployed or offers a write path that must be closed; provide explicit self-hosted migration/configuration instructions rather than relying on init scripts for existing databases.
+- Record final ownership and integration architecture once the contracts are verified; do not reuse source-project database credentials in QMS.
 
-- Inspection execution: when opened from a WO operation, pre-fills plan characteristics; a failing inspection auto-creates a Hold in `open` state on the WO + lot.
-- NC detail: "Open CAPA" action creates a `capa_records` row and links; CAPA effectiveness verification unlocks NC closure.
-- Measurements: gage selector on numeric measurements; if gage is `overdue`, blocks record.
-- Dashboard: new KPI cards — Active WOs, Open Holds, Overdue Calibrations, Cp/Cpk trend.
-
-## Phase F — Verify
-
-- Typecheck (tsgo + tsc), lint.
-- Smoke-check preview navigates through new sidebar sections without runtime errors.
-
-## Technical notes
-
-- Design tokens copied verbatim (oklch values, gradients, shadows). No new palette invention.
-- Dark-only for now (matches MES source).
-- All new tables: `id uuid pk default gen_random_uuid()`, `created_at`, `updated_at` + trigger, `created_by uuid references auth.users`.
-- SPC math done in a small server util (`api/src/spc.ts` + `src/lib/spc.ts` mirror) for consistency.
-- Recharts already available for charts.
-- No new packages except possibly `date-fns` (already installed check).
-
-## Out of scope
-
-- Realtime WebSocket push (polling with react-query is fine).
-- Full ERP/PLM sync.
-- Mobile-native shells (responsive web only).
-- Migrating existing rows to link to newly created WOs (backfill left manual).
+## Not included
+No redesign of unrelated pages, no removal of catalogue data or QMS quality configuration, no bidirectional master-data editing, and no claim that source APIs or live data access are available until verified.
