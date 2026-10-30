@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/empty-state";
 import { toast } from "sonner";
 import { notifyError } from "@/lib/toast";
 import { downloadCSV } from "@/lib/csv";
+import { catalogueCreationDisabled } from "@/lib/catalogue-policy";
 
 export type SelectOption = { value: string; label: string };
 
@@ -90,7 +91,7 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
 }) {
 
   const qc = useQueryClient();
-  const creationDisabled = hideCreate || readOnly;
+  const creationDisabled = catalogueCreationDisabled({ hideCreate, readOnly });
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
