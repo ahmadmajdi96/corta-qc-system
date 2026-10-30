@@ -64,6 +64,8 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
   dateToLabel = "to",
   exportFilename,
   hideCreate = false,
+  readOnly = false,
+  emptyDescription,
   validate,
 }: {
   table: string;
@@ -82,10 +84,13 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
   dateToLabel?: string;
   exportFilename?: string;
   hideCreate?: boolean;
+  readOnly?: boolean;
+  emptyDescription?: string;
   validate?: (form: Record<string, string>) => Record<string, string> | null;
 }) {
 
   const qc = useQueryClient();
+  const creationDisabled = hideCreate || readOnly;
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -162,6 +167,7 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
 
   const create = useMutation({
     mutationFn: async (v: Record<string, string>) => {
+      if (creationDisabled) throw new Error("This catalogue is read-only.");
       const payload: Record<string, any> = {};
       for (const f of fields) {
         const val = v[f.name];
@@ -219,7 +225,7 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
           <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
             <Download className="h-4 w-4" /> Export CSV
           </Button>
-          {!hideCreate && (
+          {!creationDisabled && (
             <Dialog open={open} onOpenChange={handleOpenChange}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> New {entityName}</Button>
@@ -352,12 +358,20 @@ export function SimpleList<T extends { id: string | number; created_at?: string 
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
         </div>
+      ) : list.isError ? (
+        <div role="alert" className="flex items-center gap-3 rounded-md border border-destructive/40 p-4 text-sm">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <span>Records could not be loaded. Existing records have not been removed.</span>
+          <Button variant="outline" size="sm" onClick={() => list.refetch()} disabled={list.isFetching}>
+            <RefreshCw className="mr-2 h-4 w-4" />Retry
+          </Button>
+        </div>
       ) : !list.data?.length ? (
         <EmptyState
           icon={emptyIcon}
           title={`No ${entityName.toLowerCase()}s yet`}
-          description={`Create the first ${entityName.toLowerCase()} to get started.`}
-          action={!hideCreate ? <Button size="sm" onClick={() => setOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> New {entityName}</Button> : undefined}
+          description={emptyDescription ?? (creationDisabled ? "No records are available." : `Create the first ${entityName.toLowerCase()} to get started.`)}
+          action={!creationDisabled ? <Button size="sm" onClick={() => setOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> New {entityName}</Button> : undefined}
         />
       ) : !filtered.length ? (
         <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">No records match the current filters.</div>
